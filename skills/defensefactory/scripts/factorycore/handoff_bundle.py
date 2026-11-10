@@ -124,10 +124,15 @@ def prepare_bundle(plan, output):
             info=tarfile.TarInfo(name);info.size=len(raw);info.mode=0o600;archive.addfile(info,io.BytesIO(raw))
     raw=gzip.compress(stream.getvalue(),mtime=0)
     checked=verify_bundle(raw,requirements);require(checked['bundle_complete'],'Prepared bundle is incomplete: '+str(checked['problems']))
-    target=Path(output);target.parent.mkdir(parents=True,exist_ok=True)
+    target=Path(output);external=target.with_name(target.name+'.requirements.json')
+    require(not target.exists() and not external.exists(), 'Use new bundle AND machine-requirements paths')
+    target.parent.mkdir(parents=True,exist_ok=True)
     with target.open('xb') as out:out.write(raw)
     target.chmod(0o600)
+    with external.open('xb') as out:out.write(canonical(requirements))
+    external.chmod(0o600)
     return {'result':'recorded','file':str(target),'bytes':len(raw),'sha256':sha(raw),'requirements':requirements,
+            'external_requirements_file':str(external),'external_requirements_sha256':sha(external.read_bytes()),
             'bundle_complete':True,'stage_readiness':'not_evaluated','closure_permitted':False,
             'whole_attempt_handoff_ready':checked.get('whole_attempt_handoff_ready',False),
             'snapshot_handoff_ready':checked.get('snapshot_handoff_ready',False),
@@ -215,6 +220,16 @@ def verify_bundle(raw, requirements, _depth=0):
                 for dep in declared:read_dep(dep)
                 if value.get('record_type')=='saved_comparison':
                     replay_comparison(value,{d['name']:read_dep(d) for d in declared})
+                if value.get('record_type')=='fixture_snapshot':
+                    from .fixtures import replay
+                    replay(value, read_dep)
+                if value.get('record_type')=='handoff_verification':
+                    from .handoff_readback import replay
+                    replay(value, read_dep, _depth)
+                if value.get('discovery_reference'):
+                    from .check_results import validate_discovery
+                    paths={e['original_path']:contents[e['id']] for e in entries}
+                    validate_discovery(value, paths.__getitem__)
                 if value.get('record_type')=='artifact_binding':validate_binding(value,read_dep)
                 if value.get('record_type')=='bundle_artifact_reference':validate_use(value,read_dep,_depth)
                 if value.get('record_type')=='codeintel_index_observation':

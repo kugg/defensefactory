@@ -8,7 +8,7 @@ import subprocess
 import time
 from .core import require,identity,sha,canonical
 from .evidence_records import dependency
-from .check_results import qualify_execution, validate_protocol
+from .check_results import qualify_execution, validate_protocol, validate_discovery
 from .artifact_binding import prepare_artifacts, finish_artifacts, seal_artifacts
 
 
@@ -52,6 +52,7 @@ def capture(spec, evidence_directory):
         record['captured_evaluator_files'][name]={'path':str(snapshot),'sha256':digest}
     try:
         validate_protocol(spec.get('execution', {}))
+        validate_discovery(spec, lambda p:Path(p).read_bytes())
         provenance = prepare_artifacts(spec)
     except (OSError, ValueError, subprocess.CalledProcessError) as error:
         record.update(execution_state='preparation_failed', result='inconclusive', reason=str(error),
@@ -85,6 +86,11 @@ def capture(spec, evidence_directory):
             'exit_code':record['exit_code'],'timed_out':record['timed_out'],'start_error':record.get('start_error')},candidate)
         pending_artifacts=[]
         try:
+            if spec.get('fixture_reference'):
+                from .fixtures import validate_live
+                fixture = json.loads(Path(spec['fixture_reference']).read_text())
+                opening = json.loads(Path(spec['stage_start_reference']).read_text())
+                validate_live(fixture, opening, spec['cwd'])
             record['artifact_evidence'], record['evidence_dependencies'], pending_artifacts = finish_artifacts(spec, provenance, root, record)
         except (OSError, ValueError, subprocess.CalledProcessError) as error:
             record['artifact_error'] = str(error)

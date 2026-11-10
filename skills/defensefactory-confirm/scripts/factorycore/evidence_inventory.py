@@ -153,7 +153,8 @@ def observed_tools(raw, workspace, opening=None, cache_directory=None, capture_l
                 classification = 'prerequisite_read_snapshot'
             elif (not compound and script is not None and package and script.is_absolute()
                     and script.resolve().parent == (package / 'scripts').resolve()
-                    and script.name in ('evidence-compare.py','handoff-audit.py','codeintel-api.py','ticket-transfer.py','restore-artifact.py')):
+                    and script.name in ('evidence-compare.py','handoff-audit.py','codeintel-api.py','ticket-transfer.py','restore-artifact.py',
+                                        'prepare-fixture.py','verify-handoff.py','trial-status.py')):
                 classification = 'evidence_helper'
             elif (not compound and script is not None and package and script.is_absolute()
                     and script.resolve()==(package/'scripts/stage.py').resolve()
@@ -274,7 +275,7 @@ def verify_inventory(inv, read_file, check_saved=True, depth=0):
             problems.append('Required CodeIntel work from the published scope was downgraded/skipped')
         problems.extend(check_codeintel(requirements.get('codeintel'),observations or {},
             [(f['path'],v) for f,v in values],read_file,inv.get('opening',{}).get('scope',{}).get('subject')))
-        from .runtime_plan import outcomes
+        from .runtime_plan import outcomes, scoped_coverage
         for f,v in values:
             if v.get('record_type')=='stage_admission_failure' and any(d['name']=='requested-assertions' for d in v.get('evidence_dependencies',[])):
                 for execution in executions.get(v['check_id'],[]):
@@ -282,6 +283,7 @@ def verify_inventory(inv, read_file, check_saved=True, depth=0):
                     if spec['execution'].get('format') != 'process-assertions-v1':
                         problems.append('Runtime assertions dropped after a preserved rejection: '+v['check_id'])
         declarations={identity(v):v for f,v in values if v.get('record_type')=='runtime_plan'}
+        problems.extend(scoped_coverage(inv.get('opening',{}),declarations.values()))
         for declaration in declarations.values():
             verdict=outcomes(declaration,inv['opening'],[v for f,v in values if v.get('execution_state')],read_file)
             problems.extend(verdict['problems'])

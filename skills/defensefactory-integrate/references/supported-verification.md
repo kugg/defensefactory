@@ -49,6 +49,10 @@ launch. Incomplete command criteria are rejected before side effects. Unknown
 commands still appear in the audit; these helpers are not a sandbox and cannot
 prevent arbitrary Python/host-tool bypass.
 
+For partial source packages and paired publication, follow the executable
+[fixture and handoff procedure](fixture-runtime-handoff.md). Fixtures retain a
+distinct subject; scope-required runtime probes cannot be omitted from the audit.
+
 ## Prepare fixtures, then run the actual runtime producer
 
 Do fixture generation, ownership/permission setup, image creation and readiness

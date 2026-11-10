@@ -82,6 +82,8 @@ local source export and actual CodeIntel evidence. Registered-trial CLI legacy
 capture cannot substitute for stage admission. A successful helper test does
 not demonstrate a fresh agent will follow these paths.
 
+For partial source packages, use the [fixture/runtime/readback path](skills/defensefactory/references/fixture-runtime-handoff.md). It assembles approved archives offline, separates fixture subjects from product subjects, binds test selection to captured discovery, and checks required runtime probes from the published scope. Bundle preparation emits the exact machine requirements sidecar; paired native readback verifies both downloaded assets. `trial-status.py` recovers current invocation paths and measured timing after compaction; fetch the live ticket for current decisions.
+
 ## Stages
 
 | Skill | Purpose |

@@ -1,5 +1,6 @@
 """Qualify declared test protocols without assuming the product language/toolchain."""
 import json
+import re
 from .core import require
 
 
@@ -9,6 +10,8 @@ def validate_protocol(contract):
     if fmt == 'command':
         require(contract.get('reason') and contract.get('success_criteria'),
                 'Non-test command needs an explicit reason and success criterion before execution')
+    elif fmt == 'go-list-json':
+        require(not contract.get('required_tests'), 'Discovery cannot claim executed tests')
     elif fmt == 'process-assertions-v1':
         criteria = contract.get('assertions', [])
         names = contract.get('required_tests', [])
@@ -30,6 +33,21 @@ def validate_protocol(contract):
 def qualify_execution(check, execution, candidate):
     contract=check.get('execution') or {};fmt=contract.get('format')
     outcome=execution['result'];diagnostics=[];events=[]
+    if fmt == 'go-list-json':
+        names = set()
+        for line in execution.get('log','').splitlines():
+            try: item = json.loads(line)
+            except ValueError: continue
+            if not isinstance(item,dict): continue
+            if item.get('Action') == 'fail': outcome = 'violated'
+            name = item.get('Output','').strip()
+            if item.get('Action') == 'output' and item.get('Package') and re.fullmatch(r'(?:Test|Example|Benchmark|Fuzz)\w*',name):
+                names.add(item['Package']+'::'+name)
+        argv = check['argv']
+        listing = '-json' in argv and any(a == '-list' or a.startswith('-list=') for a in argv)
+        return {'result':outcome if outcome != 'satisfied_within_scope' else 'satisfied_within_scope' if names and listing else 'inconclusive',
+                'format':fmt, 'discovered_tests':sorted(names), 'tests':[],
+                'scope':'Discovered names only; no tests executed or accepted.'}
     if fmt=='process-assertions-v1':
         assertions = contract.get('assertions', [])
         required = contract.get('required_tests', [])
@@ -88,3 +106,23 @@ def qualify_execution(check, execution, candidate):
             'format':fmt,'required_tests':required,'tests':events,'missing_tests':missing,'skipped_tests':sorted(skipped),
             'unexplained_skips':unexplained,'diagnostics':diagnostics,
             'limitation':'Observed output from the frozen check process; it does not authenticate the evaluator or establish independent permissions.'}
+
+
+def validate_discovery(spec, read_file):
+    """Bind selection to actual discovery output, not an agent-authored name list."""
+    if not spec.get('discovery_reference'): return
+    from .core import identity, sha
+    record = json.loads(read_file(spec['discovery_reference']))
+    require(record.get('execution_state') == 'finished' and record['subject'] == spec['subject'], 'Discovery subject/inventory differs')
+    raw = read_file(record['raw_log_reference'])
+    original = json.loads(read_file(record['specification_reference']))
+    require(identity(original) == record['specification_sha256'] and sha(raw) == record['raw_log_sha256'], 'Discovery capture changed')
+    require(original['execution']['format'] == 'go-list-json', 'Use an actual discovery capture')
+    require(original.get('evaluator_files') and original['evaluator_files'] == spec.get('evaluator_files'),
+            'Discovery and execution must use the same frozen evaluator inventory')
+    actual = qualify_execution(original, {'result':'satisfied_within_scope' if record['exit_code']==0 else 'violated',
+        'exit_code':record['exit_code'], 'log':raw.decode(errors='replace')},spec['subject'].get('revision'))
+    require(not record.get('timed_out') and not record.get('start_error') and actual == record['test_evidence']
+            and actual['result'] == 'satisfied_within_scope', 'Discovery did not complete successfully')
+    require(spec['execution']['format'] == 'go-test-json'
+            and set(spec['execution']['required_tests']) <= set(actual['discovered_tests']), 'Required test was not discovered')

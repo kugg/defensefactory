@@ -2,7 +2,18 @@
 
 Validated on 2026-11-10. These are bounded checks of this experimental package.
 
-The prospective verification-path update passes **53 offline tests** in this repository.
+The fixture/runtime/readback update passes **63 offline tests** in this repository.
+The preceding verification-path update passed 53. New checks use a real local Go
+discovery/test process, offline source archive assembly with dependency and unsafe-
+overlay failures, a distinct fixture execution subject, preserved refused test
+selection, scope-required runtime probes, an actual deny-all binary, paired
+synthetic native downloads and measured invocation status. Fixture recipes,
+artifact runtime graphs and downloaded machine handoffs replay after original
+source paths are erased. The paired transfer tests mock HTTP responses; they are
+not a new live service/agent trial. Standalone helper import checks include the
+new fixture, status and paired-readback commands under isolated Python.
+
+The existing verification-path checks remain in the suite.
 The earlier capture/handoff update passed 34. Additional checks exercise admitted
 comparison build/use across erased original paths; refusal before legacy-capture
 side effects; durable admission errors; actual child refusal and legitimate

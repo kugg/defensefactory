@@ -46,3 +46,31 @@ production governance require separately designed and evidenced controls.
 defines the local/ticket boundary and the new helper contract. The changes are
 prospective: historical reports, receipts and frozen installations retain their
 original qualifications.
+
+## Partial fixtures and approved-input continuation
+
+The latest continuation exposed gaps after source export had been approved. A
+selected source archive lacked an imported dependency; a test name was guessed
+before discovery; a host lacked the assumed timeout executable; and no
+candidate-bound runtime probe ran. The prospective fixture assembler retains
+approved inputs, explicit overlays and adequacy paths under a distinct fixture
+subject. Go discovery can bind selected names to the same frozen evaluators.
+Image/tool preparation remains project-specific, captured work under the actual
+scope, not an unspecified owner-approval dependency.
+
+Required runtime probes now belong to the published scope and cannot disappear
+behind empty worker requirements or passing fixture/unit checks. Tests exercise
+real child exits and sealed build/use graphs, including offline replay after
+source paths are erased. They do not establish a product's call coverage.
+
+The worker's exported requirements were narrative JSON rather than the emitted
+machine inventory. A hash-matched download was therefore not a complete handoff.
+Bundle preparation now writes its exact requirements sidecar, and paired native
+readback checks both assets without manual signed-URL copying. Failed generations
+are retained; supplements do not rewrite earlier compliance. Status recovery
+uses current invocation paths and measured timing, then requires a live ticket
+refresh: a compacted summary had briefly restored an obsolete approval hold.
+
+These are prospective helper/procedure changes. Earlier frozen attempts remain
+qualified, unchanged experimental evidence. A separate fresh live trial is still
+needed to measure agent adherence, compaction recovery and supported E2E behavior.

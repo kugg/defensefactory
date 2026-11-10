@@ -139,7 +139,11 @@ Failed audits still preserve bytes; do not retry them until green or hide them.
 Old subset bundles retain transport verification but cannot claim whole-handoff
 readiness.
 
-Publish archive and external requirements as distinct native resources. Use
+Publish archive and the exact emitted machine requirements as distinct native resources.
+`bundle-prepare` writes a sidecar rather than requiring the agent to author it.
+Use [paired readback](fixture-runtime-handoff.md#export-and-retrieve-the-machine-handoff)
+with `verify-handoff.py` after refreshing both native attachment lookups.
+A narrative requirements summary cannot replace the emitted file. Use
 `ticket-transfer.py --metadata NATIVE_RESPONSE.json --upload-file FILE --receipt
 NEW.json`, then finalize the native attachment. For retrieval, use the refreshed
 native attachment response with `--download-file NEW --expected-sha256 FULL_DIGEST`.

@@ -30,6 +30,41 @@ def direct_probe(argv):
         'Separate fixture setup from the direct runtime producer; do not remove assertions to run an inline shell')
 
 
+def validate_requirement(policy, scope):
+    require(type(policy.get('required')) is bool and policy.get('reference'), 'Runtime requirement needs governing reference and boolean')
+    probes = policy.get('probes', [])
+    require(isinstance(probes,list) and (not policy['required'] or probes)
+            and len({p['id'] for p in probes}) == len(probes), 'Required runtime probes must be explicit and unique')
+    comparisons = {p['id'] for p in scope.get('comparisons',[])}
+    for p in probes:
+        require(p.get('id') and p.get('artifacts') and p.get('assertions')
+                and all(isinstance(n,str) and n for n in [*p['artifacts'],*p['assertions']])
+                and len(set(p['artifacts'])) == len(p['artifacts'])
+                and len(set(p['assertions'])) == len(p['assertions']), 'Runtime obligation needs artifact and assertion names')
+        require(not p.get('comparison_id') or p['comparison_id'] in comparisons, 'Runtime obligation comparison is not admitted')
+
+
+def scoped_probe(opening, probe):
+    policy = opening['scope'].get('runtime_requirement', {})
+    for required in policy.get('probes',[]):
+        if required['id'] != probe['id']: continue
+        require(probe.get('comparison_id') == required.get('comparison_id')
+                and set(probe['artifacts']) == set(required['artifacts'])
+                and set(required['assertions']) <= {a['name'] for a in probe['assertions']}, 'Runtime probe differs from published obligation')
+
+
+def scoped_coverage(opening, declarations):
+    policy = opening.get('scope',{}).get('runtime_requirement',{})
+    if not policy.get('required'): return []
+    problems = []
+    for required in policy['probes']:
+        matches = [p for d in declarations for p in d['probes'] if p['id'] == required['id']]
+        if len(matches) != 1: problems.append('Required runtime probe missing/ambiguous in declarations: '+required['id']); continue
+        try: scoped_probe(opening,matches[0])
+        except ValueError as error: problems.append(str(error)+': '+required['id'])
+    return problems
+
+
 def declare(opening, probes, reference):
     require(opening.get('stage_execution_permitted') is True and reference and probes, 'Opened scope and ticket runtime reference required')
     require(len({p['id'] for p in probes}) == len(probes), 'Unique probe IDs required')
@@ -39,6 +74,7 @@ def declare(opening, probes, reference):
         direct_probe(p['argv'])
         require(len(set(p['artifacts'])) == len(p['artifacts']) and all(isinstance(a,str) and a for a in p['artifacts']), 'Unique artifact names required')
         require(all(any('{artifact:'+a+'}' in arg for arg in p['argv']) for a in p['artifacts']), 'Probe argv must consume every sealed artifact')
+        scoped_probe(opening, p)
         saved.append({**p, 'subject':selected_subject(opening,p.get('comparison_id')),
                       'execution':protocol(p['assertions'])})
     return {'record_type':'runtime_plan', 'schema_version':1, 'declared_at':now(),
@@ -52,6 +88,7 @@ def validate_probe(declaration, spec, opening):
     require(declaration['probes'] and len({p['id'] for p in declaration['probes']})==len(declaration['probes']), 'Ambiguous runtime probe inventory')
     p = next((p for p in declaration['probes'] if p['id'] == spec['id']), None)
     require(p and spec.get('runtime_plan_sha256') == identity(declaration), 'Probe ID/declaration differs')
+    scoped_probe(opening, p)
     require(spec['subject'] == p['subject'] == selected_subject(opening,p.get('comparison_id'))
             and spec.get('comparison_id') == p.get('comparison_id'), 'Runtime comparison subject differs')
     require(spec['execution'] == p['execution'] == protocol(p['assertions']), 'Runtime assertions downgraded or changed')

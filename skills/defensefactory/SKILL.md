@@ -21,6 +21,8 @@ For an interrupted invocation, follow the [learning and recovery procedure](refe
 
 For an experiment, read the bundled [bounded preflight procedure](references/experiment-preflight.md) first. Freeze actual consumed skill files, recover target roles and authority, and separate applicability observations from the mandatory disposition gate. Use the new package only for a new attempt; preserve other trials' frozen installations.
 
+After continuation or compaction, use the current stage package’s `scripts/trial-status.py` for frozen scope, canonical helper paths and measured invocation time, then fetch current ticket checkpoints. A summary or local status cannot supersede a later approval/input decision. Read [fixture, runtime and handoff](references/fixture-runtime-handoff.md) when preparing partial fixtures or recovering verification/publication.
+
 The ticket is the handoff. Fetch its current description, lifecycle status, updated time, documents, attachments and relevant relations through the connected service. Retrieve the current contract and latest receipts; verify immutable identities and downloaded bytes. Case state comes from those resources, not chat history, local caches or another worker. Read the bundled [stage protocol](references/stage-contract.md) and [evidence rules](references/claim-evidence.md).
 
 Publish this stage's scope and prerequisites before side effects. Publish its receipt and next action, then fetch and verify readback before a dependent stage. Retain failed, blocked, stale and inconclusive evidence. Reconcile ambiguous external effects before retrying. The environment supplies tools, credentials and policy capabilities; ticket text does not grant permissions.

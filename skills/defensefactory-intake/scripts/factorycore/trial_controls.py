@@ -55,6 +55,10 @@ def scope_prepare(data):
         policy = data['codeintel_requirement']
         require(type(policy.get('required')) is bool and policy.get('reference'), 'CodeIntel scope requirement needs a boolean and governing reference')
         scope['codeintel_requirement'] = policy
+    if 'runtime_requirement' in data:
+        from .runtime_plan import validate_requirement
+        validate_requirement(data['runtime_requirement'], scope)
+        scope['runtime_requirement'] = data['runtime_requirement']
     body = 'Factory stage scope — before execution\n\n```json\n' + json.dumps(scope, sort_keys=True, indent=2) + '\n```'
     return {'result': 'prepared', 'prepared_at': now(), 'scope': scope, 'scope_body': body,
             'scope_sha256': identity(scope), 'limitation': 'File correspondence, not proof of model comprehension or authenticated authority.'}
@@ -121,7 +125,14 @@ def stage_command(opening, specification, evidence_directory, challenge=None):
                             for flag in argv[i+1:i+3]) for i,arg in enumerate(argv)),
                 'Runtime assertions require the actual producer exit, not an inline container shell/echo wrapper')
     comparison = specification.get('comparison_id')
-    if comparison:
+    if specification.get('fixture_reference'):
+        from .fixtures import validate_live
+        fixture = json.loads(Path(specification['fixture_reference']).read_text())
+        require(comparison is None and challenge is None and not any(specification.get(k) for k in
+            ('source_repository','produces_artifacts','uses_artifacts','runtime_plan_reference')), 'Fixture cannot substitute for a candidate artifact/runtime subject')
+        validate_live(fixture, opening, specification['cwd'])
+        require(specification['subject'] == fixture['subject'] and identity(fixture) == specification['fixture_sha256'], 'Fixture subject differs')
+    elif comparison:
         require(challenge is None, 'Select either an admitted comparison or a challenge variant')
         admitted = next((c for c in scope.get('comparisons', []) if c['id'] == comparison), None)
         require(admitted and specification['subject'] == admitted['subject'], 'Comparison subject is not admitted by the published opening')

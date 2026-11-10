@@ -14,6 +14,8 @@ from factorycore.artifact_binding import expand_artifacts
 from factorycore.core import sha
 from factorycore.runtime_plan import selected_subject
 from factorycore.evidence_records import write_json, now, dependency
+from factorycore.fixtures import validate_live
+from factorycore.check_results import validate_discovery
 
 
 def main():
@@ -29,7 +31,9 @@ def main():
     parser.add_argument('--comparison', help='Comparison ID admitted in the published opening; no relabeling')
     parser.add_argument('--runtime-plan', type=Path, help='Frozen runtime-plan receipt; --id selects its probe and argv')
     parser.add_argument('--purpose', default='Captured direct producer; no named-test acceptance implied')
-    parser.add_argument('--protocol', choices=('command', 'go-test-json', 'factory-jsonl-v1'))
+    parser.add_argument('--protocol', choices=('command', 'go-test-json', 'go-list-json', 'factory-jsonl-v1'))
+    parser.add_argument('--fixture', type=Path, help='Prepared fixture snapshot; never label these commands as candidate execution')
+    parser.add_argument('--discovered-tests', type=Path, help='Successful same-subject go-list-json execution receipt')
     parser.add_argument('--required-test', action='append', default=[])
     parser.add_argument('--evaluators', type=Path, help='Previously frozen relative-path/SHA-256 JSON map')
     parser.add_argument('--source-repo', type=Path, help='Observe clean Git source at the selected subject before/after a build')
@@ -51,14 +55,24 @@ def main():
         command = args.command[1:] if args.command[:1] == ['--'] else args.command
         challenge = json.loads(args.challenge.read_text()) if args.challenge else None
         subject = selected_subject(opening, args.comparison)
+        fixture = json.loads(args.fixture.read_text()) if args.fixture else None
+        if fixture:
+            if not args.support or args.comparison or args.challenge or args.runtime_plan or args.source_repo or args.produces or args.use_artifact:
+                raise ValueError('Fixture support is separate from candidate/comparison builds and runtime proof')
+            validate_live(fixture, opening, cwd)
+            subject = fixture['subject']
         if args.comparison and (args.challenge or args.variant):
             raise ValueError('Use an admitted comparison OR a challenge variant')
         runtime = json.loads(args.runtime_plan.read_text()) if args.runtime_plan else None
         evaluators = json.loads(args.evaluators.read_text()) if args.evaluators else {}
+        if args.protocol == 'go-list-json' and not evaluators:
+            raise ValueError('Freeze actual evaluator files with --evaluators before Go discovery')
+        if args.protocol == 'go-test-json' and not challenge and not args.discovered_tests:
+            raise ValueError('Discover names first with --protocol go-list-json and the same --evaluators; select its capture using --discovered-tests')
         execution = {'format': args.protocol or 'command'}
         if execution['format'] == 'command':
             execution.update(reason=args.purpose, success_criteria='Direct producer exits zero; no test acceptance granted')
-        else:
+        elif execution['format'] != 'go-list-json':
             execution['required_tests'] = args.required_test
         if args.assertions:
             if args.protocol or args.required_test:
@@ -113,6 +127,14 @@ def main():
             'evaluator_files': {str((cwd / name).resolve()): digest for name, digest in evaluators.items()},
             'stage_start_reference': str(opening_path), 'stage_start_sha256': identity(opening)}
         specification['invoker_argv']=invoker_command
+        specification['evidence_dependencies'] = []
+        if fixture:
+            specification.update(fixture_reference=str(args.fixture.resolve()), fixture_sha256=identity(fixture))
+            specification['evidence_dependencies'].append(dependency('fixture',args.fixture,'fixture_snapshot'))
+        if args.discovered_tests:
+            specification['discovery_reference'] = str(args.discovered_tests.resolve())
+            specification['evidence_dependencies'].append(dependency('test-discovery',args.discovered_tests,'execution_receipt'))
+            validate_discovery(specification, lambda p:Path(p).read_bytes())
         if args.comparison:
             specification.update(comparison_id=args.comparison, purpose=args.purpose)
         if runtime:
@@ -143,7 +165,7 @@ def main():
         if not destination.exists() and (not registered or Path(registered).resolve() in destination.parents):
             destination.mkdir(parents=True,mode=0o700)
             dependencies=[]
-            for name,source in [('opening',args.opening),('runtime-plan',args.runtime_plan),('requested-assertions',args.assertions)]:
+            for name,source in [('opening',args.opening),('runtime-plan',args.runtime_plan),('requested-assertions',args.assertions),('fixture',args.fixture),('test-discovery',args.discovered_tests)]:
                 if source and Path(source).is_file():
                     snapshot=destination/(name+'.input')
                     snapshot.write_bytes(Path(source).read_bytes());snapshot.chmod(0o600)

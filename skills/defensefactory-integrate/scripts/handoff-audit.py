@@ -25,9 +25,13 @@ def main():
         if registered and Path(registered).resolve() not in a.output.resolve().parents:
             raise ValueError('Save worker handoff generations inside DEFENSEFACTORY_HANDOFF_ROOT')
         roots = a.root or ([Path(os.environ['DEFENSEFACTORY_EVIDENCE_ROOT'])] if os.environ.get('DEFENSEFACTORY_EVIDENCE_ROOT') else [])
+        requirements=a.requirements
+        if requirements is None and os.environ.get('DEFENSEFACTORY_EVIDENCE_ROOT'):
+            candidate=Path(os.environ['DEFENSEFACTORY_EVIDENCE_ROOT'])/'handoff-requirements.json'
+            if candidate.is_file():requirements=candidate
         result = inventory(roots, a.output, events=a.events, workspace=a.workspace,
             opening=json.loads(a.opening.read_text()) if a.opening else None,
-            requirements=json.loads(a.requirements.read_text()) if a.requirements else None)
+            requirements=json.loads(requirements.read_text()) if requirements else None)
         summary={'inventory':str(a.output/'inventory.json'),'inventory_sha256':sha((a.output/'inventory.json').read_bytes()),
                  'snapshot_handoff_ready':result['snapshot_handoff_ready'],
                  'whole_attempt_handoff_ready':result['whole_attempt_handoff_ready'],'problems':result['problems']}
@@ -40,8 +44,9 @@ def main():
                 'scope':'whole_attempt','inventory_reference':str(a.output/'inventory.json'),
                 'inventory_sha256':summary['inventory_sha256']},a.output/'evidence.tar.gz')
             write_json(a.output/'bundle-prepared.json',prepared)
-            write_json(a.output/'bundle-requirements.json',prepared['requirements'])
-            summary.update(bundle=prepared['file'],external_requirements=str(a.output/'bundle-requirements.json'))
+            summary.update(bundle=prepared['file'],external_requirements=prepared['external_requirements_file'],
+                external_requirements_sha256=prepared['external_requirements_sha256'],
+                next_action='Publish these exact two files as distinct native resources; verify both with verify-handoff.py using native event IDs.')
         print(json.dumps(summary))
         return 0 if result['snapshot_handoff_ready'] else 1
     except (OSError,ValueError,KeyError,TypeError) as error:
