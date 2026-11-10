@@ -8,7 +8,7 @@ import subprocess
 import time
 from .core import require,identity,sha,canonical
 from .evidence_records import dependency
-from .check_results import qualify_execution
+from .check_results import qualify_execution, validate_protocol
 from .artifact_binding import prepare_artifacts, finish_artifacts, seal_artifacts
 
 
@@ -30,7 +30,7 @@ def capture(spec, evidence_directory):
     specification_path=root/'specification.json';specification_path.write_bytes(canonical(spec));os.chmod(specification_path,0o600)
     record['specification_reference']=str(specification_path)
     record['captured_context_files']={}
-    for key in ('stage_start', 'challenge_plan'):
+    for key in ('stage_start', 'challenge_plan', 'runtime_plan'):
         if key+'_sha256' not in spec:
             continue
         source=Path(spec[key+'_reference'])
@@ -51,6 +51,7 @@ def capture(spec, evidence_directory):
         require(sha(snapshot.read_bytes())==digest, 'Evaluator changed during capture')
         record['captured_evaluator_files'][name]={'path':str(snapshot),'sha256':digest}
     try:
+        validate_protocol(spec.get('execution', {}))
         provenance = prepare_artifacts(spec)
     except (OSError, ValueError, subprocess.CalledProcessError) as error:
         record.update(execution_state='preparation_failed', result='inconclusive', reason=str(error),

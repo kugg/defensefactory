@@ -12,6 +12,8 @@ from factorycore.core import identity
 from factorycore.trial_controls import stage_command
 from factorycore.artifact_binding import expand_artifacts
 from factorycore.core import sha
+from factorycore.runtime_plan import selected_subject
+from factorycore.evidence_records import write_json, now, dependency
 
 
 def main():
@@ -24,6 +26,8 @@ def main():
     parser.add_argument('--challenge', type=Path)
     parser.add_argument('--variant', help='Declared variant, or baseline; required explicitly for support producers')
     parser.add_argument('--support', action='store_true')
+    parser.add_argument('--comparison', help='Comparison ID admitted in the published opening; no relabeling')
+    parser.add_argument('--runtime-plan', type=Path, help='Frozen runtime-plan receipt; --id selects its probe and argv')
     parser.add_argument('--purpose', default='Captured direct producer; no named-test acceptance implied')
     parser.add_argument('--protocol', choices=('command', 'go-test-json', 'factory-jsonl-v1'))
     parser.add_argument('--required-test', action='append', default=[])
@@ -46,7 +50,10 @@ def main():
         cwd = args.cwd.resolve()
         command = args.command[1:] if args.command[:1] == ['--'] else args.command
         challenge = json.loads(args.challenge.read_text()) if args.challenge else None
-        subject = opening['scope']['subject']
+        subject = selected_subject(opening, args.comparison)
+        if args.comparison and (args.challenge or args.variant):
+            raise ValueError('Use an admitted comparison OR a challenge variant')
+        runtime = json.loads(args.runtime_plan.read_text()) if args.runtime_plan else None
         evaluators = json.loads(args.evaluators.read_text()) if args.evaluators else {}
         execution = {'format': args.protocol or 'command'}
         if execution['format'] == 'command':
@@ -58,6 +65,14 @@ def main():
                 raise ValueError('Assertions file supplies its own frozen protocol and names')
             criteria = json.loads(args.assertions.read_text())
             execution = {'format':'process-assertions-v1','assertions':criteria,'required_tests':[c['name'] for c in criteria]}
+        if runtime:
+            if args.assertions or args.protocol or args.required_test or args.challenge:
+                raise ValueError('Runtime declaration supplies protocol/argv; do not override it')
+            probe = next(p for p in runtime['probes'] if p['id'] == args.id)
+            if args.comparison != probe.get('comparison_id'):
+                raise ValueError('Select the runtime probe comparison explicitly')
+            command = command or probe['argv']
+            execution = probe['execution']
         if challenge:
             plan = challenge['plan']
             if args.support and args.variant is None:
@@ -69,8 +84,8 @@ def main():
                     raise ValueError('Challenge evaluation uses its frozen plan; do not override the evaluator/protocol')
                 command = command or plan['argv']
                 execution, evaluators = plan['execution'], plan['evaluators']
-        elif args.variant not in (None, 'baseline') or args.support:
-            raise ValueError('A derived/support command needs the saved challenge declaration')
+        elif args.variant not in (None, 'baseline'):
+            raise ValueError('A derived variant needs the saved challenge declaration; baseline setup uses --support')
         if not command:
             raise ValueError('Supply a direct producer argv after --')
         def bindings(items):
@@ -98,6 +113,10 @@ def main():
             'evaluator_files': {str((cwd / name).resolve()): digest for name, digest in evaluators.items()},
             'stage_start_reference': str(opening_path), 'stage_start_sha256': identity(opening)}
         specification['invoker_argv']=invoker_command
+        if args.comparison:
+            specification.update(comparison_id=args.comparison, purpose=args.purpose)
+        if runtime:
+            specification.update(runtime_plan_reference=str(args.runtime_plan.resolve()),runtime_plan_sha256=identity(runtime))
         if args.assertions:
             specification['evaluator_files'][str(args.assertions.resolve())] = sha(args.assertions.read_bytes())
         if args.source_repo:
@@ -117,7 +136,26 @@ def main():
         if execution['format'] == 'process-assertions-v1':
             return 0 if record['result'] == 'satisfied_within_scope' else 1
         return code if isinstance(code, int) and 0 < code < 256 else 0 if record['result'] == 'satisfied_within_scope' else 1
-    except (OSError, ValueError, KeyError, StopIteration) as exc:
+    except (OSError, ValueError, KeyError, StopIteration, TypeError) as exc:
+        # Rejections are evidence too. Do not overwrite an existing capture or write outside a registered root.
+        registered = os.environ.get('DEFENSEFACTORY_EVIDENCE_ROOT')
+        destination = args.output.resolve()
+        if not destination.exists() and (not registered or Path(registered).resolve() in destination.parents):
+            destination.mkdir(parents=True,mode=0o700)
+            dependencies=[]
+            for name,source in [('opening',args.opening),('runtime-plan',args.runtime_plan),('requested-assertions',args.assertions)]:
+                if source and Path(source).is_file():
+                    snapshot=destination/(name+'.input')
+                    snapshot.write_bytes(Path(source).read_bytes());snapshot.chmod(0o600)
+                    dependencies.append(dependency(name,snapshot))
+            write_json(destination/'admission-failure.json', {'record_type':'stage_admission_failure',
+                'check_id':args.id,'result':'inconclusive','error':str(exc),'captured_at':now(),
+                'opening_reference':args.opening,'requested_argv':args.command,
+                'stage_start_sha256':identity(opening) if 'opening' in locals() else None,
+                'evidence_dependencies':dependencies,
+                'requested_options':{key:str(value) if isinstance(value,Path) else value for key,value in vars(args).items() if key not in ('command','env')},
+                'environment_override_names':[value.partition('=')[0] for value in args.env],
+                'runtime_plan_reference':str(args.runtime_plan) if args.runtime_plan else None})
         parser.error(str(exc))
 
 

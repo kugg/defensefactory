@@ -36,14 +36,27 @@ from factorycore.assessment_resolution import decision_plan,impact_review,sessio
 from factorycore.input_examples import describe
 from factorycore.invocation_recovery import recovery_receipt
 from factorycore.trial_controls import scope_prepare,stage_start,stage_command,mutation_plan,mutation_result,index_subject
+from factorycore.runtime_plan import declare as declare_runtime, outcomes as runtime_outcomes
+from factorycore.codeintel_gate import index_observation
+from factorycore.source_export import export_sources
 
 
 def run(operation, data):
+    def record(name):
+        if name+'_file' in data:
+            require(name not in data, 'Select a record object OR its file, not both')
+            return json.loads(Path(data[name+'_file']).read_text())
+        require(isinstance(data.get(name),dict), 'Supply '+name+' as an object or '+name+'_file as its saved JSON path')
+        return data[name]
     if operation=='stage-scope':return scope_prepare(data)
     if operation=='stage-start':return stage_start(data['preparation'],data['publication'],data['retrieval'])
     if operation=='stage-command':return stage_command(data['opening'],data['specification'],data['evidence_directory'],data.get('challenge'))
     if operation=='mutation-plan':return mutation_plan(data['plan'])
-    if operation=='mutation-result':return mutation_result(data['declaration'],data['variant_id'],data['baseline'],data['mutant'])
+    if operation=='mutation-result':return mutation_result(record('declaration'),data['variant_id'],record('baseline'),record('mutant'))
+    if operation=='runtime-plan':return declare_runtime(record('opening'),data['probes'],data['reference'])
+    if operation=='runtime-result':return runtime_outcomes(record('declaration'),record('opening'),[json.loads(Path(p).read_text()) for p in data['execution_files']],lambda p:Path(p).read_bytes())
+    if operation=='codeintel-index-observation':return index_observation(data['subject'],data['branch'],data['request_repository'],data['source_file'],data['manifest_pointer'],data.get('fields'),data.get('activation'),data.get('repository_pointer','/body/id'))
+    if operation=='source-export':return export_sources(data['repo'],data['revisions'],data['destination'],data.get('timeout_seconds',60))
     if operation=='codeintel-index-subject':return index_subject(data['subject'],data['manifests'],data['branch'],request_repository=data['request_repository'],job_active=data.get('job_active',False),warnings=data.get('warnings'),scip=data.get('scip'))
     if operation=='invocation-recovery':return recovery_receipt(data)
     if operation=='assess-decisions':return decision_plan(data['decisions'],data.get('stage','repair'))
@@ -59,7 +72,9 @@ def run(operation, data):
     if operation=='publication-verify':return publication_verify(data['publication'],data['retrieval'],data['expected'],Path(data['downloaded_file']).read_bytes() if data.get('downloaded_file') else None,data.get('bundle_requirements'))
     if operation=='bundle-prepare':return prepare_bundle(data['plan'],data['destination'])
     if operation=='bundle-verify':return verify_bundle(Path(data['downloaded_file']).read_bytes(),data['requirements'])
-    if operation=='command-record':return capture(data['specification'],data['evidence_directory'])
+    if operation=='command-record':
+        require(not os.environ.get('DEFENSEFACTORY_STAGE_OPENING'), 'Registered trial: command-record is not an admission fallback. Use stage-exec baseline setup, --comparison from published scope, or a declared challenge variant; preserve the rejection.')
+        return capture(data['specification'],data['evidence_directory'])
     if operation=='probe-assert':return assertions(data['subject'],data['check_id'],data['expectations'],data['observations'])
     if operation=='assess-observe':return observe(data['packet'],data['actor'])
     if operation=='assess-eligibility':return evaluate(data.get('packet',{}),data.get('policy'),data.get('actor'))

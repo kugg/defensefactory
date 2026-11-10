@@ -58,7 +58,8 @@ class EvidenceFlow(unittest.TestCase):
         events=self.root/'events.jsonl'
         private={'type':'reasoning','part':{'text':'PRIVATE_THOUGHT_MUST_NOT_BE_EXPORTED'}}
         events.write_text('\n'.join(json.dumps(x) for x in [private,*self.events])+'\n')
-        req={'scope_reference':'synthetic-source-only policy','comparison_ids':[], 'assertion_checks':{},'artifact_subjects':{}}
+        req={'scope_reference':'synthetic-source-only policy','comparison_ids':[], 'assertion_checks':{},'artifact_subjects':{},
+             'codeintel':{'disposition':'not_needed','reason':'Offline helper fixture without a service','reference':'Synthetic test scope'}}
         if requirements:req.update(requirements)
         return inventory([self.evidence],self.root/name,events=events,workspace=self.root,
                          opening=self.opening,requirements=req,finalized=finalized)

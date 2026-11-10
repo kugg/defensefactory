@@ -45,7 +45,10 @@ python3 /path/to/skill/scripts/stage-exec.py --opening /ticket/opening.json --id
 
 With `--challenge PLAN --variant baseline` (or a declared variant ID), evaluation
 uses the plan's frozen argv/protocol/evaluator; no argv after `--` is necessary.
-For different setup/build/runtime commands, add `--variant ACTUAL_VARIANT_ID`
+For baseline setup without a mutation declaration, `--support --purpose REASON`
+is supported directly. For a pre-fix comparison, admit its subject in the opening
+and select `--comparison ID` as described in [supported verification](supported-verification.md).
+For different setup/build/runtime commands under a mutation declaration, add `--variant ACTUAL_VARIANT_ID`
 (explicit `baseline` for the original), `--support --purpose REASON` and
 a direct argv. Use `--protocol factory-jsonl-v1 --required-test NAME` plus
 `--evaluators FROZEN_RELATIVE_PATH_DIGEST_MAP.json` for a predeclared runtime

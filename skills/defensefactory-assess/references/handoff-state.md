@@ -117,10 +117,14 @@ Store ticket-derived `handoff-requirements.json` under the evidence root:
   "scope_reference": "actual ticket contract/decision reference",
   "comparison_ids": ["opening-bytes"],
   "assertion_checks": {"runtime-refusal": ["root-refused"]},
-  "artifact_subjects": {"gateway": {"repository": "selected repository", "revision": "full selected revision"}}
+  "artifact_subjects": {"gateway": {"repository": "selected repository", "revision": "full selected revision"}},
+  "codeintel": {"disposition": "not_needed", "reason": "actual scoped reason", "reference": "governing ticket decision"}
 }
 ```
 
+For a scope requiring CodeIntel, use its required evidence form from
+[supported verification](supported-verification.md), not the not-needed example.
+New inventories require a CodeIntel disposition and replay declared runtime plans.
 Select required checks from the real stage scope; empty inventories grant no
 test coverage. Save a reason for obligations outside scope. Then run the actual
 installed `handoff-audit.py` with `--requirements FILE --workspace WORKING_DIRECTORY

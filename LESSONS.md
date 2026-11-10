@@ -21,6 +21,10 @@ qualifications and safeguards, not a claim of reliable autonomous remediation.
 | An artifact's label matched the candidate while its build/use lineage was absent. | Build bindings observe clean Git inputs, retain payload/spec/log/actual build receipt, and reject mismatched source or changed/unused payloads before runtime. |
 | A container shell printed child exit 2 but returned zero itself. | Named process assertions inspect the actual producer exit; inline shell/echo wrappers cannot earn runtime assertion credit. |
 | A worker declared completion before later actions and publication. | Live snapshots cover an observed prefix. A separate finalized parent-runner audit can qualify the report; no unreviewed command silently becomes a pass. |
+| Setup/comparison admission rejected legitimate work and the agent fell back to legacy capture. | Baseline setup has a supported path; comparisons are published exact subjects. Registered-trial legacy capture is refused before launch; rejection receipts are retained. |
+| Runtime assertions were deleted after an inline-shell rejection. | Prepare fixtures separately, freeze direct artifact probe plans, and reject/report protocol downgrades against saved declarations and refusals. |
+| CodeIntel connected but no source work happened. | Schema-2 handoffs require a scoped disposition and actual native query/raw index evidence; discovery alone is insufficient. Missing work is not a service failure. |
+| Local mutant hashes/generator survived but exact Git objects did not. | Export selected local commit objects into verified named Git bundle refs, with portable dependency receipts; retain export failures. |
 | Historical success was confused with work performed in a fresh attempt. | Freeze inputs per attempt, recover state from the live ticket, and keep current execution, historical input and observer recovery distinct. |
 
 Claims remain developer-owned and portable. A test/lint/type fence constrains

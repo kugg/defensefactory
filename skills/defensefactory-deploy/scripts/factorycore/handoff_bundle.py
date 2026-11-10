@@ -92,7 +92,7 @@ def prepare_bundle(plan, output):
             context={}
             for name,captured in record.get('captured_context_files',{}).items():
                 context[name]=linked(identifier+':context:'+name,captured['path'],'execution_context',captured['sha256'])
-            for name in ('stage_start','challenge_plan'):
+            for name in ('stage_start','challenge_plan','runtime_plan'):
                 require((name+'_sha256' in spec)==(name in context),'Execution context bytes missing: '+name)
             produced={}
             for name,artifact in record.get('artifact_evidence',{}).get('produced',{}).items():
@@ -185,12 +185,15 @@ def verify_bundle(raw, requirements, _depth=0):
                     key=graph['evaluators'][original];require(index[key]['kind']=='evaluator' and sha(contents[key])==digest,'Evaluator source bytes missing/changed')
                 context=graph.get('context',{})
                 require(set(context)==set(record.get('captured_context_files',{})), 'Execution context inventory missing/changed')
-                for name in ('stage_start','challenge_plan'):
+                for name in ('stage_start','challenge_plan','runtime_plan'):
                     require((name+'_sha256' in spec)==(name in context), 'Execution context omitted: '+name)
                     if name in context:
                         value=json.loads(contents[context[name]])
                         require(identity(value)==spec[name+'_sha256']==record.get(name+'_sha256'), 'Execution context binding differs: '+name)
                 produced=record.get('artifact_evidence',{}).get('produced',{})
+                if 'runtime_plan' in context:
+                    from .runtime_plan import validate_probe
+                    validate_probe(json.loads(contents[context['runtime_plan']]),spec,json.loads(contents[context['stage_start']]))
                 expected_produced={name for name,a in produced.items() if a.get('binding')}
                 require(set(graph.get('produced_artifacts',{}))==expected_produced,'Produced artifact binding omitted')
                 for name,key in graph.get('produced_artifacts',{}).items():
@@ -214,6 +217,9 @@ def verify_bundle(raw, requirements, _depth=0):
                     replay_comparison(value,{d['name']:read_dep(d) for d in declared})
                 if value.get('record_type')=='artifact_binding':validate_binding(value,read_dep)
                 if value.get('record_type')=='bundle_artifact_reference':validate_use(value,read_dep,_depth)
+                if value.get('record_type')=='codeintel_index_observation':
+                    from .codeintel_gate import replay_index
+                    replay_index(value,read_dep(value['evidence_dependencies'][0]))
             if requirements.get('inventory'):
                 binding=requirements['inventory'];inventory_raw=contents[binding['resource']]
                 require(sha(inventory_raw)==binding['sha256'],'Pinned handoff inventory differs')

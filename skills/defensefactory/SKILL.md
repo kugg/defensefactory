@@ -42,3 +42,5 @@ The bundled `scripts/stage.py` accepts one explicit operation with JSON input/ou
 For an optional synthetic helper regression evaluation, use the bundled
 [evaluation procedure](references/evaluation.md) and `scripts/eval-fences.py`.
 It is self-contained and does not certify an actual case or stage handoff.
+
+For comparison builds, runtime probes and required CodeIntel work, use the [supported verification paths](references/supported-verification.md). Preserve helper refusals; do not replace their bindings or assertions with low-level capture.

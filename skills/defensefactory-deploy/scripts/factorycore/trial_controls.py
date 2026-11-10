@@ -42,6 +42,19 @@ def scope_prepare(data):
         files[name] = sha(path.read_bytes())
     scope = {key: data[key] for key in ('case', 'attempt', 'stage', 'subject', 'performed_by', 'authorization_reference', 'boundaries')}
     scope.update(package=str(package), loaded_resource_sha256=files)
+    if 'comparisons' in data:
+        comparisons = data['comparisons']
+        require(isinstance(comparisons, list) and len({c['id'] for c in comparisons}) == len(comparisons), 'Unique comparison subjects required')
+        for c in comparisons:
+            require(c.get('id') and c.get('purpose') and c.get('reference') and c.get('subject')
+                    and re.fullmatch('[0-9a-f]{40}', c['subject'].get('revision', '')),
+                    'Comparison needs exact subject, purpose and existing scope/authorization reference')
+            require(c['subject'] != scope['subject'], 'Comparison must name its actual differing subject')
+        scope['comparisons'] = comparisons
+    if 'codeintel_requirement' in data:
+        policy = data['codeintel_requirement']
+        require(type(policy.get('required')) is bool and policy.get('reference'), 'CodeIntel scope requirement needs a boolean and governing reference')
+        scope['codeintel_requirement'] = policy
     body = 'Factory stage scope — before execution\n\n```json\n' + json.dumps(scope, sort_keys=True, indent=2) + '\n```'
     return {'result': 'prepared', 'prepared_at': now(), 'scope': scope, 'scope_body': body,
             'scope_sha256': identity(scope), 'limitation': 'File correspondence, not proof of model comprehension or authenticated authority.'}
@@ -86,7 +99,7 @@ def validate_plan(plan):
 
 def mutation_plan(plan):
     validate_plan(plan)
-    return {'result': 'recorded', 'declared_at': now(), 'plan': plan, 'plan_sha256': identity(plan)}
+    return {'record_type':'mutation_plan', 'result': 'recorded', 'declared_at': now(), 'plan': plan, 'plan_sha256': identity(plan)}
 
 
 def stage_command(opening, specification, evidence_directory, challenge=None):
@@ -107,7 +120,13 @@ def stage_command(opening, specification, evidence_directory, challenge=None):
                         any(flag == '-c' or (flag.startswith('-') and not flag.startswith('--') and 'c' in flag)
                             for flag in argv[i+1:i+3]) for i,arg in enumerate(argv)),
                 'Runtime assertions require the actual producer exit, not an inline container shell/echo wrapper')
-    if challenge is None:
+    comparison = specification.get('comparison_id')
+    if comparison:
+        require(challenge is None, 'Select either an admitted comparison or a challenge variant')
+        admitted = next((c for c in scope.get('comparisons', []) if c['id'] == comparison), None)
+        require(admitted and specification['subject'] == admitted['subject'], 'Comparison subject is not admitted by the published opening')
+        require(specification.get('purpose'), 'Comparison capture needs its declared purpose')
+    elif challenge is None:
         require(specification['subject'] == scope['subject'], 'Execution subject differs from ticket stage scope')
     else:
         plan = challenge['plan']; validate_plan(plan)
@@ -125,6 +144,10 @@ def stage_command(opening, specification, evidence_directory, challenge=None):
             require(specification['argv'] == plan['argv'] and specification['execution'] == plan['execution'], 'Challenge command/evaluator protocol changed')
             expected = {str((Path(specification['cwd']) / name).resolve()): digest for name, digest in plan['evaluators'].items()}
             require(specification.get('evaluator_files') == expected, 'Challenge evaluator inventory changed or control included')
+    if specification.get('runtime_plan_reference'):
+        from .runtime_plan import validate_probe
+        declaration = json.loads(Path(specification['runtime_plan_reference']).read_text())
+        validate_probe(declaration, specification, opening)
     return capture(specification, evidence_directory)
 
 

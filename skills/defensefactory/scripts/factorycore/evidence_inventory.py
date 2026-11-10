@@ -82,7 +82,7 @@ def observed_tools(raw, workspace, opening=None, cache_directory=None, capture_l
         if not isinstance(event, dict) or event.get('type') != 'tool_use':
             continue  # Private reasoning and narrative are not exported.
         part = event.get('part', {}); state = part.get('state', {})
-        item = public_value({'event_index': number, 'timestamp': event.get('timestamp'), 'tool': part.get('tool'),
+        item = public_value({'event_index': number, 'event_id':part.get('id', 'line:'+str(number)), 'timestamp': event.get('timestamp'), 'tool': part.get('tool'),
                 'status': state.get('status'), 'input': state.get('input', {}),
                 'output': state.get('output'), 'error': state.get('error')})
         metadata = state.get('metadata', {})
@@ -131,10 +131,16 @@ def observed_tools(raw, workspace, opening=None, cache_directory=None, capture_l
                     if not output.is_absolute():
                         output = Path(workspace) / output
                     receipt = output.resolve() / 'execution.json'
-                    value = json.loads(capture_loader(str(receipt)) if capture_loader else receipt.read_bytes())
+                    try:
+                        value = json.loads(capture_loader(str(receipt)) if capture_loader else receipt.read_bytes())
+                    except (OSError,ValueError):
+                        receipt = output.resolve() / 'admission-failure.json'
+                        value = json.loads(capture_loader(str(receipt)) if capture_loader else receipt.read_bytes())
+                        require(value.get('record_type')=='stage_admission_failure', 'No saved admission rejection')
+                        classification = 'guarded_rejection'
                     require(value.get('stage_start_sha256') == identity(opening), 'Opening differs')
                     require(argv[argv.index('--id')+1]==value.get('check_id'), 'Capture check ID differs')
-                    if '--' in argv:
+                    if '--' in argv and classification != 'guarded_rejection':
                         spec_path=value['specification_reference']
                         spec=json.loads(capture_loader(spec_path) if capture_loader else Path(spec_path).read_bytes())
                         require(argv[argv.index('--')+1:]==spec.get('invoker_argv',spec['argv']), 'Captured producer differs from observed argv')
@@ -154,6 +160,7 @@ def observed_tools(raw, workspace, opening=None, cache_directory=None, capture_l
                     and len(argv)>script_index+1 and argv[script_index+1] in
                     ('--describe','stage-scope','stage-start','mutation-plan','mutation-result','codeintel-index-subject',
                      'evidence-record','ticket-snapshot','source-resolve','publication-verify','bundle-prepare','bundle-verify',
+                     'runtime-plan','runtime-result','codeintel-index-observation','source-export',
                      'ledger-parse','ledger-prepare','ledger-check','ledger-reconcile')):
                 classification = 'evidence_helper'
             else:
@@ -181,8 +188,8 @@ def inventory(roots, output, *, events=None, workspace=None, opening=None, requi
     else:
         observations, tools, problems = observed_tools(Path(events).read_bytes(), workspace, opening, root, evidence_root=roots[0])
         # Dependency edges belong on the snapshot itself, not hidden inside event prose.
-        observations['evidence_dependencies'] = [d for event in observations['events'] for d in event.get('evidence_dependencies',[])]
-        for i,dep in enumerate(observations['evidence_dependencies']):dep['name']='full-response-'+str(i)
+        observations['evidence_dependencies'] = [{**d,'name':'full-response-'+str(i)} for i,d in enumerate(
+            d for event in observations['events'] for d in event.get('evidence_dependencies',[]))]
         write_json(root / 'tool-observations.json', observations)
         files.append({**dependency('tool-observations', root / 'tool-observations.json'), 'kind':'tool_observations'})
     comparisons = {}
@@ -191,7 +198,7 @@ def inventory(roots, output, *, events=None, workspace=None, opening=None, requi
         if isinstance(value,dict) and value.get('record_type')=='saved_comparison':
             comparisons[value['id']]={'path':file['path'],'result':value['result']}
     requirements = requirements or {}
-    result = {'record_type':'handoff_inventory','schema_version':1,'captured_at':now(),
+    result = {'record_type':'handoff_inventory','schema_version':2,'captured_at':now(),
               'roots':[str(Path(r).resolve()) for r in roots], 'files':files,
               'observed_tools':tools,'comparisons':comparisons,'requirements':requirements,
               'opening':opening,'workspace':str(Path(workspace or '.').resolve()),
@@ -223,7 +230,7 @@ def verify_inventory(inv, read_file, check_saved=True, depth=0):
         synthetic=[]
         for event in observations['events']:
             synthetic.append({'type':'tool_use','timestamp':event.get('timestamp'),
-                'part':{'tool':event['tool'],'state':{'input':event['input'],'output':event.get('output'),
+                'part':{'id':event.get('event_id'),'tool':event['tool'],'state':{'input':event['input'],'output':event.get('output'),
                                                  'status':event.get('status'),'error':event.get('error')}}})
         _,tools,tool_problems=observed_tools(b''.join(canonical(e) for e in synthetic), inv['workspace'],
             inv.get('opening'), capture_loader=read_file, evidence_root=inv['roots'][0])
@@ -260,6 +267,37 @@ def verify_inventory(inv, read_file, check_saved=True, depth=0):
     for name,subject in requirements.get('artifact_subjects',{}).items():
         matches=artifacts.get(name,[])
         if len(matches)!=1 or matches[0]['subject']!=subject:problems.append('Artifact subject/binding missing: '+name)
+    if inv.get('schema_version',1) >= 2:
+        from .codeintel_gate import check as check_codeintel
+        scoped = inv.get('opening',{}).get('scope',{}).get('codeintel_requirement',{})
+        if scoped.get('required') and requirements.get('codeintel',{}).get('disposition') != 'required':
+            problems.append('Required CodeIntel work from the published scope was downgraded/skipped')
+        problems.extend(check_codeintel(requirements.get('codeintel'),observations or {},
+            [(f['path'],v) for f,v in values],read_file,inv.get('opening',{}).get('scope',{}).get('subject')))
+        from .runtime_plan import outcomes
+        for f,v in values:
+            if v.get('record_type')=='stage_admission_failure' and any(d['name']=='requested-assertions' for d in v.get('evidence_dependencies',[])):
+                for execution in executions.get(v['check_id'],[]):
+                    spec=json.loads(read_file(execution['specification_reference']))
+                    if spec['execution'].get('format') != 'process-assertions-v1':
+                        problems.append('Runtime assertions dropped after a preserved rejection: '+v['check_id'])
+        declarations={identity(v):v for f,v in values if v.get('record_type')=='runtime_plan'}
+        for declaration in declarations.values():
+            verdict=outcomes(declaration,inv['opening'],[v for f,v in values if v.get('execution_state')],read_file)
+            problems.extend(verdict['problems'])
+        exported=set()
+        for f,v in values:
+            if v.get('record_type')=='source_export' and v.get('result')=='recorded':
+                for dep in v.get('evidence_dependencies',[]):
+                    raw=read_file(dep['path'])
+                    require(sha(raw)==dep['sha256'] and len(raw)==dep['bytes'], 'Exported source dependency changed')
+                exported.update(v['revisions'].values())
+        expected=set(requirements.get('source_revisions',[]))
+        for f,v in values:
+            if v.get('record_type')=='mutation_plan':
+                expected.update(p['subject']['revision'] for p in v['plan']['variants'] if p['subject'].get('revision'))
+        for revision in sorted(expected-exported):
+            problems.append('Local challenge source objects not exported: '+revision)
     ready=not problems
     whole=ready and inv.get('trace_finalized') is True
     if check_saved:

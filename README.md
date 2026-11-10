@@ -76,6 +76,12 @@ Archive verification closes non-execution dependencies as well as execution logs
 Unwrapped/compound shell commands remain visible as incomplete capture; no OS
 sandbox prevents bypass.
 
+Use the [supported verification paths](skills/defensefactory/references/supported-verification.md)
+for baseline setup, admitted comparison subjects, frozen direct runtime probes,
+local source export and actual CodeIntel evidence. Registered-trial CLI legacy
+capture cannot substitute for stage admission. A successful helper test does
+not demonstrate a fresh agent will follow these paths.
+
 ## Stages
 
 | Skill | Purpose |

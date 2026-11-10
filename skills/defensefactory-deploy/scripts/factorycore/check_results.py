@@ -3,6 +3,30 @@ import json
 from .core import require
 
 
+def validate_protocol(contract):
+    """Reject unusable criteria before running a producer, not after its side effects."""
+    fmt = contract.get('format')
+    if fmt == 'command':
+        require(contract.get('reason') and contract.get('success_criteria'),
+                'Non-test command needs an explicit reason and success criterion before execution')
+    elif fmt == 'process-assertions-v1':
+        criteria = contract.get('assertions', [])
+        names = contract.get('required_tests', [])
+        require(criteria and names and len(set(names)) == len(names)
+                and len({c['name'] for c in criteria}) == len(criteria)
+                and set(names) == {c['name'] for c in criteria}, 'Frozen named process assertion inventory required')
+        for c in criteria:
+            require(set(c) <= {'name','exit_code','stdout_contains'} and type(c.get('exit_code')) is int
+                    and isinstance(c.get('stdout_contains', []), list)
+                    and all(isinstance(s, str) and s for s in c.get('stdout_contains', [])),
+                    'Process assertion needs exact exit code and optional literal diagnostics')
+    else:
+        names = contract.get('required_tests', [])
+        require(fmt in ('go-test-json','factory-jsonl-v1') and isinstance(names,list) and names
+                and all(isinstance(n,str) and n for n in names) and len(set(names)) == len(names),
+                'Supported protocol and nonempty unique required-test inventory needed before execution')
+
+
 def qualify_execution(check, execution, candidate):
     contract=check.get('execution') or {};fmt=contract.get('format')
     outcome=execution['result'];diagnostics=[];events=[]

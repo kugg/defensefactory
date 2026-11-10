@@ -2,9 +2,19 @@
 
 Validated on 2026-11-10. These are bounded checks of this experimental package.
 
-The capture/handoff update passes **34 offline tests** in this repository. New
-checks cover input-preserving comparison replay, erased original inputs/build
-hosts, artifact/source mismatch and payload changes, failed build retention,
+The prospective verification-path update passes **53 offline tests** in this repository.
+The earlier capture/handoff update passed 34. Additional checks exercise admitted
+comparison build/use across erased original paths; refusal before legacy-capture
+side effects; durable admission errors; actual child refusal and legitimate
+behavior under frozen runtime plans; protocol downgrade detection; raw-current-
+manifest activation, stale/unscoped/failed/skipped CodeIntel queries and cached
+errors; and exact source-object export/restoration after the source clone is gone.
+The deployed-style activation fixture uses synthetic IDs and the retained status
+shape; no service is contacted. Index job state/SCIP quality remain explicitly
+unevaluated by the identity receipt.
+
+The shared capture/handoff checks cover input-preserving comparison replay, erased
+original inputs/build hosts, artifact/source mismatch and payload changes, failed build retention,
 actual nonzero child assertions versus printed statuses, whole-root inventory
 and subset limits, non-execution dependencies, native output caches/redactions,
 changed evidence generations, forged readiness fields, signed-metadata transfer
