@@ -1,0 +1,4 @@
+interface:
+  display_name: "Defense Factory"
+  short_description: "Run the manual project remediation pipeline in Codex"
+  default_prompt: "Use $defensefactory to triage this project finding through the requested stages."

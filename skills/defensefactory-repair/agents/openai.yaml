@@ -1,0 +1,4 @@
+interface:
+  display_name: "Defense Factory: Prepare a repair candidate"
+  short_description: "Run the manual factory repair stage on this host"
+  default_prompt: "Use $defensefactory-repair for this project finding or candidate."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Defense Factory: Verify a candidate revision"
+  short_description: "Run the manual factory verify stage on this host"
+  default_prompt: "Use $defensefactory-verify for this project finding or candidate."

@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "case": null,
+  "stage": null,
+  "result": "inconclusive",
+  "summary": "",
+  "subject": null,
+  "upstream_events": [],
+  "obligations": [],
+  "evidence": [],
+  "limitations": [],
+  "authorized_actions": [],
+  "independence": {
+    "mode": "same_host_rehearsal",
+    "evidence": []
+  },
+  "ticket_context": null,
+  "ticket_publication": "pending",
+  "skill_package": null,
+  "resource_manifest": [],
+  "portability_check": {
+    "result": "inconclusive",
+    "retrieved_resources": [],
+    "missing_resources": []
+  },
+  "exposure_assessment": null,
+  "codeintel_result": {
+    "result": "unsupported",
+    "evidence": [],
+    "limitations": [
+      "Not evaluated by this template."
+    ]
+  },
+  "formal_result": {
+    "specification_validity": "unsupported",
+    "model_check": "unsupported",
+    "implementation_conformance": "inconclusive",
+    "evidence": []
+  },
+  "regression_resistance": {
+    "detectability": "inconclusive",
+    "evaluator_tamper_resistance": "unverified",
+    "evidence": []
+  },
+  "end_to_end_guidance": null,
+  "end_to_end_execution": {
+    "result": "not_run",
+    "gates": [],
+    "real_legs": [],
+    "stubbed_legs": []
+  },
+  "question_required": null,
+  "next_action": null,
+  "early_disposition": {
+    "decision": "not_evaluated",
+    "targets": [],
+    "authority": null,
+    "source_assessment_complete": false,
+    "lifecycle_disposition": "not_evaluated",
+    "closure_permitted": false,
+    "native_lifecycle_readback": null
+  },
+  "ledger_validation": {
+    "result": "inconclusive",
+    "checkpoint_sha256": null,
+    "failures": []
+  }
+}

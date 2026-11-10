@@ -1,0 +1,4 @@
+interface:
+  display_name: "Defense Factory: Intake pentest findings"
+  short_description: "Run the manual factory intake stage on this host"
+  default_prompt: "Use $defensefactory-intake for this project finding or candidate."

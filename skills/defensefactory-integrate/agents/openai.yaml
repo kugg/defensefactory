@@ -1,0 +1,4 @@
+interface:
+  display_name: "Defense Factory: Evaluate integration subject"
+  short_description: "Run the manual factory integrate stage on this host"
+  default_prompt: "Use $defensefactory-integrate for this project finding or candidate."

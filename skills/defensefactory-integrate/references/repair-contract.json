@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "contract_version": 1,
+  "case": null,
+  "source_subject": null,
+  "authoritative_requirements": [],
+  "claim_versions": [],
+  "obligations": [],
+  "positive_business_behavior": [],
+  "architectural_constraints": [],
+  "enforcement_alternatives": [],
+  "bypass_routes": [],
+  "migration": [],
+  "exceptions": [],
+  "required_checks": [],
+  "preconditions": [],
+  "authorized_actions": [],
+  "budgets": {
+    "deadline": null,
+    "tool_calls": null,
+    "repair_rounds": null
+  },
+  "unknowns": [],
+  "approval": {
+    "policy": null,
+    "approved_by": null,
+    "evidence": []
+  },
+  "note": "Unapproved template. Populate from evidence and approved requirements; null and empty fields are not implicit authorization or satisfaction.",
+  "exposure_assessment": {
+    "graph_resource": null,
+    "attack_surface": null,
+    "prerequisites": [],
+    "complexity_rationale": null,
+    "reporter_severity": null,
+    "assessed_priority": null,
+    "uncertainties": []
+  },
+  "code_evidence": {
+    "required_queries": [],
+    "index_subject": null,
+    "coverage_limits": []
+  },
+  "formal_verification": {
+    "disposition": "unresolved",
+    "reason": null,
+    "obligation_ids": [],
+    "specification_resources": [],
+    "model_resources": [],
+    "profile": null,
+    "assumptions": [],
+    "bounds": null,
+    "implementation_bindings": [],
+    "positive_reachability_checks": []
+  },
+  "regression_resistance": {
+    "claim_resources": [],
+    "replay_commands": [],
+    "required_mutations": [],
+    "evaluator_identity": null,
+    "protected_acceptance_policy": null,
+    "tamper_resistance_evidence": [],
+    "invalidation_triggers": []
+  },
+  "resource_manifest": [],
+  "end_to_end_guidance": {
+    "status": "missing",
+    "reference": null,
+    "sha256": null,
+    "scope": null,
+    "environment": null,
+    "journeys": [],
+    "pass_criteria": [],
+    "negative_controls": [],
+    "cleanup": null,
+    "authorized_scope": null,
+    "prerequisites": []
+  }
+}

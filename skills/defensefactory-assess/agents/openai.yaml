@@ -1,0 +1,4 @@
+interface:
+  display_name: "Defense Factory: Assess premise and enforcement"
+  short_description: "Run the manual factory assess stage on this host"
+  default_prompt: "Use $defensefactory-assess for this project finding or candidate."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Defense Factory: Build and deploy a scoped artifact"
+  short_description: "Run the manual factory deploy stage on this host"
+  default_prompt: "Use $defensefactory-deploy for this project finding or candidate."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Defense Factory: Refresh evidence on demand"
+  short_description: "Run the manual factory maintain stage on this host"
+  default_prompt: "Use $defensefactory-maintain for this project finding or candidate."
