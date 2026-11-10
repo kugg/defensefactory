@@ -33,6 +33,8 @@ Select the next stage using the live ticket's prerequisites and the user's autho
 
 Use component-owned canonical definitions and first-class fences through the [component claim procedure](references/component-claims.md). A location index is not a second claim registry; hashes and execution verdicts belong in generated receipts.
 
+Before handing state to another stage, read [state, capture and replay](references/handoff-state.md). Save input snapshots, comparison recipes/results and artifact build/use bindings; archive the whole registered evidence inventory. The runner’s finalized postflight audit qualifies the worker’s prefix report. Local paths, console Booleans and remembered conclusions alone are incomplete handoff evidence.
+
 ## Execution and evidence helpers
 
 The bundled `scripts/stage.py` accepts one explicit operation with JSON input/output and refuses to overwrite a receipt. Use supported generic operations for claim validation, assessment/readiness, source/evaluator identity, bounded check execution, admission, confirmation and maintenance. Project-specific compilation/build/deployment requires a ticket-linked, authorized adapter with verified bytes; an absent adapter is unsupported, never a default example. A helper result grants no tool permissions or lifecycle authority. Publish its raw receipt with the stage outcome and verify readback.

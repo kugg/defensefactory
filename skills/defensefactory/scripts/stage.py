@@ -2,6 +2,7 @@
 """One explicit stage operation; JSON input/output, no scheduling or lifecycle auto-approval."""
 import argparse
 import json
+import os
 import subprocess
 from pathlib import Path
 import sys
@@ -138,6 +139,8 @@ def main():
     if not (a.operation and a.input and a.output):p.error('operation, --input and --output required for execution')
     out=Path(a.output)
     if out.exists():p.error('Use a new output per invocation; do not overwrite a receipt')
+    roots=[Path(os.environ[k]).resolve() for k in ('DEFENSEFACTORY_EVIDENCE_ROOT','DEFENSEFACTORY_HANDOFF_ROOT','DEFENSEFACTORY_PUBLICATION_ROOT') if os.environ.get(k)]
+    if roots and not any(r in out.resolve().parents for r in roots):p.error('Save stage metadata in a registered evidence/handoff/publication root')
     try:
         data=json.loads(Path(a.input).read_text());require(isinstance(data,dict),'Stage input must be a JSON object')
         if a.operation=='bundle-prepare':require(Path(data['destination']).resolve()!=out.resolve(),'Bundle destination and JSON receipt must be different files')

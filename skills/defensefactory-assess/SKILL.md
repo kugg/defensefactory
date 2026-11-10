@@ -61,6 +61,8 @@ Before comparative classification or handoff experiments, freeze corpus/arm/thre
 
 Use the [component claim and fence procedure](references/component-claims.md): classify bug mechanisms against canonical mappings, identify the owning component and specify missing hard fences. A root catalog is valid for a repository-sized component; soft policy/classification output is not coverage. Keep computed hashes and run verdicts in receipts.
 
+Before handing state to another stage, read [state, capture and replay](references/handoff-state.md). Save input snapshots, comparison recipes/results and artifact build/use bindings; archive the whole registered evidence inventory. The runner’s finalized postflight audit qualifies the worker’s prefix report. Local paths, console Booleans and remembered conclusions alone are incomplete handoff evidence.
+
 ## Executable helpers
 
 The `assess-eligibility` gate above is mandatory before repair planning. `assess-observe` permits evidence gathering without fabricated authority; missing disposition inputs produce a hold with a concrete scope question. Other operations below are optional when not applicable. Never retrospectively relabel observation logging as named assertion execution or infer missing execution timestamps.

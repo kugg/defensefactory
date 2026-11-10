@@ -125,3 +125,9 @@ class ReleaseTests(unittest.TestCase):
             '--skills-directory', str(self.root / 'client/skills')], env=env, cwd=self.root,
             capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_evidence_helpers_import_only_their_package_under_isolated_python(self):
+        for name in ('evidence-compare.py','handoff-audit.py','restore-artifact.py','ticket-transfer.py'):
+            result=subprocess.run([sys.executable,'-I',str(SCRIPTS/name),'--help'],cwd=self.root,
+                                  capture_output=True,text=True)
+            self.assertEqual(result.returncode,0,name+': '+result.stderr)

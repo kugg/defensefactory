@@ -20,6 +20,7 @@ from factorycore.assessment_resolution import session_usage
 from factorycore.preflight import package_inventory
 from factorycore.installation import default_config, load_config, opencode_config
 from factorycore.trial_controls import stage_start, instant
+from factorycore.evidence_inventory import inventory as handoff_inventory
 
 
 def validate_opening(opening, packages):
@@ -50,13 +51,16 @@ def prepare(prompt, project, skills, destination, launcher, model, installed, pr
     target.mkdir(parents=True, exist_ok=False, mode=0o700)
     files = {'prompt.txt': prompt.read_bytes(), 'opencode-trial.py': Path(__file__).read_bytes(),
              'skill-inventory.json': json.dumps(inventory, indent=2).encode()}
-    environment = {}
+    environment = {'DEFENSEFACTORY_EVIDENCE_ROOT':str(target/'evidence'),
+                   'DEFENSEFACTORY_EVENT_LOG':str(target/'agent.jsonl'),
+                   'DEFENSEFACTORY_HANDOFF_ROOT':str(target/'handoffs'),
+                   'DEFENSEFACTORY_PUBLICATION_ROOT':str(target/'publication')}
     if preferences is not None:
         files['factory-config.json'] = (json.dumps(preferences, indent=2) + '\n').encode()
         files['opencode.json'] = (json.dumps(opencode_config(preferences), indent=2) + '\n').encode()
-        environment = {'DEFENSEFACTORY_CONFIG': str(target / 'factory-config.json'),
+        environment.update({'DEFENSEFACTORY_CONFIG': str(target / 'factory-config.json'),
                        'OPENCODE_CONFIG': str(target / 'opencode.json'),
-                       'OPENCODE_CONFIG_DIR': str(Path(preferences['skills_directory']).parent)}
+                       'OPENCODE_CONFIG_DIR': str(Path(preferences['skills_directory']).parent)})
     if opening is not None:
         files['stage-opening.json'] = (json.dumps(opening, indent=2) + '\n').encode()
         environment['DEFENSEFACTORY_STAGE_OPENING'] = str(target / 'stage-opening.json')
@@ -81,6 +85,12 @@ def execute(target, manifest):
     if 'stage-opening.json' not in manifest['files']:
         raise ValueError('Manual kickoff required: publish/read back the stage scope, retrieve its opening from the ticket, then pass --opening before --run')
     validate_opening(json.loads((target / 'stage-opening.json').read_text()), manifest['packages'])
+    Path(manifest['environment']['DEFENSEFACTORY_EVIDENCE_ROOT']).mkdir(mode=0o700,exist_ok=False)
+    for name in ('DEFENSEFACTORY_HANDOFF_ROOT','DEFENSEFACTORY_PUBLICATION_ROOT'):
+        Path(manifest['environment'][name]).mkdir(mode=0o700,exist_ok=False)
+    inputs=target/'evidence/invocation-inputs';inputs.mkdir(mode=0o700)
+    for name in [*manifest['files'],'manifest.json']:
+        shutil.copy2(target/name,inputs/name)
     for name, path in manifest['packages'].items():
         if (Path(manifest['installed_skills']) / name).resolve() != Path(path).resolve():
             raise ValueError('Installed skill differs from selected release: ' + name)
@@ -137,6 +147,18 @@ def execute(target, manifest):
               'reasoning_events': sum(e.get('type') == 'reasoning' for e in events),
               'factory_acceptance': 'not_evaluated',
               'snapshot_unchanged': all(hashlib.sha256((target / n).read_bytes()).hexdigest() == h for n, h in manifest['files'].items())}
+    # Always leave a durable audit after the worker exits, including unfinished/failed work.
+    requirements=target/'evidence/handoff-requirements.json'
+    try:
+        audit=handoff_inventory([target/'evidence',target/'handoffs',target/'publication'],target/'postflight',events=log,
+            workspace=Path(manifest['argv'][manifest['argv'].index('--dir')+1]),
+            opening=json.loads((target/'stage-opening.json').read_text()),
+            requirements=json.loads(requirements.read_text()) if requirements.exists() else None,finalized=True)
+        result['postflight_inventory']=str(target/'postflight/inventory.json')
+        result['whole_attempt_handoff_ready']=audit['whole_attempt_handoff_ready']
+    except (OSError,ValueError,KeyError,TypeError) as exc:
+        result['whole_attempt_handoff_ready']=False
+        result['postflight_error']=str(exc)
     with (target / 'invocation-result.json').open('x') as f:
         json.dump(result, f, indent=2)
     if len(sessions) == 1:

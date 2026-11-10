@@ -81,11 +81,18 @@ os.environ['GOTOOLCHAIN'] = 'local'
 a.output = a.output.resolve()
 a.output.mkdir(parents=True,exist_ok=False)
 f=FenceFixture();base_definition=copy.deepcopy(f.definition)
+# Never let a shared host cache turn a fixture/provenance case into a build failure.
+cache=Path(f.tmp.name)/'go-cache';cache.mkdir(mode=0o700)
+os.environ['GOCACHE']=str(cache)
 def save(name,value):(a.output/(name+'.json')).write_text(json.dumps(value,indent=2)+'\n');return value
 def run(name,expected_blocked,reviews=None):
     revision=f.git('rev-parse','HEAD');r=f.read(revision);e=execute_fences(f.repo,r,f.checks,identity(f.checks),f.frozen);h=fence_health(r,e);gate=compare_definitions(f.receipt,r,h,f.policy,reviews or []);save(name,{'catalog_receipt':r,'execution':e,'health':h,'admission':gate});f.git('update-ref','refs/heads/evidence/'+name,revision);require(gate['pr_blocked']==expected_blocked, 'Unexpected gate outcome: '+name+'; observed '+gate['result']);return gate
 def reset():f.git('checkout','--detach',f.base);f.definition=copy.deepcopy(base_definition);f.component=f.repo/'core'
 try:
+    save('environment',{'go_executable':shutil.which('go'),
+        'go_version':subprocess.check_output(['go','version']).decode().strip(),
+        'GOTOOLCHAIN':os.environ['GOTOOLCHAIN'],'GOCACHE':str(cache),
+        'cache_scope':'Private disposable writable cache, removed with the fixture; never the host default cache.'})
     save('authored-component-example',f.definition);save('base-receipt',f.receipt);save('check-plan',{'checks':f.checks,'expected_checks_sha256':identity(f.checks),'evaluator_manifest':f.frozen});save('bug-class-mapping',map_bug_classes(f.receipt,['unauthenticated-peer']))
     outcomes={};outcomes['baseline']=run('baseline',False)['result']
     (f.component/'control.go').write_text('package core\n// Harmless refactor, no catalog edits\nfunc Allowed(peer string) bool { return map[string]bool{"trusted":true}[peer] }\n');f.commit();outcomes['refactor']=run('harmless-refactor',False)['result']

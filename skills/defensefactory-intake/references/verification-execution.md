@@ -1,5 +1,10 @@
 # Exact-candidate verification
 
+Follow [state, capture and replay](handoff-state.md) for build/use bindings,
+predeclared actual-child assertions and the whole evidence inventory. A later
+runtime probe does not supply a missing build capture. Console output and local
+client caches must become saved, replayable ticket resources before handoff.
+
 For new v6 attempts, first follow [stage admission and capture](trial-controls.md). Use the guarded execution path and retained receipt dependencies; legacy helper success does not establish stage admission.
 
 Recover the case's candidate, claim, frozen evaluator/check definitions, guidance, formal disposition and code-evidence policy through the live ticket. Verify their referenced bytes and actual decision status before running code. Run `verify` in the portable `scripts/stage.py` against a full Git revision. The helper extracts clean source and limits process time; it does not establish an OS sandbox or protected identity. Preserve raw logs and failed runs; a repair summary cannot stand in for the verifier's own execution.

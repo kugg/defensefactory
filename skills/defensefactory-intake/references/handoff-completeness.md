@@ -1,5 +1,10 @@
 # Complete evidence and phase-specific assessment
 
+Use [state, capture and replay](handoff-state.md) for generated whole-root
+inventories, saved comparisons, native response caches, artifact binding and the
+finalized postflight gate. A declared-subset archive can verify while omitting
+local evidence; `bundle_complete` alone is not whole-attempt readiness.
+
 For new v6 attempts, first follow [stage admission and capture](trial-controls.md). Use the guarded execution path and retained receipt dependencies; legacy helper success does not establish stage admission.
 
 This revision applies only to new experiments. Keep ongoing and completed trials

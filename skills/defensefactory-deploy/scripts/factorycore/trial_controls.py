@@ -102,6 +102,11 @@ def stage_command(opening, specification, evidence_directory, challenge=None):
     require(json.loads(Path(specification['stage_start_reference']).read_text()) == opening, 'Stage-opening bytes missing/changed')
     argv = specification['argv']
     require(not (Path(argv[0]).name in ('sh', 'bash', 'zsh', 'dash') and any(a == '-c' or (a.startswith('-') and not a.startswith('--') and 'c' in a) for a in argv[1:])), 'Do not hide producer status in shell -c; freeze a reviewed adapter or use direct argv')
+    if specification['execution']['format'] == 'process-assertions-v1':
+        require(not any(Path(arg).name in ('sh','bash','zsh','dash') and
+                        any(flag == '-c' or (flag.startswith('-') and not flag.startswith('--') and 'c' in flag)
+                            for flag in argv[i+1:i+3]) for i,arg in enumerate(argv)),
+                'Runtime assertions require the actual producer exit, not an inline container shell/echo wrapper')
     if challenge is None:
         require(specification['subject'] == scope['subject'], 'Execution subject differs from ticket stage scope')
     else:
@@ -114,7 +119,7 @@ def stage_command(opening, specification, evidence_directory, challenge=None):
         role = specification.get('challenge_role', 'evaluation')
         require(role in ('evaluation', 'support'), 'Unknown challenge command role')
         if role == 'support':
-            require(specification.get('purpose') and specification['execution']['format'] in ('command', 'factory-jsonl-v1'),
+            require(specification.get('purpose') and specification['execution']['format'] in ('command', 'factory-jsonl-v1', 'process-assertions-v1'),
                     'Support command needs a declared purpose and command/probe protocol')
         else:
             require(specification['argv'] == plan['argv'] and specification['execution'] == plan['execution'], 'Challenge command/evaluator protocol changed')

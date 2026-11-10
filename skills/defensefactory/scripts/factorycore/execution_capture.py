@@ -7,7 +7,9 @@ import signal
 import subprocess
 import time
 from .core import require,identity,sha,canonical
+from .evidence_records import dependency
 from .check_results import qualify_execution
+from .artifact_binding import prepare_artifacts, finish_artifacts, seal_artifacts
 
 
 def capture(spec, evidence_directory):
@@ -48,6 +50,13 @@ def capture(spec, evidence_directory):
         snapshot.parent.mkdir(parents=True,mode=0o700);snapshot.write_bytes(p.read_bytes());os.chmod(snapshot,0o600)
         require(sha(snapshot.read_bytes())==digest, 'Evaluator changed during capture')
         record['captured_evaluator_files'][name]={'path':str(snapshot),'sha256':digest}
+    try:
+        provenance = prepare_artifacts(spec)
+    except (OSError, ValueError, subprocess.CalledProcessError) as error:
+        record.update(execution_state='preparation_failed', result='inconclusive', reason=str(error),
+                      finished_at=datetime.datetime.now(datetime.timezone.utc).isoformat())
+        persist(record)
+        return record
     persist(record);started=time.monotonic();proc=None
     try:
         with (root/'output.raw').open('xb') as out:
@@ -71,8 +80,20 @@ def capture(spec, evidence_directory):
         record.update(raw_log_reference=str(root/'output.raw'),raw_log_sha256=sha(raw),raw_log_bytes=len(raw))
         outcome='unsupported' if 'start_error' in record else 'inconclusive' if record['timed_out'] else 'satisfied_within_scope' if record['exit_code']==0 else 'violated'
         candidate=spec['subject'].get('revision') or identity(spec['subject'])
-        qualified=qualify_execution(spec,{'result':outcome,'log':raw.decode(errors='replace')},candidate)
-        record.update(result=qualified['result'],test_evidence=qualified);persist(record)
+        qualified=qualify_execution(spec,{'result':outcome,'log':raw.decode(errors='replace'),
+            'exit_code':record['exit_code'],'timed_out':record['timed_out'],'start_error':record.get('start_error')},candidate)
+        pending_artifacts=[]
+        try:
+            record['artifact_evidence'], record['evidence_dependencies'], pending_artifacts = finish_artifacts(spec, provenance, root, record)
+        except (OSError, ValueError, subprocess.CalledProcessError) as error:
+            record['artifact_error'] = str(error)
+            record['evidence_dependencies'] = [dependency('retained-output-'+str(i),p,'unqualified_artifact_payload')
+                for i,p in enumerate(sorted((root/'artifacts').glob('*/payload')))]
+        overall = qualified['result']
+        if record.get('artifact_error') and overall != 'violated':
+            overall = 'inconclusive'
+        record.update(result=overall,test_evidence=qualified);persist(record)
+        seal_artifacts(pending_artifacts,root/'execution.json')
     return record
 
 

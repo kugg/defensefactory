@@ -6,6 +6,25 @@ from .core import require
 def qualify_execution(check, execution, candidate):
     contract=check.get('execution') or {};fmt=contract.get('format')
     outcome=execution['result'];diagnostics=[];events=[]
+    if fmt=='process-assertions-v1':
+        assertions = contract.get('assertions', [])
+        required = contract.get('required_tests', [])
+        require(assertions and len({a['name'] for a in assertions}) == len(assertions)
+                and set(required) == {a['name'] for a in assertions}, 'Frozen named process assertion inventory required')
+        for criterion in assertions:
+            require(set(criterion) <= {'name', 'exit_code', 'stdout_contains'}
+                    and type(criterion.get('exit_code')) is int
+                    and isinstance(criterion.get('stdout_contains', []), list)
+                    and all(isinstance(s, str) and s for s in criterion.get('stdout_contains', [])),
+                    'Process assertion needs exact child exit code and optional literal diagnostics')
+            passed = (not execution.get('timed_out') and not execution.get('start_error')
+                      and execution.get('exit_code') == criterion['exit_code']
+                      and all(s in execution.get('log', '') for s in criterion.get('stdout_contains', [])))
+            events.append({'name': criterion['name'], 'status': 'passed' if passed else 'failed',
+                           'expected_exit_code': criterion['exit_code'], 'actual_exit_code': execution.get('exit_code')})
+        return {'result': 'satisfied_within_scope' if all(e['status']=='passed' for e in events) else 'violated',
+                'format': fmt, 'required_tests': required, 'tests': events,
+                'scope': 'Actual producer exit/diagnostics; evaluator adequacy and artifact provenance remain separate.'}
     if fmt=='command':
         if not contract.get('reason') or not contract.get('success_criteria'):
             diagnostics.append('Non-test command needs an explicit reason and success criterion.')

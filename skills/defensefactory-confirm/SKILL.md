@@ -29,6 +29,8 @@ Confirm actual declared runtime scope against the component claims and fence rec
 
 Use the [host release lifecycle](references/release-lifecycle.md) and its release-admit/rollout/confirm/maintain operations. Finish the authorized demo scope with actual evidence. Production isolation/platform/research criteria belong in linked future tickets; do not turn them into a new approval barrier. Treat developers and agents as normal component owners under existing repository policy.
 
+Before handing state to another stage, read [state, capture and replay](references/handoff-state.md). Save input snapshots, comparison recipes/results and artifact build/use bindings; archive the whole registered evidence inventory. The runner’s finalized postflight audit qualifies the worker’s prefix report. Local paths, console Booleans and remembered conclusions alone are incomplete handoff evidence.
+
 ## Execution and evidence helpers
 
 The bundled `scripts/stage.py` accepts one explicit operation with JSON input/output and refuses to overwrite a receipt. Use supported generic operations for claim validation, assessment/readiness, source/evaluator identity, bounded check execution, admission, confirmation and maintenance. Project-specific compilation/build/deployment requires a ticket-linked, authorized adapter with verified bytes; an absent adapter is unsupported, never a default example. A helper result grants no tool permissions or lifecycle authority. Publish its raw receipt with the stage outcome and verify readback.

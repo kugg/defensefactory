@@ -6,6 +6,11 @@ skill and its stage/evidence references before executing the case. An existing
 candidate challenged with new tests belongs in verification, not a new repair
 or a replay of old assessment receipts.
 
+For capture completeness and handoff, use [state, capture and replay](handoff-state.md).
+The runner registers an evidence root and event log. Use one direct canonical
+helper invocation per tool call, without shell aliases, compound commands or
+truncating pipelines. The final postflight audit is separate from worker claims.
+
 
 ## Manual kickoff before a fresh worker
 
@@ -61,6 +66,12 @@ do not assign a missing-CA, configuration or dependency cause without a diagnost
 or discriminating test. Report locally verified tools separately from missing
 tools in an image. Measure durations from invocation timestamps rather than the
 agent's estimated elapsed time.
+
+Use `--source-repo` / `--produces NAME=NEW_FILE` for build bindings and
+`--use-artifact NAME=BINDING_JSON` with `{artifact:NAME}` in the runtime argv.
+Use `--assertions FILE` for predeclared child exit/diagnostic criteria. A generic
+command receipt does not establish refusal merely because a wrapper prints a
+child status. See the linked procedure for archived replay and comparison files.
 
 ## Short startup and stop checklist
 

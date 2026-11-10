@@ -16,6 +16,11 @@ qualifications and safeguards, not a claim of reliable autonomous remediation.
 | An evaluation assertion failed before its evidence was saved. | Save observations before expectations, retain Git bundles on failure and keep a fallback repository if bundling fails. A later successful run does not erase the first failure. |
 | An archive was published without separately retrievable requirements. | Publish, retrieve and verify both assets before claiming ticket-only handoff. |
 | A chosen final subset verified while failed captures were omitted or mislabeled. | Finished captures retain execution-receipt typing and dependencies regardless of result; reconcile the full attempt inventory. The helper cannot discover wholly omitted runs. |
+| A comparison printed a Boolean but had no portable recipe and input snapshots. | `evidence-compare.py` saves inputs, selectors, expectation and result; receivers replay it from archived bytes. Console persistence is distinct from ticket persistence. |
+| A full native response existed only in the client's private output cache. | The inventory snapshots truncated-response caches, preserves provenance/redaction limits and exports selected tool observations without private reasoning. |
+| An artifact's label matched the candidate while its build/use lineage was absent. | Build bindings observe clean Git inputs, retain payload/spec/log/actual build receipt, and reject mismatched source or changed/unused payloads before runtime. |
+| A container shell printed child exit 2 but returned zero itself. | Named process assertions inspect the actual producer exit; inline shell/echo wrappers cannot earn runtime assertion credit. |
+| A worker declared completion before later actions and publication. | Live snapshots cover an observed prefix. A separate finalized parent-runner audit can qualify the report; no unreviewed command silently becomes a pass. |
 | Historical success was confused with work performed in a fresh attempt. | Freeze inputs per attempt, recover state from the live ticket, and keep current execution, historical input and observer recovery distinct. |
 
 Claims remain developer-owned and portable. A test/lint/type fence constrains
@@ -32,3 +37,8 @@ Fresh-worker adherence must be measured separately from deterministic helper
 tests. The manual bootstrap changes the experimental condition; it is not
 independent-agent acceptance. Protected identities, capability isolation and
 production governance require separately designed and evidenced controls.
+
+[State, capture and replay](skills/defensefactory/references/handoff-state.md)
+defines the local/ticket boundary and the new helper contract. The changes are
+prospective: historical reports, receipts and frozen installations retain their
+original qualifications.

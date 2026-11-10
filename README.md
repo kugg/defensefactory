@@ -58,11 +58,23 @@ and the options shown by `--help`. See the complete
 3. The worker fetches the ticket and opening afresh, verifies correspondence,
    then uses `scripts/stage-exec.py` for direct producers. Stop at the authorized
    boundary: a draft PR or a justified disposition is a useful trial outcome.
+4. The runner writes a finalized postflight audit after exit. The manual operator
+   publishes its qualification and final resource/readback checkpoint before the
+   next stage relies on the worker's result. A live worker snapshot covers only
+   its observed prefix.
 
 Follow [manual kickoff and execution](skills/defensefactory/references/trial-controls.md).
 Caller-supplied connector records are checked for correspondence and ordering;
 the helpers do not authenticate those records or restrict arbitrary host tools.
 A passing process or bundle check does not grant acceptance or closure.
+
+See [where state and evidence live](skills/defensefactory/references/handoff-state.md)
+for local working files, client caches, ticket attachments and transient context.
+The new helpers save/replay comparison inputs and recipes, bind artifacts to actual
+build receipts, assert child exits, and inventory every registered evidence file.
+Archive verification closes non-execution dependencies as well as execution logs.
+Unwrapped/compound shell commands remain visible as incomplete capture; no OS
+sandbox prevents bypass.
 
 ## Stages
 
