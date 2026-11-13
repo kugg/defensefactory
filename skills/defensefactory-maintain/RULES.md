@@ -11,6 +11,21 @@ and may propose bounded corrective work without installing a scheduler.
   "inherits": ["defensefactory/RULES.md"],
   "rules": [
     {
+      "id": "MAINTAIN-BUGCLASS-VARIANTS",
+      "scope": "maintain",
+      "strength": "must",
+      "when": {"stage_state": "active", "bugclass_state": "evaluated"},
+      "requires": {"actions": ["discover_bugclass_variants"], "evidence": ["bugclass_discovery"]},
+      "forbids": {"actions": ["discard_evidence"]},
+      "allows": {},
+      "terminal": "either",
+      "mutation": "read_only",
+      "overrides": [],
+      "precedence": 45,
+      "safety": false,
+      "fulfillment": "procedure"
+    },
+    {
       "id": "MAINTAIN-REFRESH-EVIDENCE",
       "scope": "maintain",
       "strength": "must",

@@ -37,6 +37,8 @@ Evaluate first-class hard fence health using the [component claim procedure](ref
 
 Before handing state to another stage, read [state, capture and replay](references/handoff-state.md). Save input snapshots, comparison recipes/results and artifact build/use bindings; archive the whole registered evidence inventory. The runner’s finalized postflight audit qualifies the worker’s prefix report. Local paths, console Booleans and remembered conclusions alone are incomplete handoff evidence.
 
+For a repair that claims architectural bug-class coverage, follow the [bug-class procedure](references/bug-classes.md). Independently evaluate every included current and historical member, the governing claim and required hard fence against the exact PR head and merge subject. Candidate output and evaluation remain separate. Report member-only, inconclusive, violated or rejected class results honestly; zero findings without adequate coverage cannot establish closure.
+
 ## Execution and evidence helpers
 
 The bundled `scripts/stage.py` accepts one explicit operation with JSON input/output and refuses to overwrite a receipt. Use supported generic operations for claim validation, assessment/readiness, source/evaluator identity, bounded check execution, admission, confirmation and maintenance. Project-specific compilation/build/deployment requires a ticket-linked, authorized adapter with verified bytes; an absent adapter is unsupported, never a default example. A helper result grants no tool permissions or lifecycle authority. Publish its raw receipt with the stage outcome and verify readback.
@@ -58,11 +60,11 @@ For comparison builds, runtime probes and required CodeIntel work, use the [supp
     {
       "id": "verification-workflow",
       "section": "Defense Factory verify",
-      "rules": ["DF-TICKET-CURRENT", "DF-SCOPE-BEFORE-WORK", "DF-EXACT-SUBJECT", "DF-RETAIN-EVIDENCE", "DF-PUBLISH-READBACK", "DF-TERMINAL-STOPS", "DF-NO-IMPLICIT-AUTHORITY", "VERIFY-EXACT-CANDIDATE"],
-      "actions": ["fetch_ticket", "publish_scope", "bind_subject", "retain_evidence", "publish_receipt", "readback_ticket", "stop_work", "run_checks", "evaluate_candidate"],
-      "evidence": ["ticket_snapshot", "opening_receipt", "subject_receipt", "execution_receipt", "publication_readback", "verification_receipt", "candidate_evaluations"]
+      "rules": ["DF-TICKET-CURRENT", "DF-SCOPE-BEFORE-WORK", "DF-EXACT-SUBJECT", "DF-RETAIN-EVIDENCE", "DF-PUBLISH-READBACK", "DF-TERMINAL-STOPS", "DF-NO-IMPLICIT-AUTHORITY", "VERIFY-BUGCLASS-MATRIX", "VERIFY-EXACT-CANDIDATE"],
+      "actions": ["fetch_ticket", "publish_scope", "bind_subject", "retain_evidence", "publish_receipt", "readback_ticket", "stop_work", "run_checks", "evaluate_candidate", "evaluate_bugclass"],
+      "evidence": ["ticket_snapshot", "opening_receipt", "subject_receipt", "execution_receipt", "publication_readback", "verification_receipt", "candidate_evaluations", "bugclass_proof_matrix", "bugclass_verification"]
     },
-    {"id": "verification-helpers", "section": "Execution and evidence helpers", "rules": ["DF-RETAIN-EVIDENCE", "VERIFY-EXACT-CANDIDATE"], "actions": [], "evidence": []}
+    {"id": "verification-helpers", "section": "Execution and evidence helpers", "rules": ["DF-RETAIN-EVIDENCE", "VERIFY-BUGCLASS-MATRIX", "VERIFY-EXACT-CANDIDATE"], "actions": [], "evidence": []}
   ]
 }
 ```

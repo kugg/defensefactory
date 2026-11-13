@@ -116,6 +116,11 @@ the ticket handoff; local paths alone are not durable evidence.
 | Integration | Compare the actual base and merge subject semantically, require valid references/coverage, and apply the repository's native review plus declared claim policy. |
 | Maintenance | Re-run explicitly, detect stale contracts or changed coverage, and open/reuse corrective work without rewriting historical receipts. |
 
+When a repair groups multiple current or historical findings under one invariant,
+continue with the [architectural bug-class procedure](bug-classes.md). Component
+`RULES.md` remains the canonical claim/invariant source; discovery, membership,
+proof matrices and linkage are generated receipts, not new authored claim files.
+
 ## Legacy migration
 
 `claims.json` is a legacy input, not a second current authority.

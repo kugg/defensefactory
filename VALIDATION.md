@@ -2,9 +2,25 @@
 
 Validated on 2026-11-13. These are bounded checks of this experimental package.
 
+The architectural bug-class update adds nine focused checks that distinguish
+discovery candidates from evaluated
+membership; preserve current and historical ticket lifecycle; require compatible,
+evidence-backed class inclusion; bind repair design to primary, retry, fallback,
+alternate-constructor and configuration paths; require a deterministic hard fence
+and historical regression contract; evaluate every member at the exact PR merge
+subject; distinguish candidate output and model proposals from evaluation;
+preserve portable class identity across a repository move; prove legitimate
+behavior and other affected claims; produce conservative
+class-wide, member-only, inconclusive, violated and rejected outcomes; and
+reconcile partial PR/ticket linkage without overwriting receipts. These are
+synthetic helper checks. They do not search a live ticket corpus, judge a real
+bug-class boundary, mutate a PR or ticket, authenticate an evaluator, or prove
+live-agent adherence.
+
 The canonical component- and stage-rules updates, including the JER-36
-evaluator corrections, and the environment-aware installer pass the repository's
-offline suite. Sixteen focused component-rule checks exercise the strict Markdown grammar,
+evaluator corrections, the environment-aware installer and the bug-class
+workflow pass the repository's offline suite. Sixteen focused component-rule
+checks exercise the strict Markdown grammar,
 semantic/prose diffs, Unicode and hidden-content rejection, external descriptor
 validation, CUE/CodeQL/Semgrep/test/Markdown adapter behavior, candidate/evaluation
 separation, coverage-aware zero-finding semantics, unavailable engines, detached

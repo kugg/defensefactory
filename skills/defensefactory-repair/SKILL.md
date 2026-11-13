@@ -25,6 +25,8 @@ Record execution outcome, security finding/premise, assessment completeness, ver
 
 Read the ticket-linked assessment and exact approved/proposed requirements, preserving their actual decision status. Confirm the permitted base, change scope, evaluator and testing guidance. Construct in an isolated candidate checkout; keep the source under test unchanged. Migrate enumerated callers and retain positive behavior, architecture and the versioned claim. Requirement/model/evaluator amendments are explicit proposals, not changes the patch author can self-approve.
 
+Before any product edit, follow the [architectural bug-class procedure](references/bug-classes.md). Search authorized current and historical ticket/repository evidence; save discovery candidates; evaluate every membership separately; define the portable class; and save its class-wide repair contract. Similarity/CWE/title matches remain candidates. Analyze primary, retry, fallback, alternate-constructor and configuration paths, preserve legitimate behavior and other claims, and bind a deterministic hard fence plus every included historical regression. Memory-only grouping or editing first is a process failure even if the final patch works.
+
 Implement missing task-specific test seams/fixtures only when authorized by the contract, keeping them separate from production controls. Use bounded rounds driven by confirmed unmet obligations. Record all construction checks and failures; they are not independent acceptance.
 
 When PR creation is authorized, reconcile an existing branch/PR first, publish a draft and attach it through available platform tooling. Describe the problem, behavior, exact subject and actual evidence. Keep experiment chronology in the ticket journal. Clearly label staged demonstrations; never present them as historical production failures.
@@ -48,11 +50,11 @@ For comparison builds, runtime probes and required CodeIntel work, use the [supp
     {
       "id": "repair-workflow",
       "section": "Defense Factory repair",
-      "rules": ["DF-TICKET-CURRENT", "DF-SCOPE-BEFORE-WORK", "DF-EXACT-SUBJECT", "DF-RETAIN-EVIDENCE", "DF-PUBLISH-READBACK", "DF-TERMINAL-STOPS", "DF-NO-IMPLICIT-AUTHORITY", "REPAIR-BOUNDED-CANDIDATE", "REPAIR-NO-AUTHORITY-HOLDS"],
-      "actions": ["fetch_ticket", "publish_scope", "bind_subject", "retain_evidence", "publish_receipt", "readback_ticket", "stop_work", "edit_candidate", "create_draft_pr"],
-      "evidence": ["ticket_snapshot", "opening_receipt", "subject_receipt", "execution_receipt", "publication_readback", "repair_receipt", "draft_pr_reference"]
+      "rules": ["DF-TICKET-CURRENT", "DF-SCOPE-BEFORE-WORK", "DF-EXACT-SUBJECT", "DF-RETAIN-EVIDENCE", "DF-PUBLISH-READBACK", "DF-TERMINAL-STOPS", "DF-NO-IMPLICIT-AUTHORITY", "REPAIR-BUGCLASS-BEFORE-EDIT", "REPAIR-BOUNDED-CANDIDATE", "REPAIR-NO-AUTHORITY-HOLDS"],
+      "actions": ["fetch_ticket", "publish_scope", "bind_subject", "retain_evidence", "publish_receipt", "readback_ticket", "stop_work", "discover_bugclass", "evaluate_bugclass_membership", "define_bugclass", "design_class_repair", "edit_candidate", "create_draft_pr"],
+      "evidence": ["ticket_snapshot", "opening_receipt", "subject_receipt", "execution_receipt", "publication_readback", "bugclass_discovery", "bugclass_membership", "bugclass_definition", "bugclass_repair_contract", "repair_receipt", "draft_pr_reference"]
     },
-    {"id": "repair-helpers", "section": "Execution and evidence helpers", "rules": ["DF-RETAIN-EVIDENCE", "REPAIR-BOUNDED-CANDIDATE"], "actions": [], "evidence": []}
+    {"id": "repair-helpers", "section": "Execution and evidence helpers", "rules": ["DF-RETAIN-EVIDENCE", "REPAIR-BUGCLASS-BEFORE-EDIT", "REPAIR-BOUNDED-CANDIDATE"], "actions": [], "evidence": []}
   ]
 }
 ```

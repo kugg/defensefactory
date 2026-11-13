@@ -26,6 +26,21 @@ authorization and the repository's governing policy.
       "fulfillment": "procedure"
     },
     {
+      "id": "INTEGRATE-BUGCLASS-CLAIM",
+      "scope": "integrate",
+      "strength": "must",
+      "when": {"stage_state": "active", "bugclass_state": "evaluated"},
+      "requires": {"actions": ["evaluate_bugclass"], "evidence": ["bugclass_proof_matrix", "bugclass_verification"]},
+      "forbids": {},
+      "allows": {},
+      "terminal": "either",
+      "mutation": "read_only",
+      "overrides": [],
+      "precedence": 55,
+      "safety": true,
+      "fulfillment": "procedure"
+    },
+    {
       "id": "INTEGRATE-MERGE-AUTHORIZED",
       "scope": "integrate",
       "strength": "may",

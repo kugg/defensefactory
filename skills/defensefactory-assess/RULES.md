@@ -47,7 +47,7 @@ observations from judgments, and stops on a justified source disposition.
       "when": {"stage_state": "active", "applicability": "active"},
       "requires": {"actions": ["assess_finding"], "evidence": ["assessment_receipt"], "outcomes": ["active_finding"], "transitions": ["continue"]},
       "forbids": {"actions": ["edit_candidate"]},
-      "allows": {"actions": ["request_guidance"], "evidence": ["e2e_guidance"]},
+      "allows": {"actions": ["request_guidance", "discover_bugclass"], "evidence": ["e2e_guidance", "bugclass_discovery"]},
       "terminal": "nonterminal",
       "mutation": "read_only",
       "overrides": [],

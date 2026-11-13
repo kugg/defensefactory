@@ -37,6 +37,8 @@ Select the next stage using the live ticket's prerequisites and the user's autho
 
 Use component-owned canonical definitions and first-class fences through the [component claim procedure](references/component-claims.md). The owning `RULES.md` is the sole authored claim/boundary source and references external developer-owned invariant contracts. Keep candidates separate from evaluation records and compute claim state from coverage and evaluations. A location index is not a second registry; hashes and execution verdicts belong in generated receipts. Treat `claims.json` only as an explicit legacy migration input.
 
+For repair PRs, route through the [architectural bug-class procedure](references/bug-classes.md): discover current and historical candidates, evaluate membership against the same claim/invariant and compatible boundary, persist the class/repair contract before edits, prove every included variant at the exact merge subject, and reconcile bidirectional ticket/PR links. Similarity is candidate generation only; unresolved membership prevents a class-wide claim.
+
 Before handing state to another stage, read [state, capture and replay](references/handoff-state.md). Save input snapshots, comparison recipes/results and artifact build/use bindings; archive the whole registered evidence inventory. The runner’s finalized postflight audit qualifies the worker’s prefix report. Local paths, console Booleans and remembered conclusions alone are incomplete handoff evidence.
 
 ## Execution and evidence helpers

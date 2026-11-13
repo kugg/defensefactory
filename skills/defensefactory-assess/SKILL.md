@@ -65,6 +65,8 @@ Before comparative classification or handoff experiments, freeze corpus/arm/thre
 
 Use the [component claim and fence procedure](references/component-claims.md): classify bug mechanisms against canonical mappings, identify the owning component and specify missing hard fences. A root catalog is valid for a repository-sized component; soft policy/classification output is not coverage. Keep computed hashes and run verdicts in receipts.
 
+Also follow the [architectural bug-class procedure](references/bug-classes.md) far enough to record claim/invariant/component/boundary candidates for later repair. Assessment may generate candidates; it must not force class membership from a title, CWE, model score or shared source path.
+
 Before handing state to another stage, read [state, capture and replay](references/handoff-state.md). Save input snapshots, comparison recipes/results and artifact build/use bindings; archive the whole registered evidence inventory. The runner’s finalized postflight audit qualifies the worker’s prefix report. Local paths, console Booleans and remembered conclusions alone are incomplete handoff evidence.
 
 ## Executable helpers
@@ -85,12 +87,12 @@ For comparison builds, runtime probes and required CodeIntel work, use the [supp
       "id": "assessment-workflow",
       "section": "Defense Factory assess",
       "rules": ["DF-TICKET-CURRENT", "DF-SCOPE-BEFORE-WORK", "DF-EXACT-SUBJECT", "DF-RETAIN-EVIDENCE", "DF-PUBLISH-READBACK", "DF-TERMINAL-STOPS", "DF-NO-IMPLICIT-AUTHORITY", "ASSESS-ELIGIBILITY-FIRST", "ASSESS-INACTIVE-STOPS", "ASSESS-ACTIVE-BINDS-REPAIR", "ASSESS-UNKNOWN-HOLDS"],
-      "actions": ["fetch_ticket", "publish_scope", "bind_subject", "retain_evidence", "publish_receipt", "readback_ticket", "stop_work", "evaluate_eligibility", "assess_finding", "request_guidance"],
-      "evidence": ["ticket_snapshot", "opening_receipt", "subject_receipt", "execution_receipt", "publication_readback", "assessment_receipt", "e2e_guidance"]
+      "actions": ["fetch_ticket", "publish_scope", "bind_subject", "retain_evidence", "publish_receipt", "readback_ticket", "stop_work", "evaluate_eligibility", "assess_finding", "request_guidance", "discover_bugclass"],
+      "evidence": ["ticket_snapshot", "opening_receipt", "subject_receipt", "execution_receipt", "publication_readback", "assessment_receipt", "e2e_guidance", "bugclass_discovery"]
     },
     {"id": "assessment-e2e", "section": "End-to-end testing guidance", "rules": ["ASSESS-ACTIVE-BINDS-REPAIR", "ASSESS-UNKNOWN-HOLDS"], "actions": [], "evidence": []},
     {"id": "assessment-handoff", "section": "Contract and handoff", "rules": ["DF-PUBLISH-READBACK", "ASSESS-ACTIVE-BINDS-REPAIR"], "actions": [], "evidence": []},
-    {"id": "assessment-claims", "section": "Claim registry, classification and approval", "rules": ["ASSESS-ACTIVE-BINDS-REPAIR"], "actions": [], "evidence": []},
+    {"id": "assessment-claims", "section": "Claim registry, classification and approval", "rules": ["ASSESS-ACTIVE-BINDS-REPAIR"], "actions": ["discover_bugclass"], "evidence": ["bugclass_discovery"]},
     {"id": "assessment-helpers", "section": "Executable helpers", "rules": ["DF-RETAIN-EVIDENCE"], "actions": [], "evidence": []}
   ]
 }
