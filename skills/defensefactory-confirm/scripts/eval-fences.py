@@ -11,7 +11,7 @@ import shutil
 import subprocess
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE if (HERE / 'factorycore').is_dir() else HERE.parents[1]))
-from factorycore.component_claims import execute_fences,fence_health,compare_definitions,map_bug_classes,catalog_receipt
+from factorycore.component_claims import execute_fences,fence_health,compare_definitions,map_bug_classes,catalog_receipt,render_rules
 from factorycore.core import identity, require
 from factorycore.verification import tree_files
 
@@ -66,6 +66,7 @@ class FenceFixture:
 
     def save(self):
         (self.component / 'claims.json').write_text(json.dumps(self.definition, indent=2) + '\n')
+        (self.component / 'RULES.md').write_text(render_rules(self.definition))
 
     def read(self, revision):
         return catalog_receipt(self.repo, 'fixture/origin', revision)
@@ -107,7 +108,7 @@ try:
     transferred=catalog_receipt(dest,'fixture/destination',rev,origins={'fixture/origin':str(f.repo)});checks=copy.deepcopy(f.checks);checks[0]['argv'][-1]='./moved';checks[0]['execution']['required_tests']=[s.replace('/relocated::','/moved::') for s in checks[0]['execution']['required_tests']];frozen={'moved/control_test.go':f.frozen['relocated/control_test.go']}
     e=execute_fences(dest,transferred,checks,identity(checks),frozen);h=fence_health(transferred,e);policy={**f.policy,'authorized_component_transfer':'Owner-authorized synthetic transfer'};g=compare_definitions(f.receipt,transferred,h,policy,[]);save('cross-repository-transfer',{'catalog_receipt':transferred,'execution':e,'health':h,'admission':g});require(not g['pr_blocked'], 'Component transfer unexpectedly blocked');outcomes['cross_repository_transfer']=g['result']
     missing=catalog_receipt(dest,'fixture/destination',rev);e=execute_fences(dest,missing,checks,identity(checks),frozen);h=fence_health(missing,e);save('unavailable-original-history',{'catalog_receipt':missing,'execution':e,'health':h});require(h['result']=='inconclusive', 'Missing provenance must remain inconclusive; observed '+h['result']);outcomes['unavailable_original_history']=h['result'];dg('bundle','create',str((a.output/'destination.bundle').resolve()),'--all')
-    f.git('bundle','create',str((a.output/'source.bundle').resolve()),'--all');save('summary',{'outcomes':outcomes,'scope':'Actual Git/Go processes. Owner-review objects are explicit synthetic fixture decisions, not native GitHub approvals.','definition_file_count_per_component':1,'computed_hash_fields_in_authored_definition':0,'source_bundle':'source.bundle'});print(json.dumps(outcomes))
+    f.git('bundle','create',str((a.output/'source.bundle').resolve()),'--all');save('summary',{'outcomes':outcomes,'scope':'Actual Git/Go processes. Owner-review objects are explicit synthetic fixture decisions, not native GitHub approvals.','definition_representations_per_component':2,'single_definition_authority':True,'computed_hash_fields_in_authored_definition':0,'source_bundle':'source.bundle'});print(json.dumps(outcomes))
 finally:
     # Preserve reachable source and mutations even if an expectation fails.
     preservation_errors = []

@@ -27,7 +27,7 @@ Implement missing task-specific test seams/fixtures only when authorized by the 
 
 When PR creation is authorized, reconcile an existing branch/PR first, publish a draft and attach it through available platform tooling. Describe the problem, behavior, exact subject and actual evidence. Keep experiment chronology in the ticket journal. Clearly label staged demonstrations; never present them as historical production failures.
 
-Introduce or repair the hard fence specified by assessment, with a positive behavior check and real control-introduction Git ref. Update only its owning component claims.json; preserve IDs on moves. Follow the [component claim procedure](references/component-claims.md), keeping hashes in receipts and owner-reviewed requirement amendments separate from implementation.
+Introduce or repair the hard fence specified by assessment, with a positive behavior check and real control-introduction Git ref. Update only its owning component `claims.json` and the exact mirrored definition in adjacent `RULES.md`; preserve IDs on moves. Follow the [component claim procedure](references/component-claims.md), keeping hashes in receipts and owner-reviewed requirement amendments separate from implementation.
 
 Before handing state to another stage, read [state, capture and replay](references/handoff-state.md). Save input snapshots, comparison recipes/results and artifact build/use bindings; archive the whole registered evidence inventory. The runner’s finalized postflight audit qualifies the worker’s prefix report. Local paths, console Booleans and remembered conclusions alone are incomplete handoff evidence.
 

@@ -24,7 +24,7 @@ deny-all, removed test, claim amendment under an explicitly selected example
 owner-review policy, directory move, cross-repository transfer, and unavailable
 original history. The last case must remain inconclusive. See `summary.json`
 and the per-case receipts for observed results, logs and exact revisions. The
-authored component example has one claim catalog with control introduction refs;
+authored component example has one claim definition represented by synchronized `claims.json` and `RULES.md`, with control introduction refs;
 computed identities and verdicts live in receipts. The policy fixture is not a
 universal extra security approval requirement: developers own their claims under
 their normal repository policy.

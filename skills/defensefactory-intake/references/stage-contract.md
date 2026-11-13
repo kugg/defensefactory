@@ -64,4 +64,4 @@ After a timed-out publication, use a stable effect key and bounded live lookup. 
 
 ## Canonical component claims and fences
 
-Follow the [component claim/fence procedure](component-claims.md). Keep one owning definition, stable portable IDs and introduction Git refs; derive receipt hashes and discovery indexes. Normal repository ownership permits legitimate amendments but cannot waive missing or failing mandatory hard fences. Component moves preserve identities; missing source history remains a recorded evidence gap.
+Follow the [component claim/fence procedure](component-claims.md). Keep one owning definition represented by `claims.json` and its exact adjacent `RULES.md` mirror, stable portable IDs and introduction Git refs; derive receipt hashes and discovery indexes. Normal repository ownership permits legitimate amendments but cannot waive mirror drift or missing/failing mandatory hard fences. Component moves preserve identities; missing source history remains a recorded evidence gap.

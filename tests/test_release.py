@@ -128,7 +128,7 @@ class ReleaseTests(unittest.TestCase):
 
     def test_evidence_helpers_import_only_their_package_under_isolated_python(self):
         for name in ('evidence-compare.py','handoff-audit.py','restore-artifact.py','ticket-transfer.py',
-                     'prepare-fixture.py','verify-handoff.py','trial-status.py'):
+                     'prepare-fixture.py','verify-handoff.py','trial-status.py','claim-rules.py'):
             result=subprocess.run([sys.executable,'-I',str(SCRIPTS/name),'--help'],cwd=self.root,
                                   capture_output=True,text=True)
             self.assertEqual(result.returncode,0,name+': '+result.stderr)

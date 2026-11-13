@@ -104,12 +104,14 @@ defaults. Host preferences supply discovery hints, not ticket state or authority
 
 ## Claims and evidence
 
-Keep one canonical claim catalog with its owning component (the repository root
-can itself be the component). Claims name bug classes, preserved behavior and
-hard/soft fences. Controls retain their introduction Git references across moves.
-Computed hashes and execution verdicts belong in generated receipts. Developers
-may amend claims under normal repository policy; this is not a security-team
-veto mechanism. See [component claims](skills/defensefactory/references/component-claims.md).
+Keep one component-owned claim definition: machine-readable `claims.json` plus
+an exact developer-facing mirror in adjacent `RULES.md` (the repository root can
+itself be the component). Claims name bug classes, preserved behavior and
+hard/soft fences. Controls retain their introduction Git references across
+moves. The bundled helper creates/checks the reserved mirror and integration
+blocks drift. Computed hashes and execution verdicts belong in generated
+receipts. Developers may amend claims under normal repository policy; this is
+not a security-team veto mechanism. See [component claims](skills/defensefactory/references/component-claims.md).
 
 Use CodeIntel against the exact indexed subject and report query/SCIP coverage
 limits. When formal checks apply, separate bounded model results from actual

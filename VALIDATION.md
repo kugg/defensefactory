@@ -1,8 +1,17 @@
 # Validation scope
 
-Validated on 2026-11-10. These are bounded checks of this experimental package.
+Validated on 2026-11-13. These are bounded checks of this experimental package.
 
-The fixture/runtime/readback update passes **63 offline tests** in this repository.
+The component-rules update passes **69 offline tests** in this repository.
+Six focused checks require the developer-facing `RULES.md` block to match the
+adjacent machine catalog, retain unchanged legacy readability, block semantic
+legacy amendments until the companion lands, reject drift, keep packaged
+authoring templates identical and refuse to overwrite an unmanaged project rules file. The packaged Git/Go evaluation also
+passes with the synchronized definition pair through refactors, owner-reviewed
+amendments and component/repository moves. These checks do not install a native
+required check or prove live-agent adherence.
+
+The preceding fixture/runtime/readback update passed 63 offline tests.
 The preceding verification-path update passed 53. New checks use a real local Go
 discovery/test process, offline source archive assembly with dependency and unsafe-
 overlay failures, a distinct fixture execution subject, preserved refused test
@@ -11,7 +20,7 @@ synthetic native downloads and measured invocation status. Fixture recipes,
 artifact runtime graphs and downloaded machine handoffs replay after original
 source paths are erased. The paired transfer tests mock HTTP responses; they are
 not a new live service/agent trial. Standalone helper import checks include the
-new fixture, status and paired-readback commands under isolated Python.
+fixture, status, paired-readback and component-rules commands under isolated Python.
 
 The existing verification-path checks remain in the suite.
 The earlier capture/handoff update passed 34. Additional checks exercise admitted

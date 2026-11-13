@@ -25,7 +25,7 @@ Preserve the supplied report, claimed impact, reproduction steps, affected sourc
 
 Discover existing end-to-end testing guidance and link it for assessment. Missing guidance is an explicit unknown. Establish the source/target correspondence and available capabilities without claiming tools or tests were exercised merely because they are installed.
 
-Locate the owning component claims.json and original finding evidence using the [component claim procedure](references/component-claims.md). Retain stable bug-class/claim/fence IDs; do not duplicate definitions in the ticket.
+Locate the owning component `claims.json`, its synchronized developer-facing `RULES.md`, and original finding evidence using the [component claim procedure](references/component-claims.md). Retain stable bug-class/claim/fence IDs; do not duplicate definitions in the ticket.
 
 Before handing state to another stage, read [state, capture and replay](references/handoff-state.md). Save input snapshots, comparison recipes/results and artifact build/use bindings; archive the whole registered evidence inventory. The runner’s finalized postflight audit qualifies the worker’s prefix report. Local paths, console Booleans and remembered conclusions alone are incomplete handoff evidence.
 

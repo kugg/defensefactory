@@ -26,6 +26,7 @@ qualifications and safeguards, not a claim of reliable autonomous remediation.
 | CodeIntel connected but no source work happened. | Schema-2 handoffs require a scoped disposition and actual native query/raw index evidence; discovery alone is insufficient. Missing work is not a service failure. |
 | Local mutant hashes/generator survived but exact Git objects did not. | Export selected local commit objects into verified named Git bundle refs, with portable dependency receipts; retain export failures. |
 | Historical success was confused with work performed in a fresh attempt. | Freeze inputs per attempt, recover state from the live ticket, and keep current execution, historical input and observer recovery distinct. |
+| Machine claim catalogs were exact but difficult for component owners to review in context. | Land the same definition in adjacent `RULES.md` with an exact-shape table and reserved JSON block. Deterministic checks reject drift; unchanged legacy catalogs remain readable, while semantic amendments must add the companion. Hashes stay in receipts. |
 
 Claims remain developer-owned and portable. A test/lint/type fence constrains
 behavior; guidance explains intent. A valid owner amendment is not automatically
