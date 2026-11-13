@@ -11,6 +11,18 @@ from .verification import git
 from .lifecycle import integrate
 
 
+def _component_definitions_present(repo, revisions):
+    for revision in revisions:
+        for name in git(repo,'ls-tree','-r','--name-only',revision).decode().splitlines():
+            if name.rsplit('/',1)[-1]=='claims.json':
+                return True
+            if name.rsplit('/',1)[-1]=='RULES.md':
+                try: raw=git(repo,'show',revision+':'+name)
+                except subprocess.CalledProcessError: continue
+                if b'Grammar: `defensefactory/rules/v1`' in raw:return True
+    return False
+
+
 def _commit(repo, revision):
     require(isinstance(revision,str) and re.fullmatch('[a-f0-9]{40}',revision),'Full immutable commit required')
     require(git(repo,'rev-parse',revision+'^{commit}').decode().strip()==revision,'Commit unavailable')
@@ -64,8 +76,8 @@ def assess_merge(repo,case,actor,policy,plan,verification,observation,now=None,v
     if revision==plan['evaluation_revision']:pass
     elif revision==plan['head'] and cfg.get('reuse_mode')=='exact_tree' and cfg.get('revision_sensitive') is False and plan['merge_tree']==plan['candidate_tree']:reused=True
     else:reasons.append('merge_subject_requires_verification')
-    catalog_present=any(name.rsplit('/',1)[-1]=='claims.json' for ref in (plan['base'],plan['head'],plan['evaluation_revision']) for name in git(repo,'ls-tree','-r','--name-only',ref).decode().splitlines())
-    if catalog_present or cfg.get('component_claims_required') or execution.get('definition_source'):
+    definition_present=_component_definitions_present(repo,(plan['base'],plan['head'],plan['evaluation_revision']))
+    if definition_present or cfg.get('component_claims_required') or execution.get('definition_source'):
         valid_gate=(component_gate is not None and component_gate.get('change_gate_sha256')==identity({k:v for k,v in component_gate.items() if k!='change_gate_sha256'}) and component_gate.get('result')=='satisfied_within_scope' and component_gate.get('pr_blocked') is False and component_gate.get('base',{}).get('repository')==cfg['repository'] and component_gate.get('base',{}).get('revision')==plan['base'] and component_gate.get('subject',{}).get('revision')==revision and component_gate.get('subject',{}).get('repository')==cfg['repository'])
         if not valid_gate:reasons.append('component_claim_or_fence_gate_missing_stale_or_blocked')
     if execution.get('candidate')!=revision or verification.get('subject',{}).get('repository')!=cfg['repository']:reasons.append('verification_subject_mismatch')

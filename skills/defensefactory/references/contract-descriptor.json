@@ -1,0 +1,29 @@
+{
+  "schema": "defensefactory/contract/v1",
+  "id": "EXAMPLE-BOUNDARY-TEST",
+  "engine": "test",
+  "entrypoint": "example-boundary-check",
+  "claim": "EXAMPLE-COMPONENT-BOUNDARY",
+  "invariant": "CONTROL-BYPASS",
+  "applies_to": {
+    "languages": ["replace-with-project-language"]
+  },
+  "produces": "defensefactory/candidate/v1",
+  "coverage": {
+    "scope": "replace with the paths and behavior this contract actually observes",
+    "limitations": ["remove only after the owner has established actual coverage"]
+  },
+  "introduction": {
+    "repository": "replace-with-repository-identity",
+    "commit": "0000000000000000000000000000000000000000",
+    "path": "replace/with/original/control/path",
+    "selector": "replace-with-original-control-symbol-or-stable-selector"
+  },
+  "requires": {
+    "executables": [],
+    "network": false,
+    "runtime": false
+  },
+  "observation": "hard",
+  "mandatory": true
+}

@@ -31,6 +31,14 @@ def sync(check=False):
         if package.is_symlink() or not (package / 'SKILL.md').is_file():
             raise ValueError('Invalid stage package: ' + str(package))
         files(package)
+        stale = [path for root in ('scripts', 'references') for path in (package / root).rglob('*')
+                 if path.is_file() and '__pycache__' not in path.parts and path.suffix != '.pyc'
+                 and path.relative_to(package).as_posix() not in shared]
+        for path in stale:
+            if check:
+                drift.append(str(path.relative_to(ROOT)) + ' (stale shared resource)')
+            else:
+                path.unlink()
         for name, raw in shared.items():
             path = package / name
             if not path.exists() or path.read_bytes() != raw:

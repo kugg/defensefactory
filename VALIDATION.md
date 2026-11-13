@@ -2,14 +2,20 @@
 
 Validated on 2026-11-13. These are bounded checks of this experimental package.
 
-The component-rules update passes **69 offline tests** in this repository.
-Six focused checks require the developer-facing `RULES.md` block to match the
-adjacent machine catalog, retain unchanged legacy readability, block semantic
-legacy amendments until the companion lands, reject drift, keep packaged
-authoring templates identical and refuse to overwrite an unmanaged project rules file. The packaged Git/Go evaluation also
-passes with the synchronized definition pair through refactors, owner-reviewed
-amendments and component/repository moves. These checks do not install a native
-required check or prove live-agent adherence.
+The canonical component-rules update passes **78 offline tests** in this
+repository. Fifteen focused checks exercise the strict Markdown grammar,
+semantic/prose diffs, Unicode and hidden-content rejection, external descriptor
+validation, CUE/CodeQL/Semgrep/test/Markdown adapter behavior, candidate/evaluation
+separation, coverage-aware zero-finding semantics, unavailable engines, detached
+source mutation, native-owner change admission, legacy migration with preserved
+project guidance, and component/repository moves with available or unavailable
+introduction history. The disposable Git/Python `eval-rules.py` evaluation also
+passes: adequate zero-finding coverage satisfies its synthetic baseline, an
+unevaluated candidate stays inconclusive, a separately confirmed candidate
+violates the claim, and the exact-subject integration gate blocks it. These are
+mechanical helper checks; they do not install a native required check, authenticate
+review objects, isolate host processes/network, perform security evaluation, or
+prove live-agent adherence.
 
 The preceding fixture/runtime/readback update passed 63 offline tests.
 The preceding verification-path update passed 53. New checks use a real local Go

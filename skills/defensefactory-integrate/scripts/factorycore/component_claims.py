@@ -1,4 +1,7 @@
-"""Compact component-owned definitions; identities, observations and hashes live in receipts."""
+"""Legacy schema-2 compatibility for explicit migration inputs only.
+
+New component definitions use canonical RULES.md through rules_contracts.py.
+"""
 import copy
 import json
 import os

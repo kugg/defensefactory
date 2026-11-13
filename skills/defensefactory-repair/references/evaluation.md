@@ -9,7 +9,7 @@ Requirements: Python 3.12+, Git, Go 1.22+ already installed on PATH, and a POSIX
 host (Linux/macOS). Invoke from any directory, using the installed skill path:
 
 ```sh
-python3 /path/to/defensefactory/scripts/eval-fences.py --output /new/evaluation-directory
+python3 /path/to/defensefactory/scripts/eval-rules.py --output /new/evaluation-directory
 ```
 
 The output directory must not exist. Reusing it fails without overwriting old
@@ -19,13 +19,13 @@ No dependencies or toolchains are downloaded. No remote repository, ticket,
 installation, or lifecycle status is changed. A failed evaluation exits nonzero;
 keep its partial output for investigation and use a new directory for another run.
 
-Expected cases cover a correct control, harmless refactor, unconditional bypass,
-deny-all, removed test, claim amendment under an explicitly selected example
-owner-review policy, directory move, cross-repository transfer, and unavailable
-original history. The last case must remain inconclusive. See `summary.json`
-and the per-case receipts for observed results, logs and exact revisions. The
-authored component example has one claim definition represented by synchronized `claims.json` and `RULES.md`, with control introduction refs;
-computed identities and verdicts live in receipts. The policy fixture is not a
+Expected cases cover a correct control, prose-only change, unconditional bypass,
+candidate/evaluation separation and exact-subject integration blocking. See
+`summary.json` and the per-case receipts for observed results, logs and exact
+revisions. The
+authored component example has one canonical `RULES.md` plus external contract
+descriptors with control-introduction refs; computed candidates, evaluations,
+identities and verdicts live in receipts. The policy fixture is not a
 universal extra security approval requirement: developers own their claims under
 their normal repository policy.
 
