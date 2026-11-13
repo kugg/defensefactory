@@ -65,7 +65,7 @@ def run(operation, data):
     if operation=='source-export':return export_sources(data['repo'],data['revisions'],data['destination'],data.get('timeout_seconds',60))
     if operation=='codeintel-index-subject':return index_subject(data['subject'],data['manifests'],data['branch'],request_repository=data['request_repository'],job_active=data.get('job_active',False),warnings=data.get('warnings'),scip=data.get('scip'))
     if operation=='invocation-recovery':return recovery_receipt(data)
-    if operation=='assess-decisions':return decision_plan(data['decisions'],data.get('stage','repair'))
+    if operation=='assess-decisions':return decision_plan(data['decisions'],data.get('stage','repair'),data.get('authority_review'))
     if operation=='assess-impact':return impact_review(data['assertions'])
     if operation=='session-usage':return session_usage(data['path'],data['session_id'])
     if operation=='evidence-record':

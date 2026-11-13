@@ -64,9 +64,18 @@ EXAMPLES = {
                        'actor': 'REPLACE_ACTUAL_ACTOR'},
     'assess-eligibility': {'packet': {'case': 'REPLACE_TICKET', 'targets': [], 'evidence': []},
                            'policy': {'actors': {}, 'assessment_scopes': {}}, 'actor': 'REPLACE_ACTUAL_ACTOR'},
-    'assess-decisions': {'stage': 'repair', 'decisions': [{
+    'assess-decisions': {'stage': 'repair', 'authority_review': {
+        'ticket': 'REPLACE_TICKET', 'ticket_updated_at': '2025-01-01T00:00:00Z',
+        'retrieved_at': '2025-01-01T00:01:00Z', 'snapshot_reference': 'REPLACE_PERSISTED_TICKET_SNAPSHOT',
+        'surfaces': [
+            {'kind': kind, 'state': 'reviewed', 'reference': 'REPLACE_' + kind.upper() + '_RETRIEVAL'}
+            for kind in ('description', 'status', 'comments', 'documents', 'attachments', 'relations')],
+        'authority_records': []}, 'decisions': [{
         'id': 'behavior-choice', 'state': 'unresolved', 'blocks_stages': ['repair'],
         'owner': 'REPLACE_COMPONENT_OWNER', 'reference': 'REPLACE_REQUIREMENT_REFERENCE',
+        'authority_review': 'no_applicable_resolution',
+        'authority_rationale': 'REPLACE_WHY_NO_REVIEWED_OWNER_RECORD_RESOLVES_THIS_DECISION',
+        'applied_authority_references': [],
         'question': 'REPLACE_THE_SPECIFIC_BEHAVIOR_CHOICE',
         'alternatives': [{'choice': 'REPLACE_OPTION_A', 'consequence': 'REPLACE_CONSEQUENCE_A'},
                          {'choice': 'REPLACE_OPTION_B', 'consequence': 'REPLACE_CONSEQUENCE_B'}]}]},
