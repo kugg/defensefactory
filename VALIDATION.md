@@ -2,14 +2,15 @@
 
 Validated on 2026-11-13. These are bounded checks of this experimental package.
 
-The canonical component-rules update passes **78 offline tests** in this
-repository. Fifteen focused checks exercise the strict Markdown grammar,
+The canonical component-rules update plus JER-36 evaluator corrections passes
+**79 offline tests** in this repository. Sixteen focused checks exercise the strict Markdown grammar,
 semantic/prose diffs, Unicode and hidden-content rejection, external descriptor
 validation, CUE/CodeQL/Semgrep/test/Markdown adapter behavior, candidate/evaluation
 separation, coverage-aware zero-finding semantics, unavailable engines, detached
 source mutation, native-owner change admission, legacy migration with preserved
-project guidance, and component/repository moves with available or unavailable
-introduction history. The disposable Git/Python `eval-rules.py` evaluation also
+project guidance, component/repository moves with available or unavailable
+introduction history, explicit enforcement-downgrade reporting, and soft-only
+evidence that cannot admit a claim. The disposable Git/Python `eval-rules.py` evaluation also
 passes: adequate zero-finding coverage satisfies its synthetic baseline, an
 unevaluated candidate stays inconclusive, a separately confirmed candidate
 violates the claim, and the exact-subject integration gate blocks it. These are
