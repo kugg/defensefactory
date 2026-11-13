@@ -6,6 +6,7 @@ from .core import require
 EXAMPLES = {
     'source-export': {'repo':'/REPLACE/LOCAL/REPOSITORY','revisions':{'candidate':'REPLACE_FULL_COMMIT','variant':'REPLACE_FULL_COMMIT'},
         'destination':'/REPLACE/NEW/EVIDENCE/SOURCE_EXPORT','timeout_seconds':60},
+    'stage-rules-check': {'package':'/absolute/path/to/defensefactory-verify','profiles':[]},
     'stage-scope': {'case':'REPLACE_TICKET','attempt':'REPLACE_NEW_ATTEMPT','stage':'verify',
         'subject':{'repository':'REPLACE_REPOSITORY','revision':'REPLACE_FULL_COMMIT'},
         'performed_by':'REPLACE_ACTUAL_ACTOR','package':'/REPLACE/ACTUALLY/LOADED/defensefactory-verify',

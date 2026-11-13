@@ -138,3 +138,7 @@ for the tested scope and unresolved qualifications.
 
 Export standalone stage archives with `python3 scripts/package-skills.py --output
 /new/package-directory`. Every package includes the repository's MIT license.
+Each stage archive also carries the one inherited universal rule source under
+`dependencies/defensefactory/RULES.md`. Validate rules and skill conformance with
+`python3 <package>/scripts/stage-rules.py check <package>` before opening work;
+the opening receipt binds the exact effective digest and source-byte identities.
