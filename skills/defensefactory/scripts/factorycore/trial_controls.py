@@ -10,6 +10,7 @@ import re
 from .core import require, identity, sha
 from .execution_capture import capture
 from .check_results import qualify_execution
+from .stage_rules import discover_root_package, receipt_binding, validate_package_safe
 
 
 def now():
@@ -29,7 +30,7 @@ def scope_prepare(data):
     require(all(data.get(k) for k in ('case', 'attempt', 'subject', 'performed_by', 'authorization_reference', 'boundaries')), 'Actual case/stage scope and authority reference required')
     package = Path(data['package']).resolve()
     expected = 'defensefactory-' + stage
-    resources = ['SKILL.md', 'references/stage-contract.md', 'references/claim-evidence.md']
+    resources = ['SKILL.md', 'RULES.md', 'references/stage-contract.md', 'references/claim-evidence.md']
     if stage == 'verify':
         resources.append('references/verification-execution.md')
     if stage == 'maintain':
@@ -40,8 +41,18 @@ def scope_prepare(data):
         path = package / name
         require(path.is_file() and not path.is_symlink(), 'Required stage resource missing: ' + name)
         files[name] = sha(path.read_bytes())
+    profiles = data.get('rule_profiles', [])
+    require(isinstance(profiles, list), 'rule_profiles must be a list')
+    profile_paths = []
+    for value in profiles:
+        path = Path(value).resolve()
+        require(path.is_absolute() and str(path) == value and path.is_file() and not path.is_symlink(), 'Rule profiles need canonical regular-file paths')
+        profile_paths.append(path)
+    rules_validation = validate_package_safe(package, discover_root_package(package), profile_paths)
+    rules_binding = receipt_binding(rules_validation)
     scope = {key: data[key] for key in ('case', 'attempt', 'stage', 'subject', 'performed_by', 'authorization_reference', 'boundaries')}
-    scope.update(package=str(package), loaded_resource_sha256=files)
+    scope.update(package=str(package), loaded_resource_sha256=files, rule_profiles=[str(path) for path in profile_paths],
+                 stage_rules=rules_binding)
     if 'comparisons' in data:
         comparisons = data['comparisons']
         require(isinstance(comparisons, list) and len({c['id'] for c in comparisons}) == len(comparisons), 'Unique comparison subjects required')
@@ -61,6 +72,7 @@ def scope_prepare(data):
         scope['runtime_requirement'] = data['runtime_requirement']
     body = 'Factory stage scope — before execution\n\n```json\n' + json.dumps(scope, sort_keys=True, indent=2) + '\n```'
     return {'result': 'prepared', 'prepared_at': now(), 'scope': scope, 'scope_body': body,
+            'rules_validation': rules_validation,
             'scope_sha256': identity(scope), 'limitation': 'File correspondence, not proof of model comprehension or authenticated authority.'}
 
 
@@ -69,6 +81,7 @@ def stage_start(preparation, publication, retrieval):
     require(preparation['result'] == 'prepared' and preparation['scope_sha256'] == identity(scope), 'Changed scope preparation')
     rebuilt = scope_prepare(scope)
     require(rebuilt['scope'] == scope and rebuilt['scope_body'] == preparation['scope_body'], 'Required stage resources/body missing or changed')
+    require(rebuilt['rules_validation'] == preparation.get('rules_validation'), 'Effective stage rule receipt missing or changed')
     require(publication.get('id') and publication['id'] == retrieval.get('id'), 'Ticket scope resource differs')
     require(retrieval.get('operation') == 'retrieval', 'Separate connector readback required')
     require(publication.get('body') == retrieval.get('body') == preparation['scope_body'], 'Published/read-back scope body differs')
@@ -77,7 +90,7 @@ def stage_start(preparation, publication, retrieval):
     for name, digest in scope['loaded_resource_sha256'].items():
         require(sha((package / name).read_bytes()) == digest, 'Loaded stage resource changed')
     return {'result': 'recorded', 'stage_execution_permitted': True, 'opened_at': now(),
-            'scope': scope, 'scope_comment_id': publication['id'], 'preparation_sha256': identity(preparation),
+            'scope': scope, 'stage_rules': scope['stage_rules'], 'scope_comment_id': publication['id'], 'preparation_sha256': identity(preparation),
             'readback_sha256': identity(retrieval), 'acceptance': 'not_granted',
             'preparation': preparation, 'publication': publication, 'retrieval': retrieval,
             'limitation': 'Caller supplies connector records. This is not a protected identity or host-tool restriction.'}

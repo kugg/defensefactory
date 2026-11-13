@@ -6,8 +6,11 @@ import io
 import json
 from pathlib import Path
 import tarfile
+import sys
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'skills/defensefactory/scripts'))
+from factorycore.stage_rules import validate_package_safe
 
 
 def files(package):
@@ -49,11 +52,20 @@ def sync(check=False):
                     path.write_bytes(raw)
     if drift:
         raise ValueError('Shared resource drift: ' + ', '.join(drift))
+    invalid = []
+    for package in packages:
+        result = validate_package_safe(package, canonical)
+        if result.get('result') != 'satisfied':
+            invalid.append(package.name + ': ' + result.get('result', 'unknown') + ' ' + result.get('error', ''))
+    if invalid:
+        raise ValueError('Stage rule validation failed: ' + '; '.join(invalid))
     return packages
 
 
 def export(package, destination):
     payload = {p.relative_to(package).as_posix(): p.read_bytes() for p in files(package)}
+    if package.name != 'defensefactory':
+        payload['dependencies/defensefactory/RULES.md'] = (ROOT / 'skills/defensefactory/RULES.md').read_bytes()
     manifest = {name: hashlib.sha256(raw).hexdigest() for name, raw in payload.items()}
     payload['package-manifest.json'] = (json.dumps(manifest, indent=2, sort_keys=True) + '\n').encode()
     path = destination / (package.name + '.tar')

@@ -2,7 +2,7 @@
 
 Validated on 2026-11-13. These are bounded checks of this experimental package.
 
-The canonical component-rules update passes **78 offline tests** in this
+The canonical stage-rules update passes **93 offline tests** in this
 repository. Fifteen focused checks exercise the strict Markdown grammar,
 semantic/prose diffs, Unicode and hidden-content rejection, external descriptor
 validation, CUE/CodeQL/Semgrep/test/Markdown adapter behavior, candidate/evaluation
@@ -16,6 +16,18 @@ violates the claim, and the exact-subject integration gate blocks it. These are
 mechanical helper checks; they do not install a native required check, authenticate
 review objects, isolate host processes/network, perform security evaluation, or
 prove live-agent adherence.
+
+Fifteen stage-policy checks additionally exercise bounded satisfiability,
+overlapping-condition counterexamples, terminal/continue and read-only/write
+conflicts, unreachable postconditions, exception precedence and cycles,
+unsupported semantics, procedure-to-rule conformance, inheritance failures and
+exact effective-rule binding in stage openings. All nine source packages and
+their isolated standalone archives validate. The disposable
+`eval-stage-rules.py` run validated all nine packages, rejected a deliberately
+contradictory rule set and reproduced the independently computed effective-rule
+digest in a synthetic opening. This remains an offline compiler/helper result;
+it does not establish live-agent adherence, correctness of operator judgments or
+independent cyber evaluation.
 
 The preceding fixture/runtime/readback update passed 63 offline tests.
 The preceding verification-path update passed 53. New checks use a real local Go
