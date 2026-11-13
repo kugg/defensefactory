@@ -185,7 +185,7 @@ def evaluate(packet, policy, actor):
     if hypothetical:action='hold'
     if source_only and action in ('close','disqualify'):action='stop_source'
     if action in ('close','disqualify'):authorize(policy,actor,action,case)
-    plan=decision_plan(packet.get('repair_decisions',[]), 'repair')
+    plan=decision_plan(packet.get('repair_decisions',[]), 'repair', packet.get('authority_review'))
     repair_blockers=plan['blocking_decisions']
     result={'schema_version':2,'stage':'assess','case':case,'result':'inconclusive' if problems else 'recorded' if hypothetical else 'satisfied_within_scope',
             'disposition':action,'closure_permitted':action in ('close','disqualify'),'scope':required,'target_decisions':decisions,

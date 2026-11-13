@@ -17,7 +17,7 @@ The operator's `stage-scope` input can include:
     "reference": "existing ticket scope/authorization"
   }],
   "codeintel_requirement": {
-    "required": true,
+    "mode": "attempt_or_limitation",
     "reference": "governing exact-source verification requirement"
   }
 }
@@ -28,6 +28,18 @@ become part of the published/read-back opening. Source approval comes from the
 actual task/ticket; filling JSON does not create permission. If the source or
 comparison set changes, publish a new opening before its commands. The invoker
 and developers retain ordinary ownership of claims and policy.
+
+Use `attempt_or_limitation` when the obligation is to try native discovery,
+exact-subject index verification and scoped queries, while an honestly captured
+unavailable or limited capability is an acceptable result. Use
+`coverage_required` only when usable exact-source queries are themselves a gate;
+it cannot be satisfied by a limitation. Use `not_required` only under an explicit
+governing disposition. The legacy `required: true` form maps to strict
+`coverage_required`; do not use it to mean “attempt required.” In the handoff
+requirements, record `disposition: limited`, retained attempt event IDs and
+nonempty `coverage_limitations` when tools exist but search/index/SCIP coverage
+cannot support the claim. This qualifies the handoff record, not the missing
+semantic coverage.
 
 For baseline setup, `stage-exec.py --support --purpose ... -- DIRECT_ARGV` no
 longer requires an unrelated mutation declaration. For a comparison build/use,
