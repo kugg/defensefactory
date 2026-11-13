@@ -140,6 +140,17 @@ belong in receipts. Developers amend rules and contracts under normal repository
 policy. Legacy `claims.json` is only a migration input. See [component claims and
 contracts](skills/defensefactory/references/component-claims.md).
 
+Repair PRs use an architectural bug class rather than treating the triggering
+ticket in isolation. Current and historical findings are discovered as
+candidates, separately evaluated against the same claim/invariant and compatible
+boundary, and bound into a class repair contract before product edits. The exact
+merge subject then gets a proof row for every included variant plus the governing
+claim and hard fence. The PR and all included tickets are linked in both
+directions without changing historical lifecycle state. Similarity is never
+membership, and incomplete discovery or proof yields an inconclusive or
+member-only result rather than a class-wide claim. See [architectural bug
+classes](skills/defensefactory/references/bug-classes.md).
+
 Use CodeIntel against the exact indexed subject and report query/SCIP coverage
 limits. When formal checks apply, separate bounded model results from actual
 implementation conformance. Publish raw evidence and external bundle requirements

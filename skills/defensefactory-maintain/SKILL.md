@@ -31,6 +31,8 @@ Measure only declared experiment outcomes; retain failed/timed-out/unsupported r
 
 Follow the [component claim procedure](references/component-claims.md). On invocation, re-resolve descriptors and compare current engine/applicability coverage with retained receipts. Prefer blocking a PR with malformed rules, broken mandatory references, unevaluated candidates or missing/failing required hard contracts; for integrated drift, search for existing component/claim/contract corrective work, open/reuse the Linear finding and bounded repair PR under existing authority, and verify action readback. Missing provenance or engine coverage alone is inconclusive; do not invent a defect or start background automation.
 
+For an existing architectural class, follow the [bug-class procedure](references/bug-classes.md): repeat bounded current/historical discovery, preserve prior membership/evaluations, record new candidates or stale regression contracts, and route any proposed membership/class change through separate evaluation. Never rewrite earlier proof matrices to absorb a new variant.
+
 Use the [host release lifecycle](references/release-lifecycle.md) and its release-admit/rollout/confirm/maintain operations. Finish the authorized demo scope with actual evidence. Production isolation/platform/research criteria belong in linked future tickets; do not turn them into a new approval barrier. Treat developers and agents as normal component owners under existing repository policy.
 
 Before handing state to another stage, read [state, capture and replay](references/handoff-state.md). Save input snapshots, comparison recipes/results and artifact build/use bindings; archive the whole registered evidence inventory. The runner’s finalized postflight audit qualifies the worker’s prefix report. Local paths, console Booleans and remembered conclusions alone are incomplete handoff evidence.
@@ -50,11 +52,11 @@ For comparison builds, runtime probes and required CodeIntel work, use the [supp
     {
       "id": "maintenance-workflow",
       "section": "Defense Factory maintain",
-      "rules": ["DF-TICKET-CURRENT", "DF-SCOPE-BEFORE-WORK", "DF-EXACT-SUBJECT", "DF-RETAIN-EVIDENCE", "DF-PUBLISH-READBACK", "DF-TERMINAL-STOPS", "DF-NO-IMPLICIT-AUTHORITY", "MAINTAIN-REFRESH-EVIDENCE", "MAINTAIN-CORRECTIVE-WORK-AUTHORIZED"],
-      "actions": ["fetch_ticket", "publish_scope", "bind_subject", "retain_evidence", "publish_receipt", "readback_ticket", "stop_work", "refresh_evidence", "open_corrective_work"],
-      "evidence": ["ticket_snapshot", "opening_receipt", "subject_receipt", "execution_receipt", "publication_readback", "maintenance_receipt"]
+      "rules": ["DF-TICKET-CURRENT", "DF-SCOPE-BEFORE-WORK", "DF-EXACT-SUBJECT", "DF-RETAIN-EVIDENCE", "DF-PUBLISH-READBACK", "DF-TERMINAL-STOPS", "DF-NO-IMPLICIT-AUTHORITY", "MAINTAIN-BUGCLASS-VARIANTS", "MAINTAIN-REFRESH-EVIDENCE", "MAINTAIN-CORRECTIVE-WORK-AUTHORIZED"],
+      "actions": ["fetch_ticket", "publish_scope", "bind_subject", "retain_evidence", "publish_receipt", "readback_ticket", "stop_work", "discover_bugclass_variants", "refresh_evidence", "open_corrective_work"],
+      "evidence": ["ticket_snapshot", "opening_receipt", "subject_receipt", "execution_receipt", "publication_readback", "bugclass_discovery", "maintenance_receipt"]
     },
-    {"id": "maintenance-helpers", "section": "Execution and evidence helpers", "rules": ["DF-RETAIN-EVIDENCE", "MAINTAIN-REFRESH-EVIDENCE"], "actions": [], "evidence": []}
+    {"id": "maintenance-helpers", "section": "Execution and evidence helpers", "rules": ["DF-RETAIN-EVIDENCE", "MAINTAIN-BUGCLASS-VARIANTS", "MAINTAIN-REFRESH-EVIDENCE"], "actions": [], "evidence": []}
   ]
 }
 ```

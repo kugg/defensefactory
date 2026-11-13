@@ -16,15 +16,16 @@ profiles, digests, observations and outcomes live in receipts.
       "stage_state": ["opened", "active", "handoff", "terminal"],
       "disposition_class": ["none", "continue", "hold", "stop", "complete"],
       "authorization": ["absent", "present"],
-      "applicability": ["unknown", "active", "inactive"]
+      "applicability": ["unknown", "active", "inactive"],
+      "bugclass_state": ["unknown", "evaluated"]
     },
     "effects": {
       "facts": ["ticket_current", "scope_bound", "subject_exact", "evidence_retained", "handoff_readable", "eligibility_known", "candidate_bounded", "verification_complete", "integration_admitted", "artifact_identified", "deployment_observed", "maintenance_current"],
-      "actions": ["fetch_ticket", "publish_scope", "bind_subject", "execute_bounded_work", "retain_evidence", "publish_receipt", "readback_ticket", "stop_work", "select_stage", "register_finding", "preserve_original_evidence", "evaluate_eligibility", "assess_finding", "request_guidance", "edit_candidate", "create_draft_pr", "run_checks", "evaluate_candidate", "evaluate_merge", "merge_authorized", "build_artifact", "deploy_authorized", "rollback", "observe_deployment", "request_closure", "refresh_evidence", "open_corrective_work", "execute_without_scope", "discard_evidence", "infer_authority", "install_automation"],
-      "evidence": ["ticket_snapshot", "opening_receipt", "subject_receipt", "execution_receipt", "publication_readback", "intake_receipt", "assessment_receipt", "e2e_guidance", "repair_receipt", "draft_pr_reference", "verification_receipt", "candidate_evaluations", "integration_receipt", "artifact_receipt", "deployment_receipt", "confirmation_receipt", "maintenance_receipt"],
+      "actions": ["fetch_ticket", "publish_scope", "bind_subject", "execute_bounded_work", "retain_evidence", "publish_receipt", "readback_ticket", "stop_work", "select_stage", "register_finding", "preserve_original_evidence", "evaluate_eligibility", "assess_finding", "request_guidance", "discover_bugclass", "evaluate_bugclass_membership", "define_bugclass", "design_class_repair", "evaluate_bugclass", "link_bugclass", "discover_bugclass_variants", "edit_candidate", "create_draft_pr", "run_checks", "evaluate_candidate", "evaluate_merge", "merge_authorized", "build_artifact", "deploy_authorized", "rollback", "observe_deployment", "request_closure", "refresh_evidence", "open_corrective_work", "execute_without_scope", "discard_evidence", "infer_authority", "install_automation"],
+      "evidence": ["ticket_snapshot", "opening_receipt", "subject_receipt", "execution_receipt", "publication_readback", "intake_receipt", "assessment_receipt", "e2e_guidance", "bugclass_discovery", "bugclass_membership", "bugclass_definition", "bugclass_repair_contract", "bugclass_proof_matrix", "bugclass_verification", "bugclass_linkage_readback", "repair_receipt", "draft_pr_reference", "verification_receipt", "candidate_evaluations", "integration_receipt", "artifact_receipt", "deployment_receipt", "confirmation_receipt", "maintenance_receipt"],
       "transitions": ["continue", "hold", "stop", "handoff", "draft_pr", "merge", "deploy", "close"],
       "outcomes": ["continue", "hold", "stopped", "registered", "disqualified", "active_finding", "draft_pr", "verified", "integrated", "deployed", "confirmed", "maintained", "closed"],
-      "postconditions": ["ticket_current", "scope_bound", "exact_subject_bound", "evidence_retained", "handoff_readable", "eligibility_known", "candidate_bounded", "verification_complete", "integration_admitted", "artifact_identified", "deployment_observed", "maintenance_current"]
+      "postconditions": ["ticket_current", "scope_bound", "exact_subject_bound", "evidence_retained", "handoff_readable", "eligibility_known", "bugclass_evaluated", "candidate_bounded", "verification_complete", "integration_admitted", "artifact_identified", "deployment_observed", "maintenance_current"]
     },
     "terminal_outcomes": ["stopped", "disqualified", "draft_pr", "integrated", "deployed", "confirmed", "maintained", "closed"],
     "exclusive_outcome_groups": [["continue", "hold"], ["active_finding", "disqualified"]],
@@ -35,6 +36,7 @@ profiles, digests, observations and outcomes live in receipts.
       "evidence_retained": {"actions": ["retain_evidence"], "evidence": ["execution_receipt"]},
       "handoff_readable": {"actions": ["publish_receipt", "readback_ticket"], "evidence": ["publication_readback"]},
       "eligibility_known": {"actions": ["evaluate_eligibility"], "evidence": ["assessment_receipt"]},
+      "bugclass_evaluated": {"actions": ["discover_bugclass", "evaluate_bugclass_membership", "define_bugclass", "design_class_repair"], "evidence": ["bugclass_discovery", "bugclass_membership", "bugclass_definition", "bugclass_repair_contract"]},
       "candidate_bounded": {"actions": ["edit_candidate"], "evidence": ["repair_receipt"]},
       "verification_complete": {"actions": ["run_checks", "evaluate_candidate"], "evidence": ["verification_receipt", "candidate_evaluations"]},
       "integration_admitted": {"actions": ["evaluate_merge"], "evidence": ["integration_receipt"]},

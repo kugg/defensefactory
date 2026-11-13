@@ -31,6 +31,8 @@ Merge only when already authorized by the user and required gates pass. Otherwis
 
 Apply the [component claim change gate](references/component-claims.md): parse the actual merge subject's canonical `RULES.md`, resolve external contracts, compare the trusted base semantically, and apply the actual native repository review policy to semantic/binding amendments without adding a security-team approval layer. Require exact-subject status from adequate mandatory coverage and separate candidate evaluations. Allow prose-only edits and legitimate refactors with satisfied fences; definition deletion, broken references, confirmed violations, unevaluated candidates or a soft review cannot bypass required hard controls.
 
+When the PR claims an architectural class repair, use the [bug-class procedure](references/bug-classes.md). Require the exact merge-subject proof matrix, governing claim/hard-fence evaluation and bidirectional linkage readback. Apply project policy to `member_fix_only` and `class_inconclusive`; block an unsupported class-wide statement. The helper supplies evidence, not merge authority.
+
 Before handing state to another stage, read [state, capture and replay](references/handoff-state.md). Save input snapshots, comparison recipes/results and artifact build/use bindings; archive the whole registered evidence inventory. The runner’s finalized postflight audit qualifies the worker’s prefix report. Local paths, console Booleans and remembered conclusions alone are incomplete handoff evidence.
 
 ## Execution and evidence helpers
@@ -48,11 +50,11 @@ For comparison builds, runtime probes and required CodeIntel work, use the [supp
     {
       "id": "integration-workflow",
       "section": "Defense Factory integrate",
-      "rules": ["DF-TICKET-CURRENT", "DF-SCOPE-BEFORE-WORK", "DF-EXACT-SUBJECT", "DF-RETAIN-EVIDENCE", "DF-PUBLISH-READBACK", "DF-TERMINAL-STOPS", "DF-NO-IMPLICIT-AUTHORITY", "INTEGRATE-EVALUATE-SUBJECT", "INTEGRATE-MERGE-AUTHORIZED"],
-      "actions": ["fetch_ticket", "publish_scope", "bind_subject", "retain_evidence", "publish_receipt", "readback_ticket", "stop_work", "evaluate_merge", "merge_authorized"],
-      "evidence": ["ticket_snapshot", "opening_receipt", "subject_receipt", "execution_receipt", "publication_readback", "integration_receipt"]
+      "rules": ["DF-TICKET-CURRENT", "DF-SCOPE-BEFORE-WORK", "DF-EXACT-SUBJECT", "DF-RETAIN-EVIDENCE", "DF-PUBLISH-READBACK", "DF-TERMINAL-STOPS", "DF-NO-IMPLICIT-AUTHORITY", "INTEGRATE-EVALUATE-SUBJECT", "INTEGRATE-BUGCLASS-CLAIM", "INTEGRATE-MERGE-AUTHORIZED"],
+      "actions": ["fetch_ticket", "publish_scope", "bind_subject", "retain_evidence", "publish_receipt", "readback_ticket", "stop_work", "evaluate_merge", "evaluate_bugclass", "merge_authorized"],
+      "evidence": ["ticket_snapshot", "opening_receipt", "subject_receipt", "execution_receipt", "publication_readback", "integration_receipt", "bugclass_proof_matrix", "bugclass_verification"]
     },
-    {"id": "integration-helpers", "section": "Execution and evidence helpers", "rules": ["DF-RETAIN-EVIDENCE", "INTEGRATE-EVALUATE-SUBJECT"], "actions": [], "evidence": []}
+    {"id": "integration-helpers", "section": "Execution and evidence helpers", "rules": ["DF-RETAIN-EVIDENCE", "INTEGRATE-EVALUATE-SUBJECT", "INTEGRATE-BUGCLASS-CLAIM"], "actions": [], "evidence": []}
   ]
 }
 ```

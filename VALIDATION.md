@@ -2,7 +2,23 @@
 
 Validated on 2026-11-13. These are bounded checks of this experimental package.
 
-The environment-aware installer update passes **97 offline tests** in this
+The architectural bug-class update passes **106 offline tests** in this
+repository. Nine focused checks distinguish discovery candidates from evaluated
+membership; preserve current and historical ticket lifecycle; require compatible,
+evidence-backed class inclusion; bind repair design to primary, retry, fallback,
+alternate-constructor and configuration paths; require a deterministic hard fence
+and historical regression contract; evaluate every member at the exact PR merge
+subject; distinguish candidate output and model proposals from evaluation;
+preserve portable class identity across a repository move; prove legitimate
+behavior and other affected claims; produce conservative
+class-wide, member-only, inconclusive, violated and rejected outcomes; and
+reconcile partial PR/ticket linkage without overwriting receipts. These are
+synthetic helper checks. They do not search a live ticket corpus, judge a real
+bug-class boundary, mutate a PR or ticket, authenticate an evaluator, or prove
+live-agent adherence. A separate fresh evaluation ticket is required before the
+draft implementation is promoted.
+
+The preceding environment-aware installer update passed 97 offline tests in this
 repository. Fifteen focused checks exercise the strict Markdown grammar,
 semantic/prose diffs, Unicode and hidden-content rejection, external descriptor
 validation, CUE/CodeQL/Semgrep/test/Markdown adapter behavior, candidate/evaluation
