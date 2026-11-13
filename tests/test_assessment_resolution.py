@@ -8,6 +8,7 @@ sys.path.insert(0, str(ROOT / 'skills/defensefactory/scripts'))
 
 from factorycore.assessment_resolution import decision_plan
 from factorycore.core import GateError
+from factorycore.eligibility import fixed_decision_satisfaction
 
 
 class DecisionAuthorityTests(unittest.TestCase):
@@ -73,6 +74,26 @@ class DecisionAuthorityTests(unittest.TestCase):
         self.assertFalse(result['blocked'])
         self.assertEqual(result['resolved_decisions'][0]['decision_reference'],
                          'ticket-comment:owner-recovery-direction')
+
+    def test_already_fixed_cannot_contradict_recovery_owner_decision(self):
+        decision = self.unresolved()
+        decision.update(state='resolved', decision_reference='ticket-comment:owner-recovery-direction',
+                        choice='Require verified cleanup before reuse.')
+        decision.pop('authority_review'); decision.pop('authority_rationale')
+        plan = decision_plan([decision], authority_review=self.review([self.resolution()]))
+        ttl_only = {'decision_satisfaction': [{
+            'decision_id': 'recovery-safety', 'outcome': 'violated',
+            'evidence_reference': 'ticket-attachment:ttl-recovery-test',
+            'rationale': 'The observed test permits elapsed-time reuse without verified cleanup.',
+        }]}
+        with self.assertRaisesRegex(GateError, 'conflicts with a retained owner decision'):
+            fixed_decision_satisfaction(ttl_only, plan)
+        reconciled = {'decision_satisfaction': [{
+            'decision_id': 'recovery-safety', 'outcome': 'satisfied',
+            'evidence_reference': 'ticket-attachment:journal-reconciliation-test',
+            'rationale': 'The prior call is terminated and durable state reconciled before reuse.',
+        }]}
+        self.assertEqual(fixed_decision_satisfaction(reconciled, plan)[0]['outcome'], 'satisfied')
 
     def test_current_constraint_must_be_applied(self):
         constrained = self.unresolved()

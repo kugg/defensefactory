@@ -201,6 +201,16 @@ class BugClassTests(unittest.TestCase):
         self.assertEqual(subprocess.run(command, capture_output=True).returncode, 0)
         self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)
 
+    def test_bugclass_cli_generates_complete_non_overwriting_walk_templates(self):
+        temporary = tempfile.TemporaryDirectory(); self.addCleanup(temporary.cleanup); output = Path(temporary.name) / "walk"
+        command = [sys.executable, str(SCRIPTS / "bugclass.py"), "templates", "--output", str(output)]
+        self.assertEqual(subprocess.run(command, capture_output=True).returncode, 0)
+        self.assertEqual(len(list(output.glob("*-input.json"))), 9)
+        discovery = json.loads((output / "01-discover-input.json").read_text())
+        self.assertEqual(discovery["trigger"]["lifecycle"], "active")
+        self.assertEqual(discovery["tickets"][0]["lifecycle"], "completed")
+        self.assertNotEqual(subprocess.run(command, capture_output=True).returncode, 0)
+
     def test_bugclass_identity_is_portable_across_repository_moves(self):
         moved_trigger = copy.deepcopy(self.trigger)
         moved_trigger["url"] = "https://tickets.invalid/FIX-MOVED"

@@ -16,7 +16,7 @@ import subprocess
 import sys
 import tempfile
 
-from .installation import STAGES, install, validate as validate_runtime_profile
+from .installation import STAGES, install, package_files, validate as validate_runtime_profile
 from .stage_rules import validate_package_safe
 
 
@@ -32,6 +32,27 @@ def timestamp():
 
 def identity(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()
+
+
+def release_digest(path):
+    """Recompute the immutable-release identity from its current bytes."""
+    files = package_files(Path(path))
+    digests = {name: hashlib.sha256(raw).hexdigest() for name, raw in files.items()}
+    return hashlib.sha256(json.dumps(digests, sort_keys=True).encode()).hexdigest()
+
+
+def verify_installed_release(home):
+    """Bind evaluation/resume to the release recorded at installation time."""
+    home = Path(home)
+    profile = json.loads((home / "installed-profile.json").read_text())
+    ownership = json.loads((home / "ownership.json").read_text())
+    release = Path(ownership["release"]).resolve()
+    if str(release) != str(Path(profile["release"]).resolve()):
+        raise ValueError("Ownership and installed profile name different releases")
+    observed = release_digest(release)
+    if observed != profile["factory_release_digest"] or release.name != observed:
+        raise ValueError("Installed release bytes differ from the installed-profile digest; preserve and investigate")
+    return {"release": str(release), "factory_release_digest": observed}
 
 
 def _absolute(value, name):
@@ -245,7 +266,8 @@ def apply_install(spec, source, state_root, *, update=False):
 
 def deterministic_evaluation(home):
     home = Path(home); spec = validate_spec(json.loads((home / "profile.json").read_text())); ownership = json.loads((home / "ownership.json").read_text())
-    release = Path(ownership["release"]); results = []
+    verified_release = verify_installed_release(home)
+    release = Path(verified_release["release"]); results = []
     for stage in STAGES:
         receipt = validate_package_safe(release / stage, release / "defensefactory")
         results.append({"id": "stage_rules:" + stage, "result": receipt["result"], "receipt_sha256": receipt["receipt_sha256"]})
@@ -271,6 +293,7 @@ def deterministic_evaluation(home):
                         "stdout": {"path": str(stdout), "sha256": hashlib.sha256(stdout_bytes).hexdigest(), "bytes": len(stdout_bytes)},
                         "stderr": {"path": str(stderr), "sha256": hashlib.sha256(stderr_bytes).hexdigest(), "bytes": len(stderr_bytes)}})
     results.append({"id": "configuration_schema", "result": "satisfied", "profile_sha256": identity(spec)})
+    results.append({"id": "installed_release_digest", "result": "satisfied", **verified_release})
     credential_references = [spec["ticket"]["credential_reference"], spec["source_intelligence"]["credential_reference"], *spec["production"]["secret_references"]]
     results.append({"id": "credential_references", "result": "satisfied", "configured_reference_count": sum(bool(item) for item in credential_references),
                     "note": "Reference syntax was validated; secret values were not resolved or logged."})
@@ -281,7 +304,7 @@ def deterministic_evaluation(home):
         ("practice_isolation", spec["practice"]["kind"] == "source_only", "Runtime isolation needs a separately observed disposable environment."),
     ):
         results.append({"id": name, "result": "inconclusive" if configured else "not_configured", "note": note})
-    rules_ok = all(item["result"] == "satisfied" for item in results if item["id"].startswith("stage_rules:") or item["id"].endswith("_evaluator") or item["id"] in ("configuration_schema", "credential_references"))
+    rules_ok = all(item["result"] == "satisfied" for item in results if item["id"].startswith("stage_rules:") or item["id"].endswith("_evaluator") or item["id"] in ("configuration_schema", "credential_references", "installed_release_digest"))
     readiness = "practice_only" if rules_ok else "blocked"
     improvements = [{"capability": item["id"], "reason": item.get("note") or item.get("confidence_loss") or "qualification incomplete",
                      "proposal": "Qualify this capability in a separately authorized practice environment and attach its receipt.",

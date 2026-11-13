@@ -32,12 +32,15 @@ the ticket. The runner retains OpenCode JSON events, binds an optional local OTe
 log by digest, writes a privacy-preserving monitor report and keeps raw thinking
 local. Technical outcome, process adherence and readiness are separate fields.
 
-Resume never invents a missing external effect. Once ownership is committed it
-runs the next deterministic evaluation idempotently; if interruption occurred
-before ownership was committed, it preserves the failure and requires inspection
-plus a new installation ID. Uninstall removes only verified installer-owned
-links and retires its runtime configuration. Evidence, receipts and immutable
-release bytes remain recoverable.
+The profile's `paths.state_root` is authoritative for answer-file installs. An
+explicit `--state-root` must match it; lifecycle commands also reject a root that
+does not match the installed profile. Resume never invents a missing external
+effect. Once ownership is committed it recomputes the complete installed-release
+digest and refuses changed bytes before running the next deterministic evaluation;
+if interruption occurred before ownership was committed, it preserves the failure
+and requires inspection plus a new installation ID. Uninstall removes only
+verified installer-owned links and retires its runtime configuration. Evidence,
+receipts and immutable release bytes remain recoverable.
 
 Discovery records host/architecture/shell/timezone/disk and relevant tool
 versions. Git, an executable agent runner, deterministic helper runtime, durable
@@ -59,6 +62,13 @@ configuration. Skill semantics, `RULES.md`, helper behavior, repository policy,
 production deployment and authorization require a separately reviewed proposal
 and new version. A single successful practice run does not demonstrate reliable
 autonomy.
+
+The monitor's guarded/unguarded command classification is an audit heuristic,
+not a sandbox. It recognizes the canonical `stage-exec.py` and `stage.py
+stage-command` spellings in observed shell events. Renamed helpers, wrappers,
+aliases or non-shell tool calls can evade that classification and therefore need
+operator review; they do not become authorized merely because the monitor did not
+flag them.
 
 ## Legacy bounded runtime-profile helper
 

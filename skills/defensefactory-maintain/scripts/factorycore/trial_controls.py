@@ -52,6 +52,7 @@ def scope_prepare(data):
     rules_binding = receipt_binding(rules_validation)
     scope = {key: data[key] for key in ('case', 'attempt', 'stage', 'subject', 'performed_by', 'authorization_reference', 'boundaries')}
     scope.update(package=str(package), loaded_resource_sha256=files, rule_profiles=[str(path) for path in profile_paths],
+                 rule_profile_sha256={str(path): sha(path.read_bytes()) for path in profile_paths},
                  stage_rules=rules_binding)
     if 'comparisons' in data:
         comparisons = data['comparisons']

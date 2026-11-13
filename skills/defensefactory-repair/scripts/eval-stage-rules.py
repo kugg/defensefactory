@@ -19,6 +19,23 @@ def save(path, value):
     path.write_text(json.dumps(value, indent=2, sort_keys=True) + "\n")
 
 
+def save_human_summary(path, summary, validations, rejected, opening):
+    finding = next((item for item in rejected.get("findings", []) if item["kind"] == "required_forbidden_conflict"), {})
+    assignments = sorted({item["modeled_assignments"] for item in validations.values()})
+    lines = [
+        "# Stage-rule evaluation", "", f"Result: **{summary['result']}**", "",
+        f"- Packages validated: {len(validations)} ({', '.join(sorted(validations))})",
+        f"- Exhaustive assignments per package: {', '.join(map(str, assignments))}",
+        f"- Synthetic contradiction rejected: {summary['contradiction_rejected']}",
+        f"- Conflicting rules: {', '.join(finding.get('rule_ids', [])) or 'not recorded'}",
+        f"- Counterexample condition: `{json.dumps(finding.get('counterexample', {}), sort_keys=True)}`",
+        f"- Effective opening-rule digest: `{opening['stage_rules']['effective_rules_sha256']}`",
+        f"- Selected profile digests: `{json.dumps(opening['scope']['rule_profile_sha256'], sort_keys=True)}`",
+        "", "Limitations:", "", *["- " + item for item in summary["limitations"]], "",
+    ]
+    path.write_text("\n".join(lines))
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--skills", type=Path, default=HERE.parents[1])
@@ -82,6 +99,7 @@ def main():
         ],
     }
     save(args.output / "summary.json", summary)
+    save_human_summary(args.output / "summary.md", summary, validations, rejected, opening)
     print(json.dumps(summary, indent=2, sort_keys=True))
 
 

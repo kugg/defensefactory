@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "skills/defensefactory/scripts"
 sys.path.insert(0, str(SCRIPTS))
 from factorycore.environment_install import (SCHEMA, apply_install, deterministic_evaluation, discover,
-    plan, report, uninstall, validate_spec)
+    plan, report, uninstall, validate_spec, verify_installed_release)
 from factorycore.trial_monitor import qualify
 
 
@@ -58,6 +58,26 @@ class EnvironmentInstallTests(unittest.TestCase):
         self.assertEqual(marker.read_text(), "keep")
         self.assertTrue(Path(json.loads((home / "ownership.json").read_text())["release"]).is_dir())
         self.assertTrue((home / "receipts").is_dir())
+
+    def test_installed_release_drift_blocks_resume_evaluation(self):
+        installed = apply_install(self.spec, ROOT / "skills", self.root / "state")
+        home = Path(installed["home"])
+        release = Path(json.loads((home / "ownership.json").read_text())["release"])
+        self.assertEqual(verify_installed_release(home)["factory_release_digest"], release.name)
+        (release / "defensefactory/SKILL.md").write_text("changed after installation\n")
+        with self.assertRaisesRegex(ValueError, "release bytes differ"):
+            deterministic_evaluation(home)
+
+    def test_answer_profile_state_root_is_default_and_mismatch_is_rejected(self):
+        answers = self.root / "answers.json"; answers.write_text(json.dumps(self.spec))
+        command = [sys.executable, str(SCRIPTS / "install-defensefactory.py"), "--plan",
+                   "--answers", str(answers), "--noninteractive"]
+        planned = subprocess.run(command, capture_output=True, text=True)
+        self.assertEqual(planned.returncode, 0, planned.stderr)
+        self.assertIn(str(self.root / "state"), planned.stdout)
+        mismatched = subprocess.run(command + ["--state-root", str(self.root / "other-state")], capture_output=True, text=True)
+        self.assertNotEqual(mismatched.returncode, 0)
+        self.assertIn("differs from paths.state_root", mismatched.stderr)
 
     def test_monitor_reports_failures_without_copying_thinking_or_output(self):
         events = self.root / "events.jsonl"

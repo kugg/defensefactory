@@ -74,6 +74,27 @@ def inspect_component(repo, before, after, path):
             'limitation':'Git absence does not establish retirement of replacements or deployed releases.'}
 
 
+def fixed_decision_satisfaction(row, plan):
+    """Require an early fixed conclusion to reconcile every retained owner choice."""
+    resolved = {item['id']: item for item in plan['resolved_decisions']}
+    satisfaction = row.get('decision_satisfaction', [])
+    require(isinstance(satisfaction, list), 'Fixed decision satisfaction must be an array')
+    require(len({item.get('decision_id') for item in satisfaction}) == len(satisfaction),
+            'Duplicate fixed-decision satisfaction')
+    require({item.get('decision_id') for item in satisfaction} == set(resolved),
+            'Already-fixed disposition must evaluate every resolved owner decision')
+    for item in satisfaction:
+        require(set(item) == {'decision_id', 'outcome', 'evidence_reference', 'rationale'}
+                and item['outcome'] in ('satisfied', 'not_applicable', 'violated', 'unresolved')
+                and item['evidence_reference'] and item['rationale'],
+                'Decision satisfaction needs outcome, evidence and rationale')
+        require(not item['evidence_reference'].startswith('file://'),
+                'Decision satisfaction evidence must be shareable')
+        require(item['outcome'] in ('satisfied', 'not_applicable'),
+                'Already-fixed conclusion conflicts with a retained owner decision')
+    return satisfaction
+
+
 def evaluate(packet, policy, actor):
     """Validate evidence correspondence, not the truth of an external reviewer's judgment.
 
@@ -106,6 +127,7 @@ def evaluate(packet, policy, actor):
     allowed_background_roles=('reported_revision','comparison_revision','supported_release','deployed_artifact') if source_only else ('reported_revision','comparison_revision')
     require(all(r['id'] in {t['id'] for t in declared} or r.get('role') in allowed_background_roles for r in background), 'Target outside trusted scope')
     if not source_only:require({r['id'] for r in rows} <= {t['id'] for t in required}, 'Target outside trusted scope')
+    plan=decision_plan(packet.get('repair_decisions',[]), 'repair', packet.get('authority_review'))
     decisions=[]; problems=[];scope_questions=[]
     for target in required:
         row=next((r for r in rows if r['id']==target['id']),None)
@@ -157,6 +179,7 @@ def evaluate(packet, policy, actor):
             if reason=='retired':
                 require(any(r.get('retirement_authority') and r.get('support_decision')=='excluded_from_scope' and r.get('remaining_risk') for r in reviews), 'Deprecation label is not a retirement decision')
             if reason=='already_fixed':
+                satisfaction=fixed_decision_satisfaction(row,plan)
                 require(any(r.get('fix_reference') and r.get('source_analysis') for r in reviews), 'Current fix/source correspondence review missing')
                 checks=target.get('required_checks',[])
                 require(checks and {'security','positive_behavior','regression'} <= {c['kind'] for c in checks}, 'Fixed disposition requires security/positive/regression checks')
@@ -175,7 +198,9 @@ def evaluate(packet, policy, actor):
                     require(set(check['required_tests'])==set(protocol['execution'].get('required_tests',[])), 'Frozen assertion inventory differs')
                     qualified=qualify_execution(protocol,{'result':'satisfied_within_scope','log':log},target['subject'].get('revision') or identity(target['subject']))
                     require(qualified['result']=='satisfied_within_scope', 'Raw output does not establish named assertions: '+str(qualified.get('diagnostics')))
-            decisions.append({'id':target['id'],'reason':reason,'subject':target['subject'],'evidence':row['evidence']})
+            decision={'id':target['id'],'reason':reason,'subject':target['subject'],'evidence':row['evidence']}
+            if reason=='already_fixed':decision['decision_satisfaction']=satisfaction
+            decisions.append(decision)
         except (GateError,KeyError,subprocess.CalledProcessError) as error:
             problems.append({'target':target['id'],'problem':str(error)})
     active=[d for d in decisions if d['reason']=='active']
@@ -185,7 +210,6 @@ def evaluate(packet, policy, actor):
     if hypothetical:action='hold'
     if source_only and action in ('close','disqualify'):action='stop_source'
     if action in ('close','disqualify'):authorize(policy,actor,action,case)
-    plan=decision_plan(packet.get('repair_decisions',[]), 'repair', packet.get('authority_review'))
     repair_blockers=plan['blocking_decisions']
     result={'schema_version':2,'stage':'assess','case':case,'result':'inconclusive' if problems else 'recorded' if hypothetical else 'satisfied_within_scope',
             'disposition':action,'closure_permitted':action in ('close','disqualify'),'scope':required,'target_decisions':decisions,

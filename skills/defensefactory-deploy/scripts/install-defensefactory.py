@@ -99,6 +99,21 @@ def load_spec(path, installation_id, state_root, interactive_allowed):
     return interactive(installation_id, state_root)
 
 
+def state_for_spec(spec, requested):
+    """Use the profile state root by default and reject two-source ambiguity."""
+    profile_root = Path(spec["paths"]["state_root"]).resolve()
+    if requested is not None and requested.resolve() != profile_root:
+        raise ValueError("--state-root differs from paths.state_root in the environment profile")
+    return profile_root
+
+
+def verify_home_state(home, state):
+    profile = validate_spec(json.loads((home / "profile.json").read_text()))
+    if Path(profile["paths"]["state_root"]).resolve() != state.resolve():
+        raise ValueError("Selected state root differs from the installed profile")
+    return profile
+
+
 def practice_run(home, args):
     if not (args.practice_prompt and args.practice_project and args.practice_opening and args.practice_destination):
         raise ValueError("Practice evaluation needs --practice-prompt, --practice-project, --practice-opening and --practice-destination")
@@ -129,13 +144,15 @@ def main():
     parser.add_argument("--installation-id")
     parser.add_argument("--answers", type=Path, help="Complete nonsecret environment profile JSON")
     parser.add_argument("--source", type=Path, default=source_default())
-    parser.add_argument("--state-root", type=Path, default=default_state())
+    parser.add_argument("--state-root", type=Path, help="Installation state root; profile value is authoritative for --answers")
     parser.add_argument("--noninteractive", action="store_true")
     parser.add_argument("--practice-prompt", type=Path)
     parser.add_argument("--practice-project", type=Path)
     parser.add_argument("--practice-opening", type=Path)
     parser.add_argument("--practice-destination", type=Path)
-    args = parser.parse_args(); state = args.state_root.expanduser().resolve()
+    args = parser.parse_args()
+    requested_state = args.state_root.expanduser().resolve() if args.state_root else None
+    state = requested_state or default_state().expanduser().resolve()
     try:
         identifier = args.resume or args.installation_id
         home = state / identifier if identifier else None
@@ -143,24 +160,30 @@ def main():
             spec = validate_spec(json.loads(args.answers.read_text())) if args.answers else None
             result = discover(spec)
         elif args.plan:
-            spec = load_spec(args.answers, identifier, state, not args.noninteractive); result = plan(spec, args.source, state)
+            spec = load_spec(args.answers, identifier, state, not args.noninteractive)
+            state = state_for_spec(spec, requested_state); result = plan(spec, args.source, state)
         elif args.install:
-            spec = load_spec(args.answers, identifier, state, not args.noninteractive); result = apply_install(spec, args.source, state)
+            spec = load_spec(args.answers, identifier, state, not args.noninteractive)
+            state = state_for_spec(spec, requested_state); result = apply_install(spec, args.source, state)
         elif args.resume:
             if not home.is_dir(): raise ValueError("Unknown installation ID")
             if not (home / "ownership.json").is_file(): raise ValueError("Interrupted before ownership was committed; inspect preserved failure receipt and use a new installation ID")
+            verify_home_state(home, state)
             result = deterministic_evaluation(home)
         elif args.evaluate:
             if not home or not home.is_dir(): raise ValueError("--installation-id must name an installed profile")
+            verify_home_state(home, state)
             result = deterministic_evaluation(home)
             if args.practice_prompt or args.practice_project or args.practice_opening or args.practice_destination:
                 result["practice_evaluation"] = practice_run(home, args)
                 result["process_qualification"] = "see practice invocation monitor receipt"
         elif args.report:
             if not home or not home.is_dir(): raise ValueError("--installation-id must name an installed profile")
+            verify_home_state(home, state)
             result = report(home)
         else:
             if not home or not home.is_dir(): raise ValueError("--installation-id must name an installed profile")
+            verify_home_state(home, state)
             result = uninstall(home)
         print(json.dumps(result, indent=2, sort_keys=True))
         blocked = result.get("result") == "blocked" or result.get("readiness") == "blocked" or result.get("installation_readiness") == "blocked"

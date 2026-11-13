@@ -4,6 +4,7 @@ from __future__ import annotations
 import copy
 import itertools
 import json
+import math
 from pathlib import Path
 import re
 
@@ -15,6 +16,7 @@ RULES_END = "<!-- defensefactory-stage-rules:end -->"
 MAP_START = "<!-- defensefactory-procedure-map:start -->"
 MAP_END = "<!-- defensefactory-procedure-map:end -->"
 VALIDATOR = "defensefactory-stage-rules/1"
+MAX_MODELED_ASSIGNMENTS = 4096
 EFFECTS = ("facts", "actions", "evidence", "transitions", "outcomes", "postconditions")
 STRENGTHS = ("must", "must_not", "should", "may")
 TERMINAL = ("terminal", "nonterminal", "either")
@@ -206,6 +208,12 @@ def validate_effective(stage: str, documents: list[dict], procedure: dict | None
     for cycle in override_cycles: findings.append(_finding("override_cycle", cycle, {}, [], "Remove the cyclic override chain."))
 
     condition_keys = sorted(vocabulary["conditions"])
+    assignment_count = math.prod(len(vocabulary["conditions"][key]) for key in condition_keys)
+    if assignment_count > MAX_MODELED_ASSIGNMENTS:
+        raise UnsupportedSemantics(
+            f"Condition product {assignment_count} exceeds exhaustive ceiling {MAX_MODELED_ASSIGNMENTS}; "
+            "split the profile or add reviewed semantics before validation"
+        )
     assignments = [dict(zip(condition_keys, values)) for values in itertools.product(*(vocabulary["conditions"][key] for key in condition_keys))]
     satisfiable = {(state, disposition): False for state in vocabulary["conditions"].get("stage_state", []) for disposition in vocabulary["conditions"].get("disposition_class", [])}
     for assignment in assignments:
@@ -270,7 +278,8 @@ def validate_effective(stage: str, documents: list[dict], procedure: dict | None
                "source_bindings": [{"path": item["source"], "sha256": item["source_sha256"]} for item in documents],
                "findings": findings, "conformance": conformance,
                "modeled_assignments": len(assignments), "satisfiable_state_classes": sum(satisfiable.values()),
-               "state_classes": len(satisfiable)}
+               "state_classes": len(satisfiable), "assignment_ceiling": MAX_MODELED_ASSIGNMENTS,
+               "assignment_strategy": "complete_cartesian_product_without_pruning"}
     receipt["receipt_sha256"] = identity(receipt); return receipt
 
 

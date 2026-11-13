@@ -59,12 +59,37 @@ python3 <skill>/scripts/bugclass.py ticket-links --input links.json --output NEW
 python3 <skill>/scripts/bugclass.py readback --input readback.json --output NEW/link-readback.json
 ```
 
+Start a concrete nine-step walk with one current and one historical ticket using:
+
+```sh
+python3 <skill>/scripts/bugclass.py templates --output NEW/walk-inputs
+```
+
+The command writes nine literal JSON inputs named in execution order. The first
+contains both ticket lifecycles; later files use `receipt_file` links to the exact
+prior output names. Replace every `__REPLACE__`, complete empty decision/proof
+arrays from retained evidence, and use a fresh output path for each command. The
+readback input is intentionally completed last: copy the actual effect keys and
+PR-section content digest from the generated linkage plan and native readback,
+never predict them. This makes the example a safe walk rather than a set of
+unbound snippets.
+
 Use `{"receipt_file":"relative/or/absolute.json"}` anywhere a previously saved
 receipt is expected. Paths are resolved relative to the current input file. The
 CLI refuses to overwrite outputs so discovery, candidate, membership, repair,
 execution, evaluation and linkage generations cannot collapse into memory-only
 state. Ticket and evidence references must be shareable; `file://` references are
 rejected.
+
+`lineage` is empty when the component has not moved. Each nonempty entry should
+identify the prior repository and component, the move/split/rename relationship,
+and a shareable evidence reference; lineage explains portability and never adds
+members by itself. `coverage_expectations` names the path families that must be
+considered (at minimum primary, retry, fallback, alternate-constructor and
+configuration), the legitimate behavior that must remain, the hard fence expected
+to cover them, and any known boundary that remains outside the class. It is not a
+promise that a scanner has complete coverage: the proof matrix still records
+per-member limitations.
 
 Technical outcomes are:
 

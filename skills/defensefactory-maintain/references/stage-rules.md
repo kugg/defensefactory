@@ -27,9 +27,13 @@ The validator checks schema and bounded semantics, inherited rule identity,
 condition overlap, required-versus-forbidden effects, terminal/continue and
 read-only/write conflicts, unreachable postconditions, exception precedence,
 override cycles and mutually exclusive outcomes. It exhaustively enumerates the
-declared finite condition vocabulary. A conflict receipt contains the rule IDs,
-overlapping assignment, effects and a remediation hint. Unsupported semantics
-are `inconclusive`; violations and inconclusive results both block publication.
+declared finite condition vocabulary without pruning. The Cartesian product is
+limited to 4,096 assignments; a larger profile is `inconclusive` and must be
+split into reviewed profiles or supplied with new reviewed validator semantics.
+This ceiling bounds runtime without silently dropping combinations. A conflict
+receipt contains the rule IDs, overlapping assignment, effects and a remediation
+hint. Unsupported semantics are `inconclusive`; violations and inconclusive
+results both block publication.
 
 The delimited procedure map in `SKILL.md` maps every H1/H2 procedure section to
 stable rules and to the actions/evidence it produces. The checker rejects
@@ -43,6 +47,9 @@ the validation-receipt digest. The full deterministic validation receipt remains
 inside the preparation record. `stage-start` rebuilds both from the current
 files, and refuses changed, missing or non-satisfied rules before permitting case
 work. Rule-file hashes belong in these receipts, not in authored policy prose.
+The opening also lists every selected profile path and its byte digest explicitly,
+including an empty map when no profile was selected, so reviewers need not infer
+profile identity from the effective-rule digest.
 
 Changing only explanatory Markdown changes the source binding but not the
 effective semantic digest. Changing a compiled rule changes both. Preserve old

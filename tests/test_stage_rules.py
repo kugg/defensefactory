@@ -3,6 +3,7 @@ import copy
 import json
 from pathlib import Path
 import shutil
+import subprocess
 import tempfile
 import unittest
 
@@ -10,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 import sys
 sys.path.insert(0, str(ROOT / "skills/defensefactory/scripts"))
 from factorycore.stage_rules import (MAP_END, MAP_START, RULES_END, RULES_START, UnsupportedSemantics,
-    parse_rule_file, validate_effective, validate_package_safe)
+    MAX_MODELED_ASSIGNMENTS, parse_rule_file, validate_effective, validate_package_safe)
 from factorycore.trial_controls import scope_prepare, stage_start
 
 
@@ -91,6 +92,11 @@ class StageRuleTests(unittest.TestCase):
         rule = self.rule("FIXTURE-UNKNOWN", when={"arbitrary_expression": "true"})
         with self.assertRaises(UnsupportedSemantics): self.validate(rule)
 
+    def test_exhaustive_condition_product_has_a_fail_closed_ceiling(self):
+        self.root_doc["vocabulary"]["conditions"]["oversized"] = [str(i) for i in range(MAX_MODELED_ASSIGNMENTS + 1)]
+        with self.assertRaisesRegex(UnsupportedSemantics, "exceeds exhaustive ceiling"):
+            self.validate()
+
     def test_minimal_counterexamples_are_stable(self):
         left = self.rule("FIXTURE-REQUIRE", requires={"actions": ["edit_candidate"]})
         right = self.rule("FIXTURE-FORBID", forbids={"actions": ["edit_candidate"]})
@@ -136,6 +142,16 @@ class StageRuleTests(unittest.TestCase):
                 result = validate_package_safe(package, ROOT / "skills/defensefactory")
                 self.assertEqual(result["result"], "satisfied", result)
 
+    def test_offline_evaluator_writes_human_counterexample_summary(self):
+        temporary = tempfile.TemporaryDirectory(); self.addCleanup(temporary.cleanup)
+        output = Path(temporary.name) / "stage-rule-eval"
+        completed = subprocess.run([sys.executable, str(ROOT / "skills/defensefactory/scripts/eval-stage-rules.py"),
+                                    "--skills", str(ROOT / "skills"), "--output", str(output)], capture_output=True, text=True)
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        summary = (output / "summary.md").read_text()
+        self.assertIn("Counterexample condition", summary)
+        self.assertIn("Selected profile digests", summary)
+
     def test_stage_opening_binds_and_revalidates_exact_effective_rules(self):
         package = (ROOT / "skills/defensefactory-verify").resolve()
         preparation = scope_prepare({"case": "FIXTURE-1", "attempt": "rules", "stage": "verify",
@@ -144,6 +160,7 @@ class StageRuleTests(unittest.TestCase):
             "boundaries": "offline fixture", "package": str(package)})
         independent = validate_package_safe(package, ROOT / "skills/defensefactory")
         self.assertEqual(preparation["scope"]["stage_rules"]["effective_rules_sha256"], independent["effective_rules_sha256"])
+        self.assertEqual(preparation["scope"]["rule_profile_sha256"], {})
         publication = {"id": "fixture-comment", "body": preparation["scope_body"], "createdAt": preparation["prepared_at"]}
         opening = stage_start(preparation, publication, {**publication, "operation": "retrieval", "retrieved_at": preparation["prepared_at"]})
         self.assertEqual(opening["stage_rules"], preparation["scope"]["stage_rules"])

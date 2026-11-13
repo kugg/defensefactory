@@ -57,6 +57,9 @@ profile. Identical reinstallation is a no-op. Explicit `--update` backs up chang
 settings and replaces only its own managed links; old releases remain. For an
 existing manually installed or frozen factory, choose a separate directory ending
 in `skills/` to preserve it. Global OpenCode JSON/JSONC is not rewritten.
+Answer-file installs use the profile's state root and reject a conflicting CLI
+root. Evaluation and resume recompute the installed release digest before using
+it, so a changed release is preserved as a failure rather than silently trusted.
 
 The legacy `scripts/install-factory.py` remains a bounded runtime-profile helper;
 new users should use `install-defensefactory`. Evaluate an installed profile with
@@ -150,6 +153,9 @@ directions without changing historical lifecycle state. Similarity is never
 membership, and incomplete discovery or proof yields an inconclusive or
 member-only result rather than a class-wide claim. See [architectural bug
 classes](skills/defensefactory/references/bug-classes.md).
+Generate a non-overwriting, receipt-linked input walk for all nine bug-class
+commands with `python3 skills/defensefactory/scripts/bugclass.py templates
+--output /new/walk-directory`.
 
 Use CodeIntel against the exact indexed subject and report query/SCIP coverage
 limits. When formal checks apply, separate bounded model results from actual
@@ -162,6 +168,7 @@ executions, including failures, against the published inventory.
 ```sh
 python3 -m unittest discover -s tests -v
 python3 skills/defensefactory/scripts/eval-rules.py --output /tmp/factory-rules-eval-new
+python3 skills/defensefactory/scripts/eval-stage-rules.py --skills skills --output /tmp/factory-stage-rules-eval-new
 ```
 
 The evaluation runs disposable Git/Go fixtures for bypass, deny-all, missing

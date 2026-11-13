@@ -1,8 +1,11 @@
 # Validation scope
 
-Validated on 2026-11-13. These are bounded checks of this experimental package.
+Validated on 2026-11-14. These are bounded checks of this experimental package.
+The consolidated release candidate passes 122 offline tests plus both disposable
+rule evaluators. No ticket, model, external service or cyber evaluation is inferred
+from these factory-only checks.
 
-The architectural bug-class update adds nine focused checks that distinguish
+The architectural bug-class update adds ten focused checks that distinguish
 discovery candidates from evaluated
 membership; preserve current and historical ticket lifecycle; require compatible,
 evidence-backed class inclusion; bind repair design to primary, retry, fallback,
@@ -12,7 +15,8 @@ subject; distinguish candidate output and model proposals from evaluation;
 preserve portable class identity across a repository move; prove legitimate
 behavior and other affected claims; produce conservative
 class-wide, member-only, inconclusive, violated and rejected outcomes; and
-reconcile partial PR/ticket linkage without overwriting receipts. These are
+reconcile partial PR/ticket linkage without overwriting receipts, and generate a
+complete non-overwriting nine-step input walk. These are
 synthetic helper checks. They do not search a live ticket corpus, judge a real
 bug-class boundary, mutate a PR or ticket, authenticate an evaluator, or prove
 live-agent adherence.
@@ -35,11 +39,13 @@ mechanical helper checks; they do not install a native required check, authentic
 review objects, isolate host processes/network, perform security evaluation, or
 prove live-agent adherence.
 
-Fifteen stage-policy checks additionally exercise bounded satisfiability,
+Seventeen stage-policy checks additionally exercise bounded satisfiability,
 overlapping-condition counterexamples, terminal/continue and read-only/write
 conflicts, unreachable postconditions, exception precedence and cycles,
 unsupported semantics, procedure-to-rule conformance, inheritance failures and
-exact effective-rule binding in stage openings. All nine source packages and
+exact effective-rule binding in stage openings, a fail-closed 4,096-assignment
+ceiling, explicit profile digests and a human-readable counterexample summary.
+All nine source packages and
 their isolated standalone archives validate. The disposable
 `eval-stage-rules.py` run validated all nine packages, rejected a deliberately
 contradictory rule set and reproduced the independently computed effective-rule
@@ -47,12 +53,13 @@ digest in a synthetic opening. This remains an offline compiler/helper result;
 it does not establish live-agent adherence, correctness of operator judgments or
 independent cyber evaluation.
 
-Four focused environment tests additionally cover mutation-free discovery and
+Six focused environment tests additionally cover mutation-free discovery and
 planning, mandatory versus recommended/replaceable capability dispositions,
 strict credential-reference and safe-practice validation, immutable installation,
 repeatable deterministic evaluation, append-only receipts, readiness reporting,
 verified uninstall with evidence/release preservation, and privacy-preserving
-event monitoring. The monitor detects an unguarded command, guarded command,
+event monitoring. They also reject a CLI/profile state-root mismatch and changed
+installed release bytes before resume evaluation. The monitor detects an unguarded command, guarded command,
 DNS failure and truncation without copying raw reasoning or command output. The
 installed evaluation runs both bundled disposable rules evaluators and validates
 all nine stage packages. Service authentication, real CodeIntel coverage, OTel
