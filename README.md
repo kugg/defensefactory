@@ -9,24 +9,42 @@ enforced agent isolation, independent acceptance or demonstrated reliable
 end-to-end autonomy. Human review is required. No scheduler, CI, branch
 protection, credential store or production deployment is installed.
 
-## Install for OpenCode
+## Qualify and install for OpenCode
 
-Use Python 3.12+ and an installed OpenCode executable. Git is needed for source
+Use Python 3.10+ and an installed OpenCode executable. Git is needed for source
 operations; the bundled synthetic evaluation also needs Go 1.22+. Project
 toolchains and test environments come from the ticket.
 
 ```sh
 git clone https://github.com/kugg/defensefactory.git
 cd defensefactory
-python3 scripts/install-factory.py
+./scripts/install-defensefactory --check
+./scripts/install-defensefactory --plan --installation-id my-practice
+./scripts/install-defensefactory --install --installation-id my-practice
 ```
 
-The installer asks for the preferred provisioned `provider/model`, Linear
-project, complete Linear/CodeIntel MCP URLs, a separate optional indexing API URL,
-credential environment-variable name/header, transport, GitHub repository hint, launcher
-and local paths. It never asks for or stores credential values. Authenticate
-providers and native MCP connections separately. An OTel wrapper/collector is an
-optional host capability; selecting a wrapper does not provision telemetry.
+This environment-aware installer is the supported onboarding entry point. The
+first command is read-only host discovery. Plan mode asks separately where safe
+practice may run and where production use is intended, but changes nothing.
+Install mode refuses missing mandatory capabilities, writes a versioned nonsecret
+profile and immutable release, and preserves unrelated OpenCode configuration.
+Use `--answers skills/defensefactory/references/environment-profile.example.json
+--noninteractive` after replacing every placeholder for deterministic setup.
+
+The installer distinguishes mandatory contracts from recommended/replaceable
+confidence services. It asks for the preferred model, Linear project,
+CodeIntel or an exact-revision equivalent, OTel settings, private evidence path,
+practice isolation and a separately reviewed production plan. TLA+/TLC,
+CodeIntel, Python, container runtimes and other product names are capabilities,
+not universal policy: missing optional layers report the confidence lost. The
+small shell bootstrap explains the Python requirement; an equivalent installer
+may satisfy the same documented contract.
+
+It never asks for or stores credential values. Use `env:NAME`, `op://…` or
+`keychain://…` references. Authenticate providers and native connections
+separately. Practice defaults prohibit production credentials and real provider
+calls. Supplying a production target records intent only; installation grants no
+merge, deploy, lifecycle or production authority.
 
 The optional CodeIntel tools-only stdio bridge supports POST-only deployments;
 direct remote transport is also available. Workspace keys normally use
@@ -40,8 +58,15 @@ settings and replaces only its own managed links; old releases remain. For an
 existing manually installed or frozen factory, choose a separate directory ending
 in `skills/` to preserve it. Global OpenCode JSON/JSONC is not rewritten.
 
-Unattended setup accepts `--yes --model PROVIDER/MODEL --linear-project PROJECT`
-and the options shown by `--help`. See the complete
+The legacy `scripts/install-factory.py` remains a bounded runtime-profile helper;
+new users should use `install-defensefactory`. Evaluate an installed profile with
+`--evaluate --installation-id ID`, resume an interrupted post-install evaluation
+with `--resume ID`, inspect it with `--report`, and retire only installer-owned
+links/settings with `--uninstall-profile`. Evidence, receipts and immutable
+release bytes are preserved. A live practice evaluation additionally requires an
+explicit prompt, project, ticket-backed opening and new destination.
+
+See the complete
 [installation procedure](skills/defensefactory/references/installation.md).
 
 ## Start a manual trial

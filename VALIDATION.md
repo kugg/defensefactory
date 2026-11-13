@@ -2,7 +2,7 @@
 
 Validated on 2026-11-13. These are bounded checks of this experimental package.
 
-The canonical stage-rules update passes **93 offline tests** in this
+The environment-aware installer update passes **97 offline tests** in this
 repository. Fifteen focused checks exercise the strict Markdown grammar,
 semantic/prose diffs, Unicode and hidden-content rejection, external descriptor
 validation, CUE/CodeQL/Semgrep/test/Markdown adapter behavior, candidate/evaluation
@@ -28,6 +28,18 @@ contradictory rule set and reproduced the independently computed effective-rule
 digest in a synthetic opening. This remains an offline compiler/helper result;
 it does not establish live-agent adherence, correctness of operator judgments or
 independent cyber evaluation.
+
+Four focused environment tests additionally cover mutation-free discovery and
+planning, mandatory versus recommended/replaceable capability dispositions,
+strict credential-reference and safe-practice validation, immutable installation,
+repeatable deterministic evaluation, append-only receipts, readiness reporting,
+verified uninstall with evidence/release preservation, and privacy-preserving
+event monitoring. The monitor detects an unguarded command, guarded command,
+DNS failure and truncation without copying raw reasoning or command output. The
+installed evaluation runs both bundled disposable rules evaluators and validates
+all nine stage packages. Service authentication, real CodeIntel coverage, OTel
+receiver health, container isolation and a live OpenCode/ticket trial remain
+explicitly inconclusive until the separate environment evaluation is performed.
 
 The preceding fixture/runtime/readback update passed 63 offline tests.
 The preceding verification-path update passed 53. New checks use a real local Go

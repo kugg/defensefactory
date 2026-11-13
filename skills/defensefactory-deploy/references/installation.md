@@ -1,4 +1,66 @@
-# Install and configure the factory for OpenCode
+# Discover, qualify and install the factory for OpenCode
+
+The supported new-user entry point is:
+
+```sh
+./scripts/install-defensefactory --check
+./scripts/install-defensefactory --plan --installation-id <new-id>
+./scripts/install-defensefactory --install --installation-id <new-id>
+```
+
+`--check` is read-only discovery. `--plan` gathers practice and production
+answers separately and prints exact intended local mutations. `--install`
+refuses a blocked plan, installs an immutable release and writes append-only
+receipts. For unattended use, copy
+[the profile example](environment-profile.example.json), replace every
+placeholder, then pass `--answers FILE --noninteractive`.
+
+Other lifecycle modes are:
+
+```sh
+./scripts/install-defensefactory --evaluate --installation-id <id>
+./scripts/install-defensefactory --resume <id>
+./scripts/install-defensefactory --report --installation-id <id>
+./scripts/install-defensefactory --uninstall-profile --installation-id <id>
+```
+
+Deterministic evaluation validates all installed rule/skill packages without
+service calls. A monitored practice run is optional and needs all four explicit
+arguments: `--practice-prompt`, `--practice-project`, `--practice-opening` and a
+new `--practice-destination`. The opening must already be published/read back in
+the ticket. The runner retains OpenCode JSON events, binds an optional local OTel
+log by digest, writes a privacy-preserving monitor report and keeps raw thinking
+local. Technical outcome, process adherence and readiness are separate fields.
+
+Resume never invents a missing external effect. Once ownership is committed it
+runs the next deterministic evaluation idempotently; if interruption occurred
+before ownership was committed, it preserves the failure and requires inspection
+plus a new installation ID. Uninstall removes only verified installer-owned
+links and retires its runtime configuration. Evidence, receipts and immutable
+release bytes remain recoverable.
+
+Discovery records host/architecture/shell/timezone/disk and relevant tool
+versions. Git, an executable agent runner, deterministic helper runtime, durable
+ticket project, writable private evidence and a declared practice boundary are
+mandatory. Containers, formal/property tools, source intelligence, OTel, PR
+integration, secret managers and project toolchains are recommended or
+replaceable layers. A configured endpoint is not a qualified service: Linear
+read/write, CodeIntel exact-ref/coverage, OTel receiver health and runtime
+isolation remain inconclusive until an authorized practice observation exists.
+
+The practice profile captures repositories, network destinations, credential
+class, cleanup, resource limits, runtime evidence and deployment-test authority.
+It hard-refuses real provider calls and production credentials. The production
+section captures intended hosts, repositories, branch/deployment policy,
+operators, reviewers, secret references and governance, but grants no authority.
+
+Environment improvements may change only reversible installer-owned nonsecret
+configuration. Skill semantics, `RULES.md`, helper behavior, repository policy,
+production deployment and authorization require a separately reviewed proposal
+and new version. A single successful practice run does not demonstrate reliable
+autonomy.
+
+## Legacy bounded runtime-profile helper
 
 From the source checkout, run `python3 scripts/install-factory.py`. From a release,
 unpack all nine stage archives into one directory, then run

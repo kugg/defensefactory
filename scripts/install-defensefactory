@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "Defense Factory needs a Python 3.10+ interpreter for the bundled installer." >&2
+  echo "Supply Python through your package manager or run an equivalent installer that satisfies skills/defensefactory/references/installation.md." >&2
+  exit 2
+fi
+exec python3 "$(dirname "$0")/install-defensefactory.py" "$@"
