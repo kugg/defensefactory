@@ -63,8 +63,19 @@ def scope_prepare(data):
             require(c['subject'] != scope['subject'], 'Comparison must name its actual differing subject')
         scope['comparisons'] = comparisons
     if 'codeintel_requirement' in data:
-        policy = data['codeintel_requirement']
-        require(type(policy.get('required')) is bool and policy.get('reference'), 'CodeIntel scope requirement needs a boolean and governing reference')
+        policy = dict(data['codeintel_requirement'])
+        mode = policy.get('mode')
+        if mode is None:
+            require(type(policy.get('required')) is bool,
+                    'Legacy CodeIntel scope requirement needs a required boolean')
+            mode = 'coverage_required' if policy['required'] else 'not_required'
+            policy['mode'] = mode
+        require(mode in ('attempt_or_limitation', 'coverage_required', 'not_required') and policy.get('reference'),
+                'CodeIntel scope requirement needs an explicit mode and governing reference')
+        if 'required' in policy:
+            require(type(policy['required']) is bool and
+                    policy['required'] == (mode == 'coverage_required'),
+                    'Legacy CodeIntel required boolean conflicts with the explicit mode')
         scope['codeintel_requirement'] = policy
     if 'runtime_requirement' in data:
         from .runtime_plan import validate_requirement

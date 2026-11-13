@@ -271,8 +271,12 @@ def verify_inventory(inv, read_file, check_saved=True, depth=0):
     if inv.get('schema_version',1) >= 2:
         from .codeintel_gate import check as check_codeintel
         scoped = inv.get('opening',{}).get('scope',{}).get('codeintel_requirement',{})
-        if scoped.get('required') and requirements.get('codeintel',{}).get('disposition') != 'required':
+        mode = scoped.get('mode') or ('coverage_required' if scoped.get('required') else 'not_required')
+        disposition = requirements.get('codeintel',{}).get('disposition')
+        if mode == 'coverage_required' and disposition != 'required':
             problems.append('Required CodeIntel work from the published scope was downgraded/skipped')
+        if mode == 'attempt_or_limitation' and disposition not in ('required', 'limited', 'unavailable'):
+            problems.append('Required CodeIntel attempt from the published scope was skipped')
         problems.extend(check_codeintel(requirements.get('codeintel'),observations or {},
             [(f['path'],v) for f,v in values],read_file,inv.get('opening',{}).get('scope',{}).get('subject')))
         from .runtime_plan import outcomes, scoped_coverage

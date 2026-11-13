@@ -122,8 +122,10 @@ Store ticket-derived `handoff-requirements.json` under the evidence root:
 }
 ```
 
-For a scope requiring CodeIntel, use its required evidence form from
-[supported verification](supported-verification.md), not the not-needed example.
+For a scope requiring CodeIntel, use the matching `required`, `limited` or
+`unavailable` evidence form from [supported verification](supported-verification.md),
+not the not-needed example. An `attempt_or_limitation` opening may finish with a
+retained limitation; a `coverage_required` opening may not.
 New inventories require a CodeIntel disposition and replay declared runtime plans.
 Select required checks from the real stage scope; empty inventories grant no
 test coverage. Save a reason for obligations outside scope. Then run the actual
