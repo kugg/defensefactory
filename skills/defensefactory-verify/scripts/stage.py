@@ -41,6 +41,7 @@ from factorycore.codeintel_gate import index_observation
 from factorycore.source_export import export_sources
 from factorycore.rules_contracts import (claim_status as rules_status,evaluate_candidate as rules_evaluate,
     parse_rules,resolve_contracts,rules_change_gate,run_contracts,semantic_diff as rules_diff,semantic_model,transitional_compare)
+from factorycore.stage_rules import discover_root_package,validate_package_safe
 
 
 def run(operation, data):
@@ -51,6 +52,9 @@ def run(operation, data):
         require(isinstance(data.get(name),dict), 'Supply '+name+' as an object or '+name+'_file as its saved JSON path')
         return data[name]
     if operation=='stage-scope':return scope_prepare(data)
+    if operation=='stage-rules-check':
+        package=Path(data['package']).resolve();root=Path(data['root']).resolve() if data.get('root') else discover_root_package(package)
+        return validate_package_safe(package,root,data.get('profiles',[]))
     if operation=='stage-start':return stage_start(data['preparation'],data['publication'],data['retrieval'])
     if operation=='stage-command':return stage_command(data['opening'],data['specification'],data['evidence_directory'],data.get('challenge'))
     if operation=='mutation-plan':return mutation_plan(data['plan'])
