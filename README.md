@@ -104,14 +104,16 @@ defaults. Host preferences supply discovery hints, not ticket state or authority
 
 ## Claims and evidence
 
-Keep one component-owned claim definition: machine-readable `claims.json` plus
-an exact developer-facing mirror in adjacent `RULES.md` (the repository root can
-itself be the component). Claims name bug classes, preserved behavior and
-hard/soft fences. Controls retain their introduction Git references across
-moves. The bundled helper creates/checks the reserved mirror and integration
-blocks drift. Computed hashes and execution verdicts belong in generated
-receipts. Developers may amend claims under normal repository policy; this is
-not a security-team veto mechanism. See [component claims](skills/defensefactory/references/component-claims.md).
+Keep one concise component-owned `RULES.md` as the sole authored claim and
+boundary source (the repository root can itself be the component). It references
+developer-owned invariant contracts implemented with the repository's useful
+tests, types, CUE, CodeQL, Semgrep/OpenGrep, AST analyzers, runtime assertions or
+formal tools. Checker output is a candidate until separately evaluated. Claim
+state depends on declared coverage, not finding count. Controls retain their
+introduction Git references across moves; computed hashes and execution verdicts
+belong in receipts. Developers amend rules and contracts under normal repository
+policy. Legacy `claims.json` is only a migration input. See [component claims and
+contracts](skills/defensefactory/references/component-claims.md).
 
 Use CodeIntel against the exact indexed subject and report query/SCIP coverage
 limits. When formal checks apply, separate bounded model results from actual
@@ -123,7 +125,7 @@ executions, including failures, against the published inventory.
 
 ```sh
 python3 -m unittest discover -s tests -v
-python3 skills/defensefactory/scripts/eval-fences.py --output /tmp/factory-eval-new
+python3 skills/defensefactory/scripts/eval-rules.py --output /tmp/factory-rules-eval-new
 ```
 
 The evaluation runs disposable Git/Go fixtures for bypass, deny-all, missing

@@ -39,6 +39,8 @@ from factorycore.trial_controls import scope_prepare,stage_start,stage_command,m
 from factorycore.runtime_plan import declare as declare_runtime, outcomes as runtime_outcomes
 from factorycore.codeintel_gate import index_observation
 from factorycore.source_export import export_sources
+from factorycore.rules_contracts import (claim_status as rules_status,evaluate_candidate as rules_evaluate,
+    parse_rules,resolve_contracts,rules_change_gate,run_contracts,semantic_diff as rules_diff,semantic_model,transitional_compare)
 
 
 def run(operation, data):
@@ -93,7 +95,19 @@ def run(operation, data):
     if operation=='release-rollout':return record_rollout(data['release'],data.get('current',{}),data['event'],data.get('rollback_release'))
     if operation=='release-confirm':return confirm_release(data['release'],data['rollout'],data['observations'],data['now'],data['max_age'])
     if operation=='release-maintain':return maintain_release(data['release'],data['rollout'],data['current'],data['records'],data.get('exceptions',[]),data.get('counterexamples',[]),data['now'],data.get('existing_actions'))
-    if operation=='component-claims':return catalog_receipt(data['repo'],data['repository'],data['revision'],data.get('paths'),data.get('origins'))
+    if operation=='component-claims':
+        require(data.get('legacy_migration') is True,'component-claims is legacy schema-2 migration compatibility; canonical components use claim-rules-check/claim-contracts')
+        return catalog_receipt(data['repo'],data['repository'],data['revision'],data.get('paths'),data.get('origins'))
+    if operation=='claim-rules-check':
+        model=parse_rules(Path(data['rules_file']).read_bytes());result={'result':'valid','model':semantic_model(model)}
+        if data.get('legacy_file'):result['legacy']=transitional_compare(json.loads(Path(data['legacy_file']).read_text()),model)
+        return result
+    if operation=='claim-rules-diff':return rules_diff(Path(data['base_file']).read_bytes(),Path(data['candidate_file']).read_bytes())
+    if operation=='claim-contracts':return resolve_contracts(data['repo'],data['subject'],data['rules_path'])
+    if operation=='claim-contract-run':return run_contracts(data['repo'],data['subject'],data['rules_path'],data['destination'],data.get('contracts'),data.get('trusted_checks'),data.get('contexts'),data.get('max_seconds',300))
+    if operation=='claim-candidate-evaluate':return rules_evaluate(data['candidate'],data['disposition'],data['evaluator'],data['evidence'],data['explanation'],data.get('coverage_limitations',[]),data['next_action'],data.get('duplicate_of'))
+    if operation=='claim-rules-status':return rules_status(parse_rules(Path(data['rules_file']).read_bytes()),data['run'],data.get('evaluations',[]))
+    if operation=='claim-rules-change-gate':return rules_change_gate(data['repo'],data['repository'],data['base'],data['subject'],data['statuses'],data['policy'],data.get('reviews',[]))
     if operation=='bug-class-map':return map_bug_classes(data['receipt'],data['bug_classes'])
     if operation=='fence-execute':return execute_fences(data['repo'],data['receipt'],data['checks'],data['expected_checks_sha256'],data['evaluator_manifest'],data.get('max_seconds',120))
     if operation=='fence-health':return fence_health(data['receipt'],data['execution'])

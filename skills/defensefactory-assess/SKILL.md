@@ -31,6 +31,8 @@ First determine whether the finding still applies using the [early disposition p
 
 Separate reporter assertions, assessed effects and conditional attack chains with `assess-impact` and `finding.impact_assertions`. Establish or dispute the premise using bounded evidence and a safe reproduction when authorized. Retain counterevidence and the original requirements. Classify an occurrence, variant, new property or unresolved relationship using versioned claim identity; name similarity alone is insufficient. Compare a local repair with shared enforcement, including bypasses, migration, exceptions and cost evidence.
 
+When the owning component has canonical `RULES.md`, parse it and resolve applicable contract descriptors at the exact subject. Run only available, authorized adapters; retain raw checker output and normalized candidates without treating them as confirmed violations. Publish missing engine, index, language or runtime coverage as `inconclusive`. Candidate evaluation is a separate durable record.
+
 Publish a Mermaid exposure graph whose readable labels explain actor → entry point → trust assumption → sensitive operation. Distinguish source-supported, observed, proposed and unresolved edges and attach the editable graph. Explain local/remote reachability, required privileges or pivots, timing, interaction and configuration assumptions in plain language. Assess attack complexity separately from impact and preserve uncertainty in priority.
 
 ## End-to-end testing guidance

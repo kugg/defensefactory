@@ -1,44 +1,101 @@
-# Component-owned claims and first-class fences
+# Component-owned architectural claims and invariant contracts
 
-Adopted user amendment: keep one machine-readable `claims.json` and one adjacent developer-facing `RULES.md` at the owning component root. Several small claims may live there; do not turn a component into one catch-all assertion. A repository-root pair is appropriate when the repository is the component or the property is genuinely repository-wide. Start at the deployable component's root; split a child definition only when an independently owned enforcement boundary warrants it. Do not create a central copy of the definitions. Discovery is a generated scan or optional path-only index.
+`RULES.md` at the owning component root is the sole authored source for that
+component's boundaries and claims. Developers and agents amend it through the
+repository's normal review and ownership policy. It is not a security-team lock
+file. A repository-root file is appropriate when the repository is itself the
+component; split a child file only at a real independently owned boundary.
 
-`RULES.md` is where the claim definition lands for developer and agent review. Its reserved `defensefactory-claims` JSON block must exactly mirror `claims.json`, and its exact-shape table explains every required object. This is one definition with two synchronized representations, not two authorities: use `scripts/claim-rules.py --write` to create/update the reserved block and `--check` before review. The helper refuses to overwrite an existing project `RULES.md` that has not adopted the reserved block. Existing unchanged schema-2 catalogs without the companion remain readable as `missing_legacy`; the first semantic claim, bug-class, fence or component move must add the synchronized `RULES.md`. Integration blocks drift, deletion or a changed claim without its companion.
+The file uses the deliberately small `defensefactory/rules/v1` Markdown grammar.
+It records stable component, claim and invariant IDs; concise boundaries;
+preserved behavior; referenced contracts; and fence policy. The parser builds a
+versioned Markdown AST. Unknown normative headings, malformed identities,
+hidden normative content and broken references fail closed. Ordinary explanatory
+prose outside claim sections is preserved and excluded from semantic diffs.
 
-A claim states a portable property and the legitimate behavior it preserves. A bug class names a recurring failure mechanism; mappings are many-to-many and do not establish coverage. A fence identifies the deterministic check that enforces/detects a violation. QA tests, lint rules and types are hard fences. Agent instructions and review policies are soft fences explaining intention; they complement hard controls. Keep each claim, fence and bug-class definition at one canonical owning location. Other components reference stable IDs and retrieve the owning catalog; unresolved dependencies remain unresolved. Retain IDs across directory/repository moves.
+Start from [component-RULES.md](component-RULES.md). Check and inspect it with:
 
-The portable package includes references/component-claims.json as a compact machine shape and references/component-RULES.md as the companion review template; fill actual source identities rather than committing placeholders. Use schema 2 with five top-level fields: `schema_version`, `component`, `claims`, `fences`, `bug_classes`. Each claim has `id`, `statement`, `preserves`, `bug_classes`, `fences`. Each class has `id`, `definition` and optional CWE reference. Each fence has `id`, `kind`, `mechanism`, `controls` and (for hard fences) `check`. Each control identifies component-relative `path`, stable `selector` and `introduced: {repository, ref, path}`. An optional introduction `selector` preserves the original symbol after a reviewed control rename. The introduction path is relative to the original repository, and ref is its full Git commit. When relocating a definition pair, verify that native ownership and required-check scopes cover the new paths; propose any needed policy change explicitly rather than silently losing protection. Code ownership comes from the project's existing native CODEOWNERS/owner policy, not a second owner roster copied into every definition.
+```text
+python3 <skill>/scripts/claim-rules.py check <component>/RULES.md
+python3 <skill>/scripts/claim-rules.py extract <component>/RULES.md
+python3 <skill>/scripts/claim-rules.py semantic-diff --repo <repo> --path <component>/RULES.md --base <full-ref> --candidate <full-ref>
+```
 
-Do not put computed content hashes, PASS verdicts, model output, ticket journals or duplicated evaluator definitions in these authored files. Git history versions the definition. Receipts contain resolved Git subjects, definition/control/evaluator hashes, review observations, actual commands, named tests, results and limitations. Checks and formal models may be referenced through ticket resources; they are not repeated per claim. Old schema-1 contracts/receipts remain historical compatible inputs, not the template for new definitions. The generated legacy execution adapter is a receipt, never a new authored claim file.
+## Contracts are developer-owned observation mechanisms
 
-Introduction provenance is separate from present health. The helper checks the selector text at the historical file and that it was not inherited at the same path from a parent. This is bounded Git/text evidence, not semantic proof or rename-history inference. Missing original history after a repository move means unavailable evidence, not a missing current control; retrieve the original source through authorized capabilities. An introduction commit need not be an ancestor in the destination repository. Preserve source bundles/receipts if history may be pruned or squashed. For a newly added control, commit the control first and cite that commit in the catalog commit within the same PR; do not construct a self-referential commit ID. Atomicity here is the component definition/PR, not one self-referencing Git commit.
+Each contract reference resolves to a strict JSON descriptor shaped like
+[contract-descriptor.json](contract-descriptor.json). The descriptor binds a
+stable contract ID to one claim and invariant, its engine and entry point,
+applicability, actual coverage and limitations, immutable control-introduction
+provenance, runtime/tool needs, hard/soft observation kind and mandatory policy.
+It contains no computed hashes, pass verdicts, model output or ticket journal.
 
-## Stage responsibilities
+Supported adapter classes are `cue`, `codeql`, `semgrep`, `opengrep`, `test`,
+`type`, `lint`, `ast`, `runtime`, `formal` and `markdown-example`. CUE validates
+structured configuration or extracted facts; it does not parse arbitrary source
+without an extractor. CodeQL, pattern engines and language-specific analyzers
+produce candidates. Tests, types and linters can be hard fences. Markdown
+examples are always optional soft observations. Component descriptors may name
+requirements but cannot grant network access or choose arbitrary process
+commands; test and custom-adapter commands come from the trusted run input.
 
-| Stage | Responsibility |
+Use `claim-rules.py contracts` to resolve descriptors at an exact Git commit and
+`claim-rules.py run` to execute available adapters in a detached source archive.
+Every raw output is retained beside `contract-run.json`; observations normalize
+to `defensefactory/candidate/v1` with exact subject, source location, coverage and
+raw-result reference. Missing engines and incomplete coverage are
+`inconclusive`, never zero findings.
+
+## Candidates, evaluations and claim state
+
+A candidate is a possible invariant violation, not a verdict. Save it unchanged.
+An evaluator produces a separate `defensefactory/evaluation/v1` record with its
+identity/version, evidence, explanation, limitations, next action and one of:
+
+* `confirmed_violation`;
+* `rejected_false_positive`;
+* `inconclusive`;
+* `duplicate`;
+* `not_applicable`.
+
+`claim-rules.py status` computes state from the exact run, declared mandatory
+coverage and separate evaluations. Zero candidates satisfy a claim only within
+adequate declared coverage. Missing engines, partial coverage or unevaluated
+candidates remain inconclusive. Confirmed mandatory violations apply the
+component's fence policy. A soft fence is never represented as hard proof.
+
+Receipts hold exact source/rules/descriptor blobs, resolved Git subjects, engine
+versions, raw outputs, evaluations, hashes and limitations. Share them through
+the ticket handoff; local paths alone are not durable evidence.
+
+## Stage use
+
+| Stage | Use |
 | --- | --- |
-| Intake / assessment | Find the owning component, map the bug class to canonical claims/fences, establish current applicability, and specify missing or inadequate fences. New class/property proposals require evidence and owner judgment. |
-| Repair | Implement the control and its hard fence, preserve positive behavior, then update `claims.json` and its synchronized `RULES.md` block with real introduction provenance. Keep soft intention beside the component. |
-| Verification | Recover the catalog and trusted evaluator receipts. Execute named tests/lint/type checks against the exact source; evaluate mutations and legitimate behavior. A file existing or an Oplane PASS is not enforcement proof. |
-| Integration | Compare definitions from the trusted base, run affected fences, and apply the normal repository review policy to property, class-map or fence-definition amendments. Do not freeze all production-file bytes or block every legitimate claim edit. |
-| Deployment / confirmation | Carry claim/fence IDs and source/receipt references into artifact/configuration correspondence; source fence success does not establish runtime behavior. |
-| Maintenance | On invocation, detect missing/failing/unverified required fences and deduplicate corrective Linear work by component/claim/fence. Prefer blocking a proposed PR; for already integrated drift, open/reuse a corrective finding and bounded repair PR under existing authority. Publish action/readback receipts. No scheduler is implied. |
+| Assessment | Parse the owning rules, run applicable contracts, retain candidates, and identify missing coverage without treating raw findings as confirmed. |
+| Repair | Preserve claim meaning unless an owner-reviewed amendment is required; implement the control and a hard contract/fence for the invalidating invariant. |
+| Verification | Resolve and run mandatory contracts against the exact candidate, evaluate candidates separately, and exercise preserved behavior. |
+| Integration | Compare the actual base and merge subject semantically, require valid references/coverage, and apply the repository's native review plus declared claim policy. |
+| Maintenance | Re-run explicitly, detect stale contracts or changed coverage, and open/reuse corrective work without rewriting historical receipts. |
 
-## Change admission
+## Legacy migration
 
-Ordinary production changes pass when definitions are unchanged and relevant hard fences still pass; no digest refresh is required in code. JSON formatting and unordered-reference ordering are not semantic changes. A changed component identity or native owner scope follows normal repository ownership policy. Developers and agents own definition edits as normal component code. Use the repository's existing contribution/CODEOWNERS policy; no separate security-team approval is introduced. Set definition_review_required only when that actual native policy requires a specific owner review, binding it to the current base/head and changed requirements. When native policy requires owner review, resolve `component_owners` from native ownership for every affected component; a repository-wide `owners` list is appropriate only for an actual repository-wide owner. An unrelated component owner cannot approve the amendment. Approval cannot override missing or failing mandatory fences. A deliberate retirement/transfer additionally needs an explicit owner-authorized scope decision; deleting the catalog cannot disable the gate. Changes to evaluator inputs require their own governing review and refreshed receipt. An author recomputing a hash is not approval.
+`claims.json` is a legacy input, not a second current authority.
 
-Generated component execution contracts carry both definition paths into verification. Integration detects the reserved `claims.json` in base, head or preview source even if report metadata was omitted; deleting either definition representation cannot disable this requirement. Integration and renewed merge intents require the matching current `claim-change-gate` receipt for those contracts (or when policy explicitly requires it); the helper cannot silently skip fence admission.
+* Legacy only: read it, generate a proposed `RULES.md` plus descriptors with
+  explicit owner-review limitations, and do not delete the source automatically.
+* Transitional pair: compare the semantics legacy schema 2 could express. Block
+  divergence. Remove `claims.json` only in an explicit reviewed migration.
+* RULES-only: use `RULES.md`; reintroducing `claims.json` is duplicate authored
+  state and must not become authoritative.
 
-`claim-change-gate` blocks the manual pipeline with a nonzero result for unresolved amendments or fence health. It does not install a GitHub required check, authenticate a caller's review object or mutate Linear/GitHub. Read approval from native trusted owner/repository controls, not the candidate's assertion that it is approved. Platform-enforced blocking requires an existing authorized required-check integration and owner protection. Do not create CI, CODEOWNERS or branch rules merely by invoking this skill. Same-repository tests can be altered; protected inputs/owner review remain separate from behavioral detectability.
+Run:
 
-## Executable interface
+```text
+python3 <skill>/scripts/claim-rules.py migrate <component>/claims.json <component>/RULES.md --component-type <type> --owner @owner --descriptors <component>/contracts
+```
 
-* `component-claims`: generate a receipt from exact Git source, discovering `claims.json` or explicit catalog paths; `origins` maps authorized original repository IDs to retrieved checkouts for provenance.
-* `claim-rules.py --write|--check`: create/update only the reserved block in adjacent `RULES.md`, or verify that it exactly matches `claims.json`. Its emitted digest is evidence output, never authored policy.
-* `bug-class-map`: return mapped candidate claims/fences and unknown classes. No model label creates a new class or closes a finding.
-* `fence-execute`: execute the supplied trusted check plan in a fresh Git archive. Its expected check-plan digest and frozen evaluator manifest come from receipts, never authored catalogs. Hard QA fences require named tests; lint/type commands require explicit success criteria. No sandbox/independent identity is inferred.
-* `fence-health`: combine current control/provenance observations with exact-subject check receipts. Soft-only, missing history, skipped/empty tests and unexecuted controls cannot earn enforcement coverage.
-* `claim-change-gate`: compare base/head definitions and health using trusted owner review/retirement evidence. Directory moves preserve identities and do not duplicate definitions.
-* `component-contract`: generate an obligation-preserving compatibility view for existing contract/verification operations. `claim-registry` and candidate retrieval also accept schema-2 catalogs. Generated digests remain in this view/receipt.
-
-All receipts are ticket resources with byte/readback validation. Keep schema and stage prose here; store project commands, real control-introduction commits, owners and retirement decisions in case/product resources.
+The migration is intentionally reported as `proposed_incomplete` until owners
+replace inferred boundaries, establish descriptor coverage and reconcile paths.
+Stable IDs and repository-qualified introduction provenance survive component or
+repository moves; unavailable history remains an explicit limitation.

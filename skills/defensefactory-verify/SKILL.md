@@ -31,7 +31,7 @@ Challenge relevant control-removal, trust-bypass, deny-all and downgrade mutatio
 
 Return obligation-level satisfied-within-scope, violated, inconclusive, stale or unsupported outcomes. Do not let missing execution, incomplete extraction or budget exhaustion become a pass. Preserve failures across rounds and identify the concrete next repair, fixture or environment action.
 
-Evaluate first-class hard fence health using the [component claim procedure](references/component-claims.md). Run the exact-subject QA/lint/type controls and retain generated hash/provenance receipts. Agent/Oplane guidance is complementary soft evidence, not a substitute for missing or failing hard fences.
+Evaluate first-class hard fence health using the [component claim procedure](references/component-claims.md). Resolve the canonical rules and descriptors at the exact subject, run mandatory applicable contracts, retain raw results, and evaluate every candidate in a separate record before computing claim state. Zero candidates satisfy only adequate declared coverage. Agent/Oplane guidance and Markdown examples are complementary soft evidence, not substitutes for missing or failing hard fences.
 
 Before handing state to another stage, read [state, capture and replay](references/handoff-state.md). Save input snapshots, comparison recipes/results and artifact build/use bindings; archive the whole registered evidence inventory. The runner’s finalized postflight audit qualifies the worker’s prefix report. Local paths, console Booleans and remembered conclusions alone are incomplete handoff evidence.
 
@@ -40,7 +40,7 @@ Before handing state to another stage, read [state, capture and replay](referenc
 The bundled `scripts/stage.py` accepts one explicit operation with JSON input/output and refuses to overwrite a receipt. Use supported generic operations for claim validation, assessment/readiness, source/evaluator identity, bounded check execution, admission, confirmation and maintenance. Project-specific compilation/build/deployment requires a ticket-linked, authorized adapter with verified bytes; an absent adapter is unsupported, never a default example. A helper result grants no tool permissions or lifecycle authority. Publish its raw receipt with the stage outcome and verify readback.
 
 For an optional synthetic helper regression evaluation, use the bundled
-[evaluation procedure](references/evaluation.md) and `scripts/eval-fences.py`.
+[evaluation procedure](references/evaluation.md) and `scripts/eval-rules.py`.
 It is self-contained and does not certify an actual case or stage handoff.
 
 For partial fixtures, required runtime obligations, test discovery or evidence publication, follow [fixture, runtime and handoff](references/fixture-runtime-handoff.md). Run its status recovery after compaction, then fetch live ticket checkpoints. A synthetic-local test restriction must be distinguished from a real-provider restriction.

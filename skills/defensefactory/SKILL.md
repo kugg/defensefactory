@@ -33,7 +33,7 @@ Record execution outcome, security finding/premise, assessment completeness, ver
 
 Select the next stage using the live ticket's prerequisites and the user's authorized sequence. Use the installed package for that stage; if it is unavailable, retrieve the exact approved package through the ticket and verify its digest. Do not recreate a missing stage from chat memory. A blocked stage remains blocked; continue independent preparation without advancing it. Assessment first checks applicability; a published, verified early closure/disqualification stops the pipeline after native lifecycle readback. Unknown applicability holds; only active scope proceeds to repair-contract planning. Route new findings to intake/assessment, candidates to repair/verification, and accepted changes to integration/deployment/confirmation under the recorded policy.
 
-Use component-owned canonical definitions and first-class fences through the [component claim procedure](references/component-claims.md). The exact definition must also land in adjacent developer-owned `RULES.md`; use the bundled helper to keep its reserved block synchronized with `claims.json`. A location index is not a second claim registry; hashes and execution verdicts belong in generated receipts.
+Use component-owned canonical definitions and first-class fences through the [component claim procedure](references/component-claims.md). The owning `RULES.md` is the sole authored claim/boundary source and references external developer-owned invariant contracts. Keep candidates separate from evaluation records and compute claim state from coverage and evaluations. A location index is not a second registry; hashes and execution verdicts belong in generated receipts. Treat `claims.json` only as an explicit legacy migration input.
 
 Before handing state to another stage, read [state, capture and replay](references/handoff-state.md). Save input snapshots, comparison recipes/results and artifact build/use bindings; archive the whole registered evidence inventory. The runner’s finalized postflight audit qualifies the worker’s prefix report. Local paths, console Booleans and remembered conclusions alone are incomplete handoff evidence.
 
@@ -42,7 +42,7 @@ Before handing state to another stage, read [state, capture and replay](referenc
 The bundled `scripts/stage.py` accepts one explicit operation with JSON input/output and refuses to overwrite a receipt. Use supported generic operations for claim validation, assessment/readiness, source/evaluator identity, bounded check execution, admission, confirmation and maintenance. Project-specific compilation/build/deployment requires a ticket-linked, authorized adapter with verified bytes; an absent adapter is unsupported, never a default example. A helper result grants no tool permissions or lifecycle authority. Publish its raw receipt with the stage outcome and verify readback.
 
 For an optional synthetic helper regression evaluation, use the bundled
-[evaluation procedure](references/evaluation.md) and `scripts/eval-fences.py`.
+[evaluation procedure](references/evaluation.md) and `scripts/eval-rules.py`.
 It is self-contained and does not certify an actual case or stage handoff.
 
 For comparison builds, runtime probes and required CodeIntel work, use the [supported verification paths](references/supported-verification.md). Preserve helper refusals; do not replace their bindings or assertions with low-level capture.
