@@ -62,7 +62,16 @@ EXAMPLES = {
         'rationale': 'REPLACE_ANALYSIS', 'source_reference': 'REPLACE_SOURCE_RECEIPT'}},
     'assess-observe': {'packet': {'case': 'REPLACE_TICKET', 'targets': [], 'evidence': []},
                        'actor': 'REPLACE_ACTUAL_ACTOR'},
-    'assess-eligibility': {'packet': {'case': 'REPLACE_TICKET', 'targets': [], 'evidence': []},
+    'assess-eligibility': {'packet': {'case': 'REPLACE_TICKET', 'targets': [], 'evidence': [],
+                           'authority_review': {
+                               'ticket': 'REPLACE_TICKET', 'ticket_updated_at': '2025-01-01T00:00:00Z',
+                               'retrieved_at': '2025-01-01T00:01:00Z',
+                               'snapshot_reference': 'REPLACE_PERSISTED_TICKET_SNAPSHOT',
+                               'surfaces': [
+                                   {'kind': kind, 'state': 'reviewed', 'reference': 'REPLACE_' + kind.upper() + '_RETRIEVAL'}
+                                   for kind in ('description', 'status', 'comments', 'documents', 'attachments', 'relations')],
+                               'authority_records': []},
+                           'repair_decisions': []},
                            'policy': {'actors': {}, 'assessment_scopes': {}}, 'actor': 'REPLACE_ACTUAL_ACTOR'},
     'assess-decisions': {'stage': 'repair', 'authority_review': {
         'ticket': 'REPLACE_TICKET', 'ticket_updated_at': '2025-01-01T00:00:00Z',

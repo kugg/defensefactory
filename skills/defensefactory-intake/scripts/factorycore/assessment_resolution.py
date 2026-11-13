@@ -65,6 +65,9 @@ def decision_plan(decisions, stage='repair', authority_review=None):
     review = _authority_review(authority_review)
     ids = [d['id'] for d in decisions]
     require(len(ids) == len(set(ids)), 'Duplicate decision identity')
+    unmapped = [record['id'] for record in review['authority_records']
+                if record['effect'] in ('resolves', 'constrains') and record['decision_id'] not in ids]
+    require(not unmapped, 'Current owner decisions/constraints were not mapped into the decision plan: ' + ', '.join(unmapped))
     blocking, deferred, resolved, questions, incomplete = [], [], [], [], []
     for original in decisions:
         d = copy.deepcopy(original)

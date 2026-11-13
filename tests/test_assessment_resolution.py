@@ -56,6 +56,10 @@ class DecisionAuthorityTests(unittest.TestCase):
         with self.assertRaisesRegex(GateError, 'do not reopen'):
             decision_plan([self.unresolved()], authority_review=self.review([self.resolution()]))
 
+    def test_current_owner_resolution_cannot_disappear_from_early_gate(self):
+        with self.assertRaisesRegex(GateError, 'not mapped'):
+            decision_plan([], authority_review=self.review([self.resolution()]))
+
     def test_resolved_decision_binds_exact_owner_record(self):
         decision = self.unresolved()
         decision.update({
