@@ -7,6 +7,8 @@ description: Run an explicitly invoked maintenance pass for evidence freshness, 
 
 Use the optional [host installation profile](references/installation.md) for tool endpoints and project preferences. It supplies defaults, never ticket state, authorization, or acceptance evidence.
 
+Before following the procedure, validate this package's `RULES.md`, its inherited universal rules and any ticket-selected policy profile with `scripts/stage-rules.py check <package>`. A non-satisfied result blocks publication. The resulting effective-rule digest and source bindings are added automatically to `stage-scope` and revalidated by `stage-start`; prose in `SKILL.md` cannot silently replace or weaken those rules. See [stage rules and procedure conformance](references/stage-rules.md).
+
 For a fresh foreground trial, use the [manual kickoff](references/trial-controls.md): the operator publishes/read-backs scope and attaches the opening before the worker starts. Retrieve and validate that opening from the ticket. The runner requires `--opening`; report operator preparation separately, not as unassisted worker adherence. Use `scripts/stage-exec.py` for direct host producers to avoid hand-writing receipt fields.
 
 Before any case checkout, edit, build, test, probe or index request, publish/read back the narrow stage scope and save its opening. Capture setup/build/runtime as well as tests. At stop, account separately for ordering, command capture, host indexing and retrieval of both bundle and external requirements.
@@ -29,6 +31,8 @@ Measure only declared experiment outcomes; retain failed/timed-out/unsupported r
 
 Follow the [component claim procedure](references/component-claims.md). On invocation, re-resolve descriptors and compare current engine/applicability coverage with retained receipts. Prefer blocking a PR with malformed rules, broken mandatory references, unevaluated candidates or missing/failing required hard contracts; for integrated drift, search for existing component/claim/contract corrective work, open/reuse the Linear finding and bounded repair PR under existing authority, and verify action readback. Missing provenance or engine coverage alone is inconclusive; do not invent a defect or start background automation.
 
+For an existing architectural class, follow the [bug-class procedure](references/bug-classes.md): repeat bounded current/historical discovery, preserve prior membership/evaluations, record new candidates or stale regression contracts, and route any proposed membership/class change through separate evaluation. Never rewrite earlier proof matrices to absorb a new variant.
+
 Use the [host release lifecycle](references/release-lifecycle.md) and its release-admit/rollout/confirm/maintain operations. Finish the authorized demo scope with actual evidence. Production isolation/platform/research criteria belong in linked future tickets; do not turn them into a new approval barrier. Treat developers and agents as normal component owners under existing repository policy.
 
 Before handing state to another stage, read [state, capture and replay](references/handoff-state.md). Save input snapshots, comparison recipes/results and artifact build/use bindings; archive the whole registered evidence inventory. The runner’s finalized postflight audit qualifies the worker’s prefix report. Local paths, console Booleans and remembered conclusions alone are incomplete handoff evidence.
@@ -38,3 +42,22 @@ Before handing state to another stage, read [state, capture and replay](referenc
 The bundled `scripts/stage.py` accepts one explicit operation with JSON input/output and refuses to overwrite a receipt. Use supported generic operations for claim validation, assessment/readiness, source/evaluator identity, bounded check execution, admission, confirmation and maintenance. Project-specific compilation/build/deployment requires a ticket-linked, authorized adapter with verified bytes; an absent adapter is unsupported, never a default example. A helper result grants no tool permissions or lifecycle authority. Publish its raw receipt with the stage outcome and verify readback.
 
 For comparison builds, runtime probes and required CodeIntel work, use the [supported verification paths](references/supported-verification.md). Preserve helper refusals; do not replace their bindings or assertions with low-level capture.
+
+<!-- defensefactory-procedure-map:start -->
+```json
+{
+  "schema_version": 1,
+  "stage": "maintain",
+  "procedures": [
+    {
+      "id": "maintenance-workflow",
+      "section": "Defense Factory maintain",
+      "rules": ["DF-TICKET-CURRENT", "DF-SCOPE-BEFORE-WORK", "DF-EXACT-SUBJECT", "DF-RETAIN-EVIDENCE", "DF-PUBLISH-READBACK", "DF-TERMINAL-STOPS", "DF-NO-IMPLICIT-AUTHORITY", "MAINTAIN-BUGCLASS-VARIANTS", "MAINTAIN-REFRESH-EVIDENCE", "MAINTAIN-CORRECTIVE-WORK-AUTHORIZED"],
+      "actions": ["fetch_ticket", "publish_scope", "bind_subject", "retain_evidence", "publish_receipt", "readback_ticket", "stop_work", "discover_bugclass_variants", "refresh_evidence", "open_corrective_work"],
+      "evidence": ["ticket_snapshot", "opening_receipt", "subject_receipt", "execution_receipt", "publication_readback", "bugclass_discovery", "maintenance_receipt"]
+    },
+    {"id": "maintenance-helpers", "section": "Execution and evidence helpers", "rules": ["DF-RETAIN-EVIDENCE", "MAINTAIN-BUGCLASS-VARIANTS", "MAINTAIN-REFRESH-EVIDENCE"], "actions": [], "evidence": []}
+  ]
+}
+```
+<!-- defensefactory-procedure-map:end -->

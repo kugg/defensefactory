@@ -6,6 +6,7 @@ from .core import require
 EXAMPLES = {
     'source-export': {'repo':'/REPLACE/LOCAL/REPOSITORY','revisions':{'candidate':'REPLACE_FULL_COMMIT','variant':'REPLACE_FULL_COMMIT'},
         'destination':'/REPLACE/NEW/EVIDENCE/SOURCE_EXPORT','timeout_seconds':60},
+    'stage-rules-check': {'package':'/absolute/path/to/defensefactory-verify','profiles':[]},
     'stage-scope': {'case':'REPLACE_TICKET','attempt':'REPLACE_NEW_ATTEMPT','stage':'verify',
         'subject':{'repository':'REPLACE_REPOSITORY','revision':'REPLACE_FULL_COMMIT'},
         'performed_by':'REPLACE_ACTUAL_ACTOR','package':'/REPLACE/ACTUALLY/LOADED/defensefactory-verify',
@@ -61,11 +62,29 @@ EXAMPLES = {
         'rationale': 'REPLACE_ANALYSIS', 'source_reference': 'REPLACE_SOURCE_RECEIPT'}},
     'assess-observe': {'packet': {'case': 'REPLACE_TICKET', 'targets': [], 'evidence': []},
                        'actor': 'REPLACE_ACTUAL_ACTOR'},
-    'assess-eligibility': {'packet': {'case': 'REPLACE_TICKET', 'targets': [], 'evidence': []},
+    'assess-eligibility': {'packet': {'case': 'REPLACE_TICKET', 'targets': [], 'evidence': [],
+                           'authority_review': {
+                               'ticket': 'REPLACE_TICKET', 'ticket_updated_at': '2025-01-01T00:00:00Z',
+                               'retrieved_at': '2025-01-01T00:01:00Z',
+                               'snapshot_reference': 'REPLACE_PERSISTED_TICKET_SNAPSHOT',
+                               'surfaces': [
+                                   {'kind': kind, 'state': 'reviewed', 'reference': 'REPLACE_' + kind.upper() + '_RETRIEVAL'}
+                                   for kind in ('description', 'status', 'comments', 'documents', 'attachments', 'relations')],
+                               'authority_records': []},
+                           'repair_decisions': []},
                            'policy': {'actors': {}, 'assessment_scopes': {}}, 'actor': 'REPLACE_ACTUAL_ACTOR'},
-    'assess-decisions': {'stage': 'repair', 'decisions': [{
+    'assess-decisions': {'stage': 'repair', 'authority_review': {
+        'ticket': 'REPLACE_TICKET', 'ticket_updated_at': '2025-01-01T00:00:00Z',
+        'retrieved_at': '2025-01-01T00:01:00Z', 'snapshot_reference': 'REPLACE_PERSISTED_TICKET_SNAPSHOT',
+        'surfaces': [
+            {'kind': kind, 'state': 'reviewed', 'reference': 'REPLACE_' + kind.upper() + '_RETRIEVAL'}
+            for kind in ('description', 'status', 'comments', 'documents', 'attachments', 'relations')],
+        'authority_records': []}, 'decisions': [{
         'id': 'behavior-choice', 'state': 'unresolved', 'blocks_stages': ['repair'],
         'owner': 'REPLACE_COMPONENT_OWNER', 'reference': 'REPLACE_REQUIREMENT_REFERENCE',
+        'authority_review': 'no_applicable_resolution',
+        'authority_rationale': 'REPLACE_WHY_NO_REVIEWED_OWNER_RECORD_RESOLVES_THIS_DECISION',
+        'applied_authority_references': [],
         'question': 'REPLACE_THE_SPECIFIC_BEHAVIOR_CHOICE',
         'alternatives': [{'choice': 'REPLACE_OPTION_A', 'consequence': 'REPLACE_CONSEQUENCE_A'},
                          {'choice': 'REPLACE_OPTION_B', 'consequence': 'REPLACE_CONSEQUENCE_B'}]}]},

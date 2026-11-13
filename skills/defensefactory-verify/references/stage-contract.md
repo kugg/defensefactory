@@ -65,3 +65,22 @@ After a timed-out publication, use a stable effect key and bounded live lookup. 
 ## Canonical component claims and fences
 
 Follow the [component claim/contract procedure](component-claims.md). Keep one concise owning `RULES.md` with stable portable claim/invariant IDs, external developer-owned contract descriptors and introduction Git refs; derive candidate, evaluation, status and discovery receipts. Normal repository ownership permits legitimate amendments but cannot waive malformed rules, broken mandatory references, confirmed violations or missing mandatory coverage. Component moves preserve identities; missing source history remains a recorded evidence gap. `claims.json` is only a legacy migration input.
+
+## Architectural bug classes
+
+Before a repair edit, follow the [bug-class procedure](bug-classes.md). Retrieve
+current and historical findings across the authorized ticket and repository
+scope, retain the exact queries and limitations, then separate discovery hints
+from evidence-backed membership decisions. Bind the class to one canonical
+claim/invariant and a compatible component boundary. Persist the class definition,
+path analysis, hard fence, historical regression contracts and preserved behavior
+as a repair contract before changing product code.
+
+Verification evaluates every included current and historical variant against the
+exact PR head and actual merge subject. Candidate tool output and evaluator
+decisions remain separate. Integration permits a class-wide remediation statement
+only when the proof matrix, governing claim and required hard fence satisfy the
+declared coverage. Link the PR and every included ticket in both directions,
+retrieve both sides and reconcile partial effects without reopening or rewriting
+historical ticket state. Similarity, a model label or a passed trigger regression
+alone can establish neither membership nor class-wide repair.

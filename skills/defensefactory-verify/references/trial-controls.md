@@ -97,11 +97,15 @@ An unperformed item is incomplete or violated, never implied by a green helper.
 ## Open the stage through the ticket
 
 1. Read the current ticket and referenced inputs. Load the stage's `SKILL.md`,
-   `stage-contract.md`, `claim-evidence.md`, and the stage execution reference.
+   `RULES.md`, `stage-contract.md`, `claim-evidence.md`, and the stage execution reference.
+   Validate the effective inherited rules and procedure conformance with
+   `stage-rules.py check`; a violation or unsupported/inconclusive result blocks
+   opening the stage.
    Run `stage.py --describe stage-scope` for the short input shape.
 2. Run `stage-scope` with the actual package path, performer, exact base subject,
    case/attempt, existing authorization reference and bounded scope. This reads
-   and hashes those stage resources and returns `scope_body`. Publish that body
+   and hashes those stage resources, compiles the exact effective rules, and
+   returns `scope_body` with their digest/source bindings. Publish that body
    to the ticket through the native connector **before case commands/effects**.
 3. Fetch the new comment separately. `stage-start` takes the preparation plus
    actual publication/readback objects (`id`, `body`, `createdAt`; readback also

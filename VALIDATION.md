@@ -1,21 +1,70 @@
 # Validation scope
 
-Validated on 2026-11-13. These are bounded checks of this experimental package.
+Validated on 2026-11-14. These are bounded checks of this experimental package.
+The consolidated release candidate passes 122 offline tests plus both disposable
+rule evaluators. No ticket, model, external service or cyber evaluation is inferred
+from these factory-only checks.
 
-The canonical component-rules update passes **78 offline tests** in this
-repository. Fifteen focused checks exercise the strict Markdown grammar,
+The architectural bug-class update adds ten focused checks that distinguish
+discovery candidates from evaluated
+membership; preserve current and historical ticket lifecycle; require compatible,
+evidence-backed class inclusion; bind repair design to primary, retry, fallback,
+alternate-constructor and configuration paths; require a deterministic hard fence
+and historical regression contract; evaluate every member at the exact PR merge
+subject; distinguish candidate output and model proposals from evaluation;
+preserve portable class identity across a repository move; prove legitimate
+behavior and other affected claims; produce conservative
+class-wide, member-only, inconclusive, violated and rejected outcomes; and
+reconcile partial PR/ticket linkage without overwriting receipts, and generate a
+complete non-overwriting nine-step input walk. These are
+synthetic helper checks. They do not search a live ticket corpus, judge a real
+bug-class boundary, mutate a PR or ticket, authenticate an evaluator, or prove
+live-agent adherence.
+
+The canonical component- and stage-rules updates, including the JER-36
+evaluator corrections, the environment-aware installer and the bug-class
+workflow pass the repository's offline suite. Sixteen focused component-rule
+checks exercise the strict Markdown grammar,
 semantic/prose diffs, Unicode and hidden-content rejection, external descriptor
 validation, CUE/CodeQL/Semgrep/test/Markdown adapter behavior, candidate/evaluation
 separation, coverage-aware zero-finding semantics, unavailable engines, detached
 source mutation, native-owner change admission, legacy migration with preserved
-project guidance, and component/repository moves with available or unavailable
-introduction history. The disposable Git/Python `eval-rules.py` evaluation also
+project guidance, component/repository moves with available or unavailable
+introduction history, explicit enforcement-downgrade reporting, and soft-only
+evidence that cannot admit a claim. The disposable Git/Python `eval-rules.py` evaluation also
 passes: adequate zero-finding coverage satisfies its synthetic baseline, an
 unevaluated candidate stays inconclusive, a separately confirmed candidate
 violates the claim, and the exact-subject integration gate blocks it. These are
 mechanical helper checks; they do not install a native required check, authenticate
 review objects, isolate host processes/network, perform security evaluation, or
 prove live-agent adherence.
+
+Seventeen stage-policy checks additionally exercise bounded satisfiability,
+overlapping-condition counterexamples, terminal/continue and read-only/write
+conflicts, unreachable postconditions, exception precedence and cycles,
+unsupported semantics, procedure-to-rule conformance, inheritance failures and
+exact effective-rule binding in stage openings, a fail-closed 4,096-assignment
+ceiling, explicit profile digests and a human-readable counterexample summary.
+All nine source packages and
+their isolated standalone archives validate. The disposable
+`eval-stage-rules.py` run validated all nine packages, rejected a deliberately
+contradictory rule set and reproduced the independently computed effective-rule
+digest in a synthetic opening. This remains an offline compiler/helper result;
+it does not establish live-agent adherence, correctness of operator judgments or
+independent cyber evaluation.
+
+Six focused environment tests additionally cover mutation-free discovery and
+planning, mandatory versus recommended/replaceable capability dispositions,
+strict credential-reference and safe-practice validation, immutable installation,
+repeatable deterministic evaluation, append-only receipts, readiness reporting,
+verified uninstall with evidence/release preservation, and privacy-preserving
+event monitoring. They also reject a CLI/profile state-root mismatch and changed
+installed release bytes before resume evaluation. The monitor detects an unguarded command, guarded command,
+DNS failure and truncation without copying raw reasoning or command output. The
+installed evaluation runs both bundled disposable rules evaluators and validates
+all nine stage packages. Service authentication, real CodeIntel coverage, OTel
+receiver health, container isolation and a live OpenCode/ticket trial remain
+explicitly inconclusive until the separate environment evaluation is performed.
 
 The preceding fixture/runtime/readback update passed 63 offline tests.
 The preceding verification-path update passed 53. New checks use a real local Go

@@ -118,6 +118,13 @@ class ReleaseTests(unittest.TestCase):
             for name, digest in manifest.items():
                 self.assertEqual(hashlib.sha256((relocated / name).read_bytes()).hexdigest(), digest)
             self.assertEqual((relocated / 'LICENSE').read_bytes(), (ROOT / 'LICENSE').read_bytes())
+            rules = subprocess.run([sys.executable, '-I', str(relocated / 'scripts/stage-rules.py'),
+                'check', str(relocated)], cwd=self.root, capture_output=True, text=True)
+            self.assertEqual(rules.returncode, 0, package.name + ': ' + rules.stderr + rules.stdout)
+            parsed = json.loads(rules.stdout)
+            self.assertEqual(parsed['result'], 'satisfied')
+            if package.name != 'defensefactory':
+                self.assertTrue((relocated / 'dependencies/defensefactory/RULES.md').is_file())
         env = {**os.environ, 'PYTHONDONTWRITEBYTECODE': '1'}
         result = subprocess.run([sys.executable, '-I', str(isolated / 'defensefactory/scripts/install-factory.py'),
             '--yes', '--model', 'fixture/model', '--linear-project', 'Example project',
@@ -128,7 +135,8 @@ class ReleaseTests(unittest.TestCase):
 
     def test_evidence_helpers_import_only_their_package_under_isolated_python(self):
         for name in ('evidence-compare.py','handoff-audit.py','restore-artifact.py','ticket-transfer.py',
-                     'prepare-fixture.py','verify-handoff.py','trial-status.py','claim-rules.py'):
+                     'prepare-fixture.py','verify-handoff.py','trial-status.py','claim-rules.py','stage-rules.py',
+                     'bugclass.py','install-defensefactory.py'):
             result=subprocess.run([sys.executable,'-I',str(SCRIPTS/name),'--help'],cwd=self.root,
                                   capture_output=True,text=True)
             self.assertEqual(result.returncode,0,name+': '+result.stderr)

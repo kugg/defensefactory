@@ -60,6 +60,10 @@ class RulesContractTests(unittest.TestCase):
         parsed = parse_rules(original)
         self.assertEqual(semantic_model(parsed)["claims"], self.model["claims"])
         self.assertEqual(semantic_diff(original, changed)["prose_only"], True)
+        weakened = copy.deepcopy(self.model); weakened["claims"][0]["enforcement"]["confirmed_violation"] = "allow"
+        downgrade = semantic_diff(render_rules(self.model), render_rules(weakened))
+        self.assertEqual(downgrade["enforcement_downgrades"], [{"claim_id": "AUTHENTICATED-BOUNDARY",
+            "outcome": "confirmed_violation", "before": "block", "after": "allow", "direction": "downgrade"}])
 
     def test_rejects_duplicate_missing_unknown_unicode_and_hidden_normative_syntax(self):
         valid = render_rules(self.model)
@@ -120,6 +124,15 @@ class RulesContractTests(unittest.TestCase):
         run = run_contracts(self.repo, revision, "service/RULES.md", self.root / "run")
         self.assertEqual(run["result"], "inconclusive")
         self.assertEqual(claim_status(parse_rules((self.component / "RULES.md").read_text()), run, [])["result"], "inconclusive")
+
+    def test_soft_only_evidence_is_named_and_cannot_admit_a_claim(self):
+        descriptor = copy.deepcopy(self.descriptor); descriptor.update(observation="soft", mandatory=False)
+        self.write_rules(descriptor); revision = self.commit("Add soft-only observation")
+        checks = {"boundary-check": {"argv": [sys.executable, "boundary_test.py"], "cwd": "service", "timeout": 10}}
+        run = run_contracts(self.repo, revision, "service/RULES.md", self.root / "soft-only", trusted_checks=checks)
+        status = claim_status(parse_rules((self.component / "RULES.md").read_text()), run, [])
+        self.assertEqual(status["claims"][0]["result"], "satisfied_soft_only")
+        self.assertEqual(status["result"], "inconclusive")
 
     def test_cross_repository_move_preserves_ids_and_reports_or_resolves_original_history(self):
         self.write_rules(); revision = self.commit("Add portable component")

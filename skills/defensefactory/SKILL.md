@@ -7,6 +7,8 @@ description: Run or resume a manually invoked, ticket-driven security remediatio
 
 Use the optional [host installation profile](references/installation.md) for tool endpoints and project preferences. It supplies defaults, never ticket state, authorization, or acceptance evidence.
 
+Before following the procedure, validate this package's `RULES.md`, its inherited universal rules and any ticket-selected policy profile with `scripts/stage-rules.py check <package>`. A non-satisfied result blocks publication. The resulting effective-rule digest and source bindings are added automatically to `stage-scope` and revalidated by `stage-start`; prose in `SKILL.md` cannot silently replace or weaken those rules. See [stage rules and procedure conformance](references/stage-rules.md).
+
 For a fresh foreground trial, use the [manual kickoff](references/trial-controls.md): the operator publishes/read-backs scope and attaches the opening before the worker starts. Retrieve and validate that opening from the ticket. The runner requires `--opening`; report operator preparation separately, not as unassisted worker adherence. Use `scripts/stage-exec.py` for direct host producers to avoid hand-writing receipt fields.
 
 Before any case checkout, edit, build, test, probe or index request, publish/read back the narrow stage scope and save its opening. Capture setup/build/runtime as well as tests. At stop, account separately for ordering, command capture, host indexing and retrieval of both bundle and external requirements.
@@ -35,6 +37,8 @@ Select the next stage using the live ticket's prerequisites and the user's autho
 
 Use component-owned canonical definitions and first-class fences through the [component claim procedure](references/component-claims.md). The owning `RULES.md` is the sole authored claim/boundary source and references external developer-owned invariant contracts. Keep candidates separate from evaluation records and compute claim state from coverage and evaluations. A location index is not a second registry; hashes and execution verdicts belong in generated receipts. Treat `claims.json` only as an explicit legacy migration input.
 
+For repair PRs, route through the [architectural bug-class procedure](references/bug-classes.md): discover current and historical candidates, evaluate membership against the same claim/invariant and compatible boundary, persist the class/repair contract before edits, prove every included variant at the exact merge subject, and reconcile bidirectional ticket/PR links. Similarity is candidate generation only; unresolved membership prevents a class-wide claim.
+
 Before handing state to another stage, read [state, capture and replay](references/handoff-state.md). Save input snapshots, comparison recipes/results and artifact build/use bindings; archive the whole registered evidence inventory. The runner’s finalized postflight audit qualifies the worker’s prefix report. Local paths, console Booleans and remembered conclusions alone are incomplete handoff evidence.
 
 ## Execution and evidence helpers
@@ -46,3 +50,28 @@ For an optional synthetic helper regression evaluation, use the bundled
 It is self-contained and does not certify an actual case or stage handoff.
 
 For comparison builds, runtime probes and required CodeIntel work, use the [supported verification paths](references/supported-verification.md). Preserve helper refusals; do not replace their bindings or assertions with low-level capture.
+
+<!-- defensefactory-procedure-map:start -->
+```json
+{
+  "schema_version": 1,
+  "stage": "orchestrate",
+  "procedures": [
+    {
+      "id": "orchestration-workflow",
+      "section": "Defense Factory",
+      "rules": ["DF-TICKET-CURRENT", "DF-SCOPE-BEFORE-WORK", "DF-EXACT-SUBJECT", "DF-RETAIN-EVIDENCE", "DF-PUBLISH-READBACK", "DF-TERMINAL-STOPS", "DF-NO-IMPLICIT-AUTHORITY", "ORCH-SELECT-LIVE-STAGE"],
+      "actions": ["fetch_ticket", "publish_scope", "bind_subject", "retain_evidence", "publish_receipt", "readback_ticket", "stop_work", "select_stage"],
+      "evidence": ["ticket_snapshot", "opening_receipt", "subject_receipt", "execution_receipt", "publication_readback"]
+    },
+    {
+      "id": "orchestration-helpers",
+      "section": "Execution and evidence helpers",
+      "rules": ["DF-RETAIN-EVIDENCE", "DF-PUBLISH-READBACK"],
+      "actions": [],
+      "evidence": []
+    }
+  ]
+}
+```
+<!-- defensefactory-procedure-map:end -->

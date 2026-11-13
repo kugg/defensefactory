@@ -26,12 +26,14 @@ class FollowupGaps(unittest.TestCase):
         self.f.setUp()
         self.addCleanup(self.f.doCleanups)
 
-    def opening(self, comparisons=(), required=False):
+    def opening(self, comparisons=(), required=False, codeintel_mode=None):
         f=self.f
+        codeintel = ({'mode':codeintel_mode,'reference':'Synthetic ticket policy'} if codeintel_mode else
+                     {'required':required,'reference':'Synthetic ticket policy'})
         prep=scope_prepare({'case':'FIXTURE-1','attempt':'synthetic-evidence','stage':'verify','subject':f.subject,
             'performed_by':'synthetic-agent','package':str(f.package),'authorization_reference':'Synthetic operator',
             'boundaries':'Offline fixtures only','comparisons':list(comparisons),
-            'codeintel_requirement':{'required':required,'reference':'Synthetic ticket policy'}})
+            'codeintel_requirement':codeintel})
         pub={'id':'fixture-comment','body':prep['scope_body'],'createdAt':prep['prepared_at']}
         f.opening=stage_start(prep,pub,{**pub,'operation':'retrieval','retrieved_at':prep['prepared_at']})
         (f.root/'opening.json').write_text(json.dumps(f.opening))
@@ -214,6 +216,29 @@ class FollowupGaps(unittest.TestCase):
         policy['attempt_event_ids']=['failed-query']
         supported=f.audit({'codeintel':policy},name='attempted')
         self.assertTrue(supported['whole_attempt_handoff_ready'],supported['problems'])
+
+    def test_attempt_required_can_finish_with_a_retained_coverage_limitation(self):
+        f=self.f
+        self.opening(codeintel_mode='attempt_or_limitation')
+        f.events.append({'type':'tool_use','part':{'id':'limited-query','tool':'factory_codeintel_grep',
+            'state':{'status':'completed','input':{'ref':'candidate'},'output':'{"matches":[]}'}}})
+        policy={'disposition':'limited','reason':'Exact subject indexed but text and SCIP recall are unusable',
+            'reference':'Synthetic scope','attempt_event_ids':['limited-query'],
+            'coverage_limitations':['SCIP occurrences are zero; known source term was not returned']}
+        audit=f.audit({'codeintel':policy},name='limited')
+        self.assertTrue(audit['whole_attempt_handoff_ready'],audit['problems'])
+
+    def test_strict_coverage_scope_rejects_the_same_limitation(self):
+        f=self.f
+        self.opening(codeintel_mode='coverage_required')
+        f.events.append({'type':'tool_use','part':{'id':'limited-query','tool':'factory_codeintel_grep',
+            'state':{'status':'completed','input':{'ref':'candidate'},'output':'{"matches":[]}'}}})
+        policy={'disposition':'limited','reason':'Known source term was not returned',
+            'reference':'Synthetic scope','attempt_event_ids':['limited-query'],
+            'coverage_limitations':['Text recall is incomplete']}
+        audit=f.audit({'codeintel':policy},name='limited-strict')
+        self.assertFalse(audit['whole_attempt_handoff_ready'])
+        self.assertTrue(any('downgraded' in problem for problem in audit['problems']))
 
 
     def test_truncated_codeintel_error_is_checked_from_retained_full_response(self):

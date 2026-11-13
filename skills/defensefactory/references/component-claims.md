@@ -46,6 +46,37 @@ to `defensefactory/candidate/v1` with exact subject, source location, coverage a
 raw-result reference. Missing engines and incomplete coverage are
 `inconclusive`, never zero findings.
 
+### Minimal run, evaluate and status loop
+
+The component descriptor names `entrypoint`; it cannot choose a command. The
+trusted caller supplies the command in a separate JSON file. For a descriptor
+whose entry point is `boundary-check`, a minimal test mapping is:
+
+```json
+{
+  "boundary-check": {
+    "argv": ["go", "test", "./...", "-run", "TestBoundary"],
+    "cwd": "component",
+    "timeout": 60
+  }
+}
+```
+
+Run the exact full commit into a new evidence directory, then compute status from
+the saved run rather than console memory:
+
+```text
+python3 <skill>/scripts/claim-rules.py run --repo <repo> --subject <full-commit> --path component/RULES.md --destination evidence/run-001 --checks trusted-checks.json
+python3 <skill>/scripts/claim-rules.py status --subject <full-commit> --rules component/RULES.md --run evidence/run-001/contract-run.json --output evidence/status-001.json
+```
+
+If `candidates.json` contains candidates, do not pass them directly to `status`.
+For each candidate, save a separate decision JSON containing `disposition`,
+`evaluator`, `evidence`, `explanation`, `coverage_limitations`, `next_action` and
+optional `duplicate_of`; run `claim-rules.py evaluate --candidate ... --decision
+... --output ...`; then repeat `status` with every resulting file after
+`--evaluations`. Never overwrite a run, evaluation or status generation.
+
 ## Candidates, evaluations and claim state
 
 A candidate is a possible invariant violation, not a verdict. Save it unchanged.
@@ -62,7 +93,14 @@ identity/version, evidence, explanation, limitations, next action and one of:
 coverage and separate evaluations. Zero candidates satisfy a claim only within
 adequate declared coverage. Missing engines, partial coverage or unevaluated
 candidates remain inconclusive. Confirmed mandatory violations apply the
-component's fence policy. A soft fence is never represented as hard proof.
+component's fence policy. A claim with only soft/optional observations is named
+`satisfied_soft_only` at claim level but remains overall `inconclusive`; a soft
+fence is never represented as hard proof.
+
+`semantic-diff` reports enforcement changes separately and labels changes from
+`block` to `review`/`allow`, or `review` to `allow`, as explicit downgrades. The
+repository's normal owners may still approve an intentional amendment, but the
+downgrade cannot hide inside a generic changed-claim result.
 
 Receipts hold exact source/rules/descriptor blobs, resolved Git subjects, engine
 versions, raw outputs, evaluations, hashes and limitations. Share them through
@@ -77,6 +115,11 @@ the ticket handoff; local paths alone are not durable evidence.
 | Verification | Resolve and run mandatory contracts against the exact candidate, evaluate candidates separately, and exercise preserved behavior. |
 | Integration | Compare the actual base and merge subject semantically, require valid references/coverage, and apply the repository's native review plus declared claim policy. |
 | Maintenance | Re-run explicitly, detect stale contracts or changed coverage, and open/reuse corrective work without rewriting historical receipts. |
+
+When a repair groups multiple current or historical findings under one invariant,
+continue with the [architectural bug-class procedure](bug-classes.md). Component
+`RULES.md` remains the canonical claim/invariant source; discovery, membership,
+proof matrices and linkage are generated receipts, not new authored claim files.
 
 ## Legacy migration
 

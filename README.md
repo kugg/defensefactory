@@ -9,24 +9,42 @@ enforced agent isolation, independent acceptance or demonstrated reliable
 end-to-end autonomy. Human review is required. No scheduler, CI, branch
 protection, credential store or production deployment is installed.
 
-## Install for OpenCode
+## Qualify and install for OpenCode
 
-Use Python 3.12+ and an installed OpenCode executable. Git is needed for source
+Use Python 3.10+ and an installed OpenCode executable. Git is needed for source
 operations; the bundled synthetic evaluation also needs Go 1.22+. Project
 toolchains and test environments come from the ticket.
 
 ```sh
 git clone https://github.com/kugg/defensefactory.git
 cd defensefactory
-python3 scripts/install-factory.py
+./scripts/install-defensefactory --check
+./scripts/install-defensefactory --plan --installation-id my-practice
+./scripts/install-defensefactory --install --installation-id my-practice
 ```
 
-The installer asks for the preferred provisioned `provider/model`, Linear
-project, complete Linear/CodeIntel MCP URLs, a separate optional indexing API URL,
-credential environment-variable name/header, transport, GitHub repository hint, launcher
-and local paths. It never asks for or stores credential values. Authenticate
-providers and native MCP connections separately. An OTel wrapper/collector is an
-optional host capability; selecting a wrapper does not provision telemetry.
+This environment-aware installer is the supported onboarding entry point. The
+first command is read-only host discovery. Plan mode asks separately where safe
+practice may run and where production use is intended, but changes nothing.
+Install mode refuses missing mandatory capabilities, writes a versioned nonsecret
+profile and immutable release, and preserves unrelated OpenCode configuration.
+Use `--answers skills/defensefactory/references/environment-profile.example.json
+--noninteractive` after replacing every placeholder for deterministic setup.
+
+The installer distinguishes mandatory contracts from recommended/replaceable
+confidence services. It asks for the preferred model, Linear project,
+CodeIntel or an exact-revision equivalent, OTel settings, private evidence path,
+practice isolation and a separately reviewed production plan. TLA+/TLC,
+CodeIntel, Python, container runtimes and other product names are capabilities,
+not universal policy: missing optional layers report the confidence lost. The
+small shell bootstrap explains the Python requirement; an equivalent installer
+may satisfy the same documented contract.
+
+It never asks for or stores credential values. Use `env:NAME`, `op://…` or
+`keychain://…` references. Authenticate providers and native connections
+separately. Practice defaults prohibit production credentials and real provider
+calls. Supplying a production target records intent only; installation grants no
+merge, deploy, lifecycle or production authority.
 
 The optional CodeIntel tools-only stdio bridge supports POST-only deployments;
 direct remote transport is also available. Workspace keys normally use
@@ -39,9 +57,19 @@ profile. Identical reinstallation is a no-op. Explicit `--update` backs up chang
 settings and replaces only its own managed links; old releases remain. For an
 existing manually installed or frozen factory, choose a separate directory ending
 in `skills/` to preserve it. Global OpenCode JSON/JSONC is not rewritten.
+Answer-file installs use the profile's state root and reject a conflicting CLI
+root. Evaluation and resume recompute the installed release digest before using
+it, so a changed release is preserved as a failure rather than silently trusted.
 
-Unattended setup accepts `--yes --model PROVIDER/MODEL --linear-project PROJECT`
-and the options shown by `--help`. See the complete
+The legacy `scripts/install-factory.py` remains a bounded runtime-profile helper;
+new users should use `install-defensefactory`. Evaluate an installed profile with
+`--evaluate --installation-id ID`, resume an interrupted post-install evaluation
+with `--resume ID`, inspect it with `--report`, and retire only installer-owned
+links/settings with `--uninstall-profile`. Evidence, receipts and immutable
+release bytes are preserved. A live practice evaluation additionally requires an
+explicit prompt, project, ticket-backed opening and new destination.
+
+See the complete
 [installation procedure](skills/defensefactory/references/installation.md).
 
 ## Start a manual trial
@@ -115,6 +143,20 @@ belong in receipts. Developers amend rules and contracts under normal repository
 policy. Legacy `claims.json` is only a migration input. See [component claims and
 contracts](skills/defensefactory/references/component-claims.md).
 
+Repair PRs use an architectural bug class rather than treating the triggering
+ticket in isolation. Current and historical findings are discovered as
+candidates, separately evaluated against the same claim/invariant and compatible
+boundary, and bound into a class repair contract before product edits. The exact
+merge subject then gets a proof row for every included variant plus the governing
+claim and hard fence. The PR and all included tickets are linked in both
+directions without changing historical lifecycle state. Similarity is never
+membership, and incomplete discovery or proof yields an inconclusive or
+member-only result rather than a class-wide claim. See [architectural bug
+classes](skills/defensefactory/references/bug-classes.md).
+Generate a non-overwriting, receipt-linked input walk for all nine bug-class
+commands with `python3 skills/defensefactory/scripts/bugclass.py templates
+--output /new/walk-directory`.
+
 Use CodeIntel against the exact indexed subject and report query/SCIP coverage
 limits. When formal checks apply, separate bounded model results from actual
 implementation conformance. Publish raw evidence and external bundle requirements
@@ -126,6 +168,7 @@ executions, including failures, against the published inventory.
 ```sh
 python3 -m unittest discover -s tests -v
 python3 skills/defensefactory/scripts/eval-rules.py --output /tmp/factory-rules-eval-new
+python3 skills/defensefactory/scripts/eval-stage-rules.py --skills skills --output /tmp/factory-stage-rules-eval-new
 ```
 
 The evaluation runs disposable Git/Go fixtures for bypass, deny-all, missing
@@ -138,3 +181,7 @@ for the tested scope and unresolved qualifications.
 
 Export standalone stage archives with `python3 scripts/package-skills.py --output
 /new/package-directory`. Every package includes the repository's MIT license.
+Each stage archive also carries the one inherited universal rule source under
+`dependencies/defensefactory/RULES.md`. Validate rules and skill conformance with
+`python3 <package>/scripts/stage-rules.py check <package>` before opening work;
+the opening receipt binds the exact effective digest and source-byte identities.

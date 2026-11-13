@@ -77,6 +77,23 @@ def check(requirement, observations, records, read_file, subject):
         attempts=[events[k] for k in requirement.get('attempt_event_ids',[]) if k in events]
         apis=[r for path,r in records if path in requirement.get('api_observations',[]) and r.get('record_type')=='api_observation']
         return [] if attempts or apis else ['CodeIntel unavailable is unsupported: no retained discovery/query/API attempt']
+    if disposition=='limited':
+        attempts=[events[k] for k in requirement.get('attempt_event_ids',[]) if k in events]
+        apis=[r for path,r in records if path in requirement.get('api_observations',[]) and r.get('record_type')=='api_observation']
+        problems=[]
+        if not attempts and not apis:
+            problems.append('CodeIntel limitation is unsupported: no retained discovery/query/API attempt')
+        if not requirement.get('coverage_limitations'):
+            problems.append('CodeIntel limitation needs explicit search/index/SCIP coverage limitations')
+        if requirement.get('index_observation'):
+            try:
+                record=json.loads(read_file(requirement['index_observation']))
+                require(record.get('record_type')=='codeintel_index_observation' and record['subject']==subject,
+                        'Limited CodeIntel index observation is not bound to the current subject')
+                replay_index(record,read_file(record['evidence_dependencies'][0]['path']))
+            except (ValueError,OSError,KeyError,TypeError) as error:
+                problems.append('CodeIntel limitation index evidence: '+str(error))
+        return problems
     if disposition!='required':
         return ['Unknown CodeIntel disposition']
     problems=[]

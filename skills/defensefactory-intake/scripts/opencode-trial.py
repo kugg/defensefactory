@@ -21,6 +21,7 @@ from factorycore.preflight import package_inventory
 from factorycore.installation import default_config, load_config, opencode_config
 from factorycore.trial_controls import stage_start, instant
 from factorycore.evidence_inventory import inventory as handoff_inventory
+from factorycore.trial_monitor import qualify as monitor_trial
 
 
 def validate_opening(opening, packages):
@@ -77,7 +78,7 @@ def prepare(prompt, project, skills, destination, launcher, model, installed, pr
     return target, manifest
 
 
-def execute(target, manifest):
+def execute(target, manifest, otel_log=None):
     target = Path(target)
     for name, digest in manifest['files'].items():
         if hashlib.sha256((target / name).read_bytes()).hexdigest() != digest:
@@ -164,6 +165,10 @@ def execute(target, manifest):
     if len(sessions) == 1:
         with (target / 'usage.json').open('x') as f:
             json.dump(session_usage(str(log), sessions[0]), f, indent=2)
+    monitor = monitor_trial(log, result, otel_log=otel_log)
+    with (target / 'monitor-report.json').open('x') as f:
+        json.dump(monitor, f, indent=2)
+    result['monitor_report'] = str(target / 'monitor-report.json')
     return result
 
 
@@ -179,6 +184,7 @@ def main():
     parser.add_argument('--model', default=os.environ.get('OPENCODE_MODEL'))
     parser.add_argument('--installed-skills')
     parser.add_argument('--run', action='store_true')
+    parser.add_argument('--otel-log', help='Optional local OTel log to bind by digest; raw telemetry remains local')
     args = parser.parse_args()
     os.umask(0o077)
     try:
@@ -200,7 +206,7 @@ def main():
         target, manifest = prepare(args.prompt, args.project, args.skills, args.destination, args.launcher, args.model, args.installed_skills, preferences, opening)
         print(json.dumps({'prepared': str(target), 'requested_model': args.model, 'thinking': True}), flush=True)
         if args.run:
-            result = execute(target, manifest)
+            result = execute(target, manifest, args.otel_log)
             print(json.dumps(result), flush=True)
             return result['runner_exit_code']
     except (OSError, ValueError) as exc:

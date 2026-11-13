@@ -228,11 +228,23 @@ def semantic_diff(base: bytes | str, candidate: bytes | str) -> dict:
     old = semantic_model(parse_rules(base)); new = semantic_model(parse_rules(candidate))
     old_claims = {row["id"]: row for row in old["claims"]}; new_claims = {row["id"]: row for row in new["claims"]}
     changed = sorted(key for key in old_claims.keys() & new_claims.keys() if old_claims[key] != new_claims[key])
+    enforcement_changes = []
+    strength = {"allow": 0, "review": 1, "block": 2}
+    for claim_id in sorted(old_claims.keys() & new_claims.keys()):
+        before = old_claims[claim_id]["enforcement"]; after = new_claims[claim_id]["enforcement"]
+        for outcome in sorted(before):
+            if before[outcome] == after[outcome]:
+                continue
+            enforcement_changes.append({"claim_id": claim_id, "outcome": outcome,
+                                        "before": before[outcome], "after": after[outcome],
+                                        "direction": "downgrade" if strength[after[outcome]] < strength[before[outcome]] else "strengthening"})
     return {"schema": "defensefactory/rules-diff/v1", "semantic_change": old != new,
             "component_changed": old["component"] != new["component"],
             "added_claims": sorted(new_claims.keys() - old_claims.keys()),
             "removed_claims": sorted(old_claims.keys() - new_claims.keys()),
-            "changed_claims": changed, "prose_only": old == new and base != candidate}
+            "changed_claims": changed, "enforcement_changes": enforcement_changes,
+            "enforcement_downgrades": [row for row in enforcement_changes if row["direction"] == "downgrade"],
+            "prose_only": old == new and base != candidate}
 
 
 def validate_descriptor(value: dict, reference: dict | None = None, claim: dict | None = None) -> dict:
@@ -540,19 +552,23 @@ def claim_status(model: dict, run: dict, evaluations: list[dict]) -> dict:
         dispositions = [evaluation_by_candidate[row["candidate_id"]]["disposition"] for row in claim_candidates if row["candidate_id"] in evaluation_by_candidate]
         missing_evaluations = [row["candidate_id"] for row in claim_candidates if row["candidate_id"] not in evaluation_by_candidate]
         mandatory_incomplete = [row["id"] for row in contracts if row["mandatory"] and row.get("coverage") != "complete"]
+        hard_coverage = [row["id"] for row in contracts if row["mandatory"] and row["observation"] == "hard" and row.get("coverage") == "complete"]
         if "confirmed_violation" in dispositions:
             result = "violated"
         elif run.get("source_mutations") or mandatory_incomplete or missing_evaluations or any(item in ("inconclusive", "duplicate") for item in dispositions):
             result = "inconclusive"
+        elif not hard_coverage:
+            result = "satisfied_soft_only"
         else:
             result = "satisfied_within_scope"
         states.append({"claim_id": claim["id"], "result": result, "mandatory_coverage_missing": mandatory_incomplete,
+                       "mandatory_hard_coverage": hard_coverage,
                        "unevaluated_candidates": missing_evaluations, "evaluations": sorted(dispositions),
                        "coverage": "Only the declared contract scopes at the exact run subject"})
     overall = "violated" if any(row["result"] == "violated" for row in states) else "satisfied_within_scope" if all(row["result"] == "satisfied_within_scope" for row in states) else "inconclusive"
     result = {"schema": STATUS_SCHEMA, "subject": run["subject"], "rules_sha256": run["rules"]["sha256"],
               "run_sha256": run["run_sha256"], "claims": states, "result": overall,
-              "zero_finding_semantics": "Zero candidates satisfy a claim only when every mandatory contract has complete declared coverage."}
+              "zero_finding_semantics": "Zero candidates satisfy a claim only when every mandatory contract has complete declared coverage and at least one mandatory hard contract covers the claim. Soft-only evidence is reported separately and remains non-admitting."}
     result["status_sha256"] = identity(result)
     return result
 

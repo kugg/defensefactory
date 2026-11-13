@@ -55,21 +55,41 @@ or lifecycle inventory usually blocks a narrower evidence or later-stage claim.
 Missing facts can still block source understanding; explain the dependency rather
 than treating every missing capability as either mandatory or irrelevant.
 
-Use `assess-decisions` with `{stage,decisions}`. Each decision carries `id`,
-`state`, `reference`, `blocks_stages`, actual `owner`, one concrete `question`,
-and at least two `alternatives` with `choice` and `consequence`. A resolved choice
-needs its actual `decision_reference`. The helper routes explicit dependencies;
-it cannot prove a choice is necessary or authorize the answer. Unresolved legacy
-repair decisions default to blocking repair, so old contracts are not weakened.
-Only repair-stage blockers flow into repair-contract readiness; later blockers
-remain visible in `deferred_decisions`.
+Before `assess-decisions`, retrieve the current ticket and persist a complete
+authority review of its description, status, comments, documents, attachments
+and relations. Mark a surface `empty` only when the connector confirms it; a
+truncated or unavailable surface is not complete. Extract applicable owner
+directions as authority records with a stable decision ID, exact reference,
+owner, timestamp, retained directive and effect (`resolves`, `constrains`,
+`authorizes` or `context_only`). When an owner changes a decision, retain both
+records and identify the exact prior record in `supersedes`; unresolved
+conflicting resolutions are rejected. Older receipts remain evidence, but a
+newer opening does not erase a still-current owner decision.
+
+Run `assess-decisions` with `{stage,authority_review,decisions}`. Each decision
+carries `id`, `state`, `reference`, `blocks_stages`, actual `owner`, one concrete
+`question`, and at least two `alternatives` with `choice` and `consequence`. A
+resolved choice needs its actual `decision_reference`, retained `choice` and any
+applied constraint references. An unresolved question must record
+`no_applicable_resolution` and explain why the complete review does not answer
+it. The helper refuses to reopen a decision whose reviewed owner record already
+resolves the same ID, and refuses to omit a current constraint. It routes
+explicit dependencies; it cannot judge whether prose was mapped to the correct
+stable decision ID, prove a choice is necessary or authorize the answer.
+Unresolved legacy repair decisions default to blocking repair, so old contracts
+are not weakened. Only repair-stage blockers flow into repair-contract readiness;
+later blockers remain visible in `deferred_decisions`.
 
 Do independent work before stopping: source map, bounded tests, concrete options,
 recommended choice with rationale where supportable, and planned success/failure
-checks. Ask the owner only for non-inferable product decisions. Use existing
-developer-owned requirements to select routine implementation details; do not
-invent an external security approval requirement. Reuse an actual shared owner
-decision across related tickets by reference, without fabricating or rewriting it.
+checks. Ask the owner only for non-inferable product decisions. A direction that
+names the governing system, safety criterion or selected alternative is a
+decision; do not downgrade it into context and ask the owner to choose again. A
+direction that assigns routine design work to the factory is not a request for
+the owner to design the implementation. Use existing developer-owned requirements
+to select routine implementation details; do not invent an external security
+approval requirement. Reuse an actual shared owner decision across related
+tickets by reference, without fabricating or rewriting it.
 
 An accepted design residual is not automatically a defect. Explain which
 requirement the code violates, or record a policy/risk question rather than

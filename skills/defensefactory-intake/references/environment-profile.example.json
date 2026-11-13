@@ -1,0 +1,68 @@
+{
+  "schema": "defensefactory/environment-profile/v1",
+  "installation_id": "replace-local-installation-id",
+  "model": "replace-provider/replace-model",
+  "launcher": "/absolute/path/to/opencode-otel",
+  "ticket": {
+    "system": "linear",
+    "workspace": "replace-workspace",
+    "team": "replace-team",
+    "project": "replace-project",
+    "endpoint": "",
+    "credential_reference": "",
+    "write_qualification": false
+  },
+  "source_intelligence": {
+    "kind": "codeintel",
+    "mcp_url": "http://127.0.0.1:3000/replace-mcp-route",
+    "index_api_url": "http://127.0.0.1:3000",
+    "credential_reference": "env:CODEINTEL_API_KEY",
+    "required": true,
+    "sample_repository": "replace-authorized-sample",
+    "sample_ref": "replace-full-ref"
+  },
+  "telemetry": {
+    "otel_endpoint": "http://127.0.0.1:4318",
+    "otel_log": "/absolute/private/path/opencode-otel.jsonl",
+    "thinking_retained_local": true,
+    "retention_policy": "private local debugging; raw thinking is not uploaded by default"
+  },
+  "paths": {
+    "skills_directory": "/absolute/client/skills",
+    "private_evidence_root": "/absolute/private/evidence",
+    "state_root": "/absolute/private/installations"
+  },
+  "practice": {
+    "kind": "docker",
+    "location": "replace-compose-project",
+    "allowed_repositories": ["replace-owner/repository"],
+    "allowed_network_destinations": ["ticket-and-source-services-only"],
+    "external_provider_calls": false,
+    "credential_class": "synthetic",
+    "cleanup_policy": "operator-reviewed cleanup after evidence capture",
+    "resource_limits": "declare CPU, memory, disk and timeout before runtime",
+    "deployment_tests": false,
+    "runtime_evidence": "captured assertions and logs"
+  },
+  "production": {
+    "target_kind": "developer_workstation",
+    "description": "declared intent only; installation grants no production authority",
+    "repositories": ["replace-owner/repository"],
+    "ticket_project": "replace-project",
+    "pr_repository": "replace-owner/repository",
+    "branch_policy": "replace-reviewed-policy-reference",
+    "deployment_environments": [],
+    "authorization_reference": "replace-reviewed-production-plan",
+    "secret_references": ["op://replace/vault/item/field"],
+    "evidence_retention": "replace-policy",
+    "operators": ["replace-operator"],
+    "reviewers": ["replace-reviewer"],
+    "governance": "replace-evaluator-governance"
+  },
+  "safety": {
+    "default_stop": "draft_pr_or_justified_disposition",
+    "allowed_external_mutations": [],
+    "evidence_upload_policy": "shareable receipts only; no secrets or raw thinking"
+  },
+  "alternatives": {}
+}
