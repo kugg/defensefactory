@@ -70,6 +70,8 @@ class AlphaReleaseTests(unittest.TestCase):
         self.assertEqual(list(profiles["stages"]), list(STAGES))
         for name in ("Dockerfile", "compose.yaml", "otel-collector.yaml", "README.md"):
             self.assertTrue((ALPHA / name).is_file(), name)
+        dockerfile = (ALPHA / "Dockerfile").read_text()
+        self.assertRegex(dockerfile, r"(?m)^FROM [^\s]+@sha256:[0-9a-f]{64}$")
         compose = (ALPHA / "compose.yaml").read_text()
         self.assertIn("read_only: true", compose)
         self.assertIn("internal: true", compose)
