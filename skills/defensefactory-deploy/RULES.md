@@ -15,7 +15,7 @@ scope explicitly authorized by current ticket state.
       "scope": "deploy",
       "strength": "must",
       "when": {"stage_state": "active"},
-      "requires": {"actions": ["build_artifact"], "evidence": ["artifact_receipt"], "postconditions": ["artifact_identified"]},
+      "requires": {"actions": ["build_artifact", "validate_deployment_binding"], "evidence": ["artifact_receipt", "deployment_binding_receipt"], "postconditions": ["artifact_identified", "deployment_bound"]},
       "forbids": {"actions": ["edit_candidate"]},
       "allows": {"actions": ["rollback"]},
       "terminal": "either",

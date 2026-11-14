@@ -15,7 +15,7 @@ SCRIPTS = fixtures.SCRIPTS
 from factorycore.core import GateError,identity,sha
 from factorycore.trial_controls import scope_prepare,stage_start
 from factorycore.runtime_plan import declare,outcomes
-from factorycore.codeintel_gate import index_observation
+from factorycore.codeintel_gate import index_observation,coverage_disposition
 from factorycore.source_export import export_sources
 from factorycore.handoff_bundle import verify_bundle
 
@@ -165,12 +165,16 @@ class FollowupGaps(unittest.TestCase):
             'branch':'refs/heads/candidate','commitHash':f.subject['revision'],'active':True}]}}))
         record=index_observation(f.subject,'refs/heads/candidate',f.subject['repository'],status,'/body/manifests')
         observed=f.evidence/'index-observation.json';observed.write_text(json.dumps(record))
+        coverage=coverage_disposition(f.subject,record,{'occurrences':1,'query_succeeded':not error,
+            'source_reads':1 if not error else 0,'warnings':[]})
+        coverage_path=f.evidence/'coverage.json';coverage_path.write_text(json.dumps(coverage))
         f.events.append({'type':'tool_use','part':{'id':'actual-native-query','tool':'factory_codeintel_grep',
             'state':{'status':'completed','input':{'repo_id':17,'ref':query_ref,'query':'entry'},
                      'output':json.dumps({'error':'offline'} if error else {'matches':[{'path':'component.go','line':1}]} )}}})
         return {'disposition':'required','reason':'Exact-source query obligation','reference':'Synthetic contract',
             'index_observation':str(observed),'query_event_ids':['actual-native-query'],
             'repository_argument':'repo_id','repository_value':17,'ref_argument':'ref',
+            'coverage_receipt':str(coverage_path),'coverage_disposition':coverage['coverage_disposition'],
             'coverage_limitations':['Lexical search only; no semantic completeness claim']}
 
     def test_skipped_codeintel_or_discovery_only_or_error_cannot_earn_readiness(self):

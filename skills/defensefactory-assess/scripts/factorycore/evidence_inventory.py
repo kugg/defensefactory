@@ -1,5 +1,6 @@
 """Inventory declared evidence roots and observable tool calls; never infer working memory."""
 import json
+import datetime
 from pathlib import Path
 import shlex
 import re
@@ -167,14 +168,18 @@ def observed_tools(raw, workspace, opening=None, cache_directory=None, capture_l
             else:
                 classification = 'unreviewed_shell_command'
         item['classification'] = classification
-        if classification in ('unreviewed_shell_command','capture_missing_or_unbound'):
-            problems.append('Unbound/unreviewed tool event ' + str(number))
+        if classification == 'unreviewed_shell_command':
+            problems.append('unguarded_capture:event '+str(number)+
+                ': run direct producers through the selected package scripts/stage-exec.py')
+        elif classification == 'capture_missing_or_unbound':
+            problems.append('guarded_capture_unbound:event '+str(number)+
+                ': preserve the stage-exec admission/capture receipt and bind it to this opening')
         tools.append({'event_index':number,'tool':item['tool'],'classification':classification,
                       **({'capture_reference':item['capture_reference']} if item.get('capture_reference') else {})})
         records.append(item)
     return {'record_type':'tool_observations','captured_at':now(),'raw_prefix_sha256':sha(prefix),
             'raw_prefix_bytes':len(prefix),'private_reasoning_exported':False,'share_review_required':True,'events':records,
-            'parse_problems':[p for p in problems if not p.startswith('Unbound/unreviewed')]}, tools, problems
+            'parse_problems':[p for p in problems if not p.startswith(('unguarded_capture:','guarded_capture_unbound:'))]}, tools, problems
 
 
 def inventory(roots, output, *, events=None, workspace=None, opening=None, requirements=None, finalized=False):
@@ -206,10 +211,47 @@ def inventory(roots, output, *, events=None, workspace=None, opening=None, requi
               'evidence_roots_complete':True,'capture_adherence':'incomplete' if problems else 'satisfied_within_observed_prefix',
               'trace_finalized':finalized,'snapshot_handoff_ready':not problems,
               'whole_attempt_handoff_ready':not problems and finalized,'problems':problems,
+              'whole_attempt_handoff_reason':None if not problems and finalized else
+                  'trace_not_finalized' if not finalized and not problems else 'handoff_requirements_unsatisfied',
               'limitation':'Declared roots and observed event prefix only. Undisclosed files, arbitrary external tools and private working memory are not observable. No authenticated isolation/acceptance.'}
     checked=verify_inventory(result, lambda p:Path(p).read_bytes(), check_saved=False)
     result.update(checked, capture_adherence='incomplete' if checked['problems'] else 'satisfied_within_observed_prefix')
     write_json(root / 'inventory.json', result)
+    return result
+
+
+def publication_gate(inv, read_file, override=None):
+    """Make incomplete handoff publication an explicit operator decision."""
+    replay=verify_inventory(inv,read_file,check_saved=True)
+    finalized=inv.get('trace_finalized') is True
+    ready=replay['whole_attempt_handoff_ready']
+    basis='whole_attempt'
+    problems=list(replay['problems'])
+    if not finalized:
+        problems.append('Trace is not finalized; publication cannot claim whole-attempt readiness')
+    if ready:
+        result={'record_type':'handoff_publication_gate','schema_version':1,'result':'satisfied_within_scope',
+                'publish_permitted':True,'handoff_ready':True,'readiness_basis':basis,
+                'whole_attempt_claim_permitted':True,'inventory_sha256':identity(inv),'problems':problems}
+    elif not isinstance(override,dict):
+        result={'record_type':'handoff_publication_gate','schema_version':1,'result':'blocked',
+                'publish_permitted':False,'handoff_ready':False,'readiness_basis':basis,
+                'whole_attempt_claim_permitted':False,'inventory_sha256':identity(inv),'problems':problems,
+                'next_action':'Satisfy the named handoff problems or attach an explicit operator override that publishes incomplete evidence without claiming readiness.'}
+    else:
+        require(override.get('decision_id') and override.get('decided_by') and override.get('decided_at')
+                and isinstance(override.get('reference'),str) and override['reference'] and override.get('reason') and
+                override.get('scope')=='publish_incomplete_evidence',
+                'Handoff override needs decision, decider, timestamp, reference, reason and publish_incomplete_evidence scope')
+        parsed=datetime.datetime.fromisoformat(override['decided_at'].replace('Z','+00:00'))
+        require(parsed.tzinfo is not None and not override['reference'].startswith('file://'),
+                'Handoff override needs timezone and durable reference')
+        result={'record_type':'handoff_publication_gate','schema_version':1,'result':'overridden_with_limitation',
+                'publish_permitted':True,'handoff_ready':False,'readiness_basis':basis,
+                'whole_attempt_claim_permitted':False,'inventory_sha256':identity(inv),'problems':problems,
+                'override':override,
+                'limitation':'Operator allowed publication of incomplete evidence; the override does not make the handoff ready.'}
+    result['publication_gate_sha256']=identity(result)
     return result
 
 

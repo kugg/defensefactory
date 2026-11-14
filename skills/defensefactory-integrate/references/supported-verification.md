@@ -136,6 +136,8 @@ For a required obligation:
     "repository_argument": "actual tool repository argument key",
     "repository_value": "actual repository ID/value",
     "ref_argument": "actual tool branch/ref argument key",
+    "coverage_receipt": "/evidence/codeintel-coverage.json",
+    "coverage_disposition": "coverage_available",
     "coverage_limitations": ["actual warnings and lexical/semantic limits"]
   }
 }
@@ -149,6 +151,15 @@ arguments and errors (including full truncated-response caches). A list-repos
 event alone is not a source query. Skipped work, query errors, stale/mismatched
 index identity or an attempted switch from a scope-required obligation to
 `not_needed` remain incomplete.
+
+After the index observation and actual queries, run `codeintel-coverage` with
+the retained occurrence count, query outcome, source-read count and warnings.
+Bind its receipt and exact disposition in the handoff requirement. Zero
+occurrences is `coverage_zero_occurrence`, not a pass or a claim violation.
+Unavailable and partial coverage are also explicit. For any unsupported state,
+run `codeintel-coverage-gate`: a `semantic_required` decision remains blocked;
+an owner-declared `non_semantic` scope may publish the evidence with limitation
+but receives no semantic-claim credit. See [workflow gates](workflow-gates.md).
 
 Create `codeintel-index-observation` from a **saved raw status** plus explicit JSON
 Pointers selecting its manifests/fields; the raw bytes become a dependency and

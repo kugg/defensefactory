@@ -54,6 +54,12 @@ def scope_prepare(data):
     scope.update(package=str(package), loaded_resource_sha256=files, rule_profiles=[str(path) for path in profile_paths],
                  rule_profile_sha256={str(path): sha(path.read_bytes()) for path in profile_paths},
                  stage_rules=rules_binding)
+    if stage == 'repair':
+        from .workflow_gates import repair_admission
+        gate=repair_admission(data.get('eligibility_receipt'),scope['subject'])
+        require(gate['repair_permitted'], 'Repair admission refused: '+ '; '.join(gate.get('problems',[])))
+        scope['eligibility_receipt']=data['eligibility_receipt']
+        scope['eligibility_sha256']=data['eligibility_receipt']['eligibility_sha256']
     if 'comparisons' in data:
         comparisons = data['comparisons']
         require(isinstance(comparisons, list) and len({c['id'] for c in comparisons}) == len(comparisons), 'Unique comparison subjects required')
