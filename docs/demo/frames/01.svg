@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img">
+  <rect width="1280" height="720" fill="#000"/>
+  <rect x="28" y="28" width="1224" height="664" rx="10" fill="none" stroke="#333" stroke-width="2"/>
+  <text x="70" y="82" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" letter-spacing="3">DARK FACTORY</text>
+  <text x="1210" y="82" text-anchor="end" fill="#777" font-family="Menlo, Consolas, monospace" font-size="18">SYNTHETIC HELPER DEMO · 1/5</text>
+  <text x="70" y="132" fill="#777" font-family="Menlo, Consolas, monospace" font-size="18">OFFLINE DETERMINISTIC FIXTURE · NO MODEL OR SERVICE CALLS</text>
+  <rect x="70" y="172" width="210" height="72" rx="4" fill="#fff"/><text x="175.0" y="217" text-anchor="middle" fill="#000" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">BUG REPORT</text>
+<path d="M294 208h56m-18-16 18 16-18 16" fill="none" stroke="#fff" stroke-width="5"/>
+<rect x="372" y="172" width="238" height="72" rx="4" fill="#fff"/><text x="491.0" y="217" text-anchor="middle" fill="#000" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">DURABLE TICKET</text>
+  <text x="70" y="319" fill="#777" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" letter-spacing="2">01 · REPORT</text>
+  <text x="70" y="357" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700">The ticket is the ledger</text>
+  <text x="76" y="390" fill="#7d7d7d" font-family="Menlo, Consolas, monospace" font-size="23">finding     </text><text x="270" y="390" fill="#fff" font-family="Menlo, Consolas, monospace" font-size="23">FIX-1 · Credential reaches peer</text><text x="76" y="442" fill="#7d7d7d" font-family="Menlo, Consolas, monospace" font-size="23">state       </text><text x="270" y="442" fill="#fff" font-family="Menlo, Consolas, monospace" font-size="23">active · exact subject and scope retained</text><text x="76" y="494" fill="#7d7d7d" font-family="Menlo, Consolas, monospace" font-size="23">receipt     </text><text x="270" y="494" fill="#fff" font-family="Menlo, Consolas, monospace" font-size="23">inputs and decisions survive the handoff</text>
+  <rect x="58" y="578" width="1164" height="72" rx="4" fill="#111" stroke="#333"/>
+  <circle cx="86" cy="614" r="6" fill="#fff"/>
+  <text x="106" y="622" fill="#fff" font-family="Menlo, Consolas, monospace" font-size="20">report  FIX-1 [active] · Credential reaches peer</text>
+  <text x="70" y="677" fill="#666" font-family="Arial, Helvetica, sans-serif" font-size="15">Synthetic metadata and execution evidence only · no live product, source index, PR mutation or deployment claim</text>
+</svg>

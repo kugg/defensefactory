@@ -1,9 +1,19 @@
 # Validation scope
 
 Validated on 2026-11-14. These are bounded checks of this experimental package.
-The consolidated release candidate passes 125 offline tests plus both disposable
+The consolidated release candidate passes 128 offline tests plus both disposable
 rule evaluators. No ticket, model, external service or cyber evaluation is inferred
 from these factory-only checks.
+
+Three focused README-evidence checks bind the published synthetic JSON to a fresh
+run of the real bug-class helper fixture, require the displayed class outcome and
+explicit no-live-product qualification, validate the PNG/GIF/WebM signatures and
+all five labeled SVG source frames, and reject missing local README links or media
+targets. The animation and poster were visually inspected at their published
+dimensions; the WebM was decoded as VP9 at 1280x720 and the GIF as 960x540. The
+flow is deliberately described as a synthetic helper demo. These checks do not
+establish live-agent adherence, source indexing, ticket mutation, PR mutation,
+runtime confirmation or deployment.
 
 The installer surface check requires exactly one public source entry point and
 one canonical packaged implementation. The relocated standalone-package test now

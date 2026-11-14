@@ -1,0 +1,61 @@
+{
+  "architecture_improvement": {
+    "applies_to_future_attempts": true,
+    "contract": "PEER-REGRESSION",
+    "rule": "Credentials must not cross to an unverified peer.",
+    "suggestion": "Make verified peer identity a required architectural fence for credential-bearing gateways."
+  },
+  "assessment": {
+    "boundary": "credential boundary",
+    "claim": "PEER-AUTH",
+    "included_current": [
+      "FIX-1"
+    ],
+    "included_historical": [
+      "FIX-2"
+    ],
+    "invariant": "CREDENTIAL-TO-UNVERIFIED-PEER"
+  },
+  "delivery": {
+    "pr": "https://github.com/fixture/repository/pull/7",
+    "proof_section_generated": true,
+    "section_sha256": "13d80efc5672ad63b266b438c91c7274b80c61d098997173d0860c167365fa42"
+  },
+  "limitations": [
+    "Synthetic metadata and execution evidence only.",
+    "No live finding, source index, runtime, pull request mutation or deployment was evaluated."
+  ],
+  "qualification": "Offline deterministic fixture; no model, ticket service, product target or deployment call.",
+  "repair": {
+    "hard_fence": {
+      "contract": "PEER-REGRESSION",
+      "coverage": "named negative and positive paths",
+      "id": "PEER-IDENTITY-FENCE",
+      "introduction_ref_status": "candidate",
+      "mechanism": "test"
+    },
+    "paths": [
+      "primary",
+      "retry",
+      "fallback",
+      "alternate_constructor",
+      "configuration"
+    ],
+    "restores_claim": "PEER-AUTH"
+  },
+  "report": {
+    "lifecycle": "active",
+    "ticket": "FIX-1",
+    "title": "Credential reaches peer"
+  },
+  "schema": "defensefactory/readme-synthetic-trial/v1",
+  "verification": {
+    "class_wide_remediation_claim_permitted": true,
+    "merge_subject": {
+      "repository": "fixture/repository",
+      "revision": "cccccccccccccccccccccccccccccccccccccccc"
+    },
+    "outcome": "class_remediated_within_scope",
+    "variant_count": 2
+  }
+}

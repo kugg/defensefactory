@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" role="img" aria-labelledby="title desc">
+  <title id="title">Defense Factory</title>
+  <desc id="desc">A monochrome white upside-down factory on a black field.</desc>
+  <rect width="1200" height="400" fill="#000"/>
+  <g fill="#fff">
+    <!-- The factory is deliberately inverted: the building sits above its roofline. -->
+    <path d="M90 70h340v116l-66 54v-52l-70 57v-57l-70 57v-57l-70 57-64-52z"/>
+    <rect x="120" y="78" width="54" height="72" fill="#000"/>
+    <rect x="210" y="78" width="54" height="72" fill="#000"/>
+    <rect x="300" y="78" width="54" height="72" fill="#000"/>
+    <path d="M130 245h34v59h-34zm88 3h34v88h-34zm88-6h34v54h-34z"/>
+  </g>
+  <text x="510" y="169" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="74" font-weight="700" letter-spacing="5">DEFENSE</text>
+  <text x="510" y="248" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="74" font-weight="700" letter-spacing="5">FACTORY</text>
+  <path d="M510 286h594" stroke="#fff" stroke-width="4"/>
+  <text x="510" y="327" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="21" letter-spacing="2">BUGS IN · ARCHITECTURAL ENFORCEMENT OUT</text>
+</svg>
