@@ -60,6 +60,7 @@ def main(argv=None) -> int:
             "python": version(["python3", "--version"]),
             "git": version(["git", "--version"]),
             "node": version(["node", "--version"]),
+            "go": version(["go", "version"]),
             "opencode": version(["opencode", "--version"]),
             "qualification": "Runtime version inventory, not a complete package-level SBOM.",
         }, sort_keys=True))

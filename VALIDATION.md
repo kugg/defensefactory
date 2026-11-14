@@ -25,6 +25,14 @@ closing a caller-path gap noted by the assessment-eligibility evaluation. These
 are local factory-helper corrections; the prior evaluation records remain
 unchanged and a new exact-ref evaluation is still required.
 
+The first exact-image repository run then exposed a host/image mismatch that
+host tests had hidden: the candidate contained Python 3.11 and no Go toolchain,
+so two Python 3.12 archive checks errored and one real Go discovery check failed.
+The release Dockerfile now pins separate Python 3.12, Node 22 and Go 1.23 stages,
+the manifest records every base rather than only the first, and the runtime
+inventory reports Go explicitly. This is a release-image correction; the failed
+image run remains part of the candidate history.
+
 The first Compose attempt preserved a real topology failure: an internal-only
 network prevented the trusted host controller from reaching loopback-published
 ledger and source ports. The correction gives only the auxiliary services a

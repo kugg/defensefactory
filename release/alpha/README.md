@@ -8,6 +8,9 @@ It uses one Defense Factory image for the ledger, source fixture and all eight
 stage invocations. The OpenTelemetry collector is a separately pinned
 observability service. Stage containers are read-only, have fresh tmpfs
 workspaces, no host mounts, no Docker socket and an internal-only network.
+The common image pins its Python 3.12, Node 22 and Go 1.23 build stages by
+registry digest so the repository tests and bundled Go fence evaluation use the
+same declared toolchains as the candidate.
 
 The deterministic worker is a transport and artifact-binding evaluation. It is
 not a substitute for the separate fresh-session OpenCode experiment described

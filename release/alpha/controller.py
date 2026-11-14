@@ -69,13 +69,13 @@ def tree_digest(path: Path) -> str:
     return identity(entries)
 
 
-def base_image() -> str:
-    first = next((line.strip() for line in DOCKERFILE.read_text().splitlines()
-                  if line.strip().startswith("FROM ")), "")
-    value = first.split()[1] if len(first.split()) >= 2 else ""
-    if "@sha256:" not in value:
-        raise TrialError("Alpha Dockerfile base image must be pinned by registry digest")
-    return value
+def base_images() -> list[str]:
+    values = [line.strip().split()[1] for line in DOCKERFILE.read_text().splitlines()
+              if line.strip().startswith("FROM ") and len(line.strip().split()) >= 2]
+    if not values or any(re.fullmatch(r"[^\s@]+@sha256:[0-9a-f]{64}", value) is None
+                         for value in values):
+        raise TrialError("Every alpha Dockerfile base image must be pinned by registry digest")
+    return values
 
 
 def current_commit() -> str:
@@ -153,7 +153,7 @@ def release_manifest(image: str, digest: str, commit: str, inventory: dict,
         "git_commit": commit,
         "image": image,
         "image_digest": digest,
-        "base_image": base_image(),
+        "base_images": base_images(),
         "capability_profiles_sha256": sha256(PROFILES.read_bytes()),
         "capability_profiles_identity": identity(profiles),
         "skills": {path.name: tree_digest(path) for path in sorted((ROOT / "skills").iterdir())

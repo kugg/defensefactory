@@ -3,11 +3,12 @@ from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import json
 from pathlib import Path
+import re
 import tempfile
 import threading
 import unittest
 
-from release.alpha import source_service, stage_worker
+from release.alpha import controller, source_service, stage_worker
 from release.alpha.ledger_service import LedgerStore, handler_for
 from release.alpha.protocol import (STAGES, TICKET_SCHEMA, ProtocolError, canonical,
                                     read_json, sha256, validate_profiles)
@@ -71,7 +72,11 @@ class AlphaReleaseTests(unittest.TestCase):
         for name in ("Dockerfile", "compose.yaml", "otel-collector.yaml", "README.md"):
             self.assertTrue((ALPHA / name).is_file(), name)
         dockerfile = (ALPHA / "Dockerfile").read_text()
-        self.assertRegex(dockerfile, r"(?m)^FROM [^\s]+@sha256:[0-9a-f]{64}$")
+        bases = [line.split()[1] for line in dockerfile.splitlines() if line.startswith("FROM ")]
+        self.assertEqual(len(bases), 3)
+        self.assertTrue(all(re.fullmatch(r"[^\s@]+@sha256:[0-9a-f]{64}", item)
+                            for item in bases))
+        self.assertEqual(controller.base_images(), bases)
         compose = (ALPHA / "compose.yaml").read_text()
         self.assertIn("read_only: true", compose)
         self.assertIn("internal: true", compose)
