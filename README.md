@@ -156,17 +156,18 @@ and [architectural bug classes](skills/defensefactory/references/bug-classes.md)
 | Stage | Durable outcome |
 | --- | --- |
 | **Intake** | Finding, original evidence, exact source and authorized scope. |
-| **Assess** | Early disposition, or active exposure, attack complexity and repair obligations. |
-| **Repair** | Bounded candidate restoring the governing claim across the declared bug class. |
-| **Verify** | Exact-subject security, behavior, architecture and runtime evidence. |
+| **Assess** | Early disposition, or active exposure, attack complexity, structured decisions and exact-subject repair eligibility. |
+| **Repair** | Eligibility-admitted bounded candidate restoring the governing claim across the declared bug class. |
+| **Verify** | Exact-subject security, behavior, architecture, runtime and optional fresh-process comparison evidence. |
 | **Integrate** | Merge-subject and governing-policy decision. |
-| **Deploy** | Identified artifact rolled out only within separately authorized scope. |
+| **Deploy** | Identified artifact with satisfied cross-component deployment bindings, rolled out only within separately authorized scope. |
 | **Confirm** | Actual deployed artifact, configuration and rollout scope checked. |
 | **Maintain** | Explicit drift, exception and new-variant pass. |
 
 Every stage has a standalone skill. The orchestration skill routes using freshly
 retrieved ticket state; it does not pass an invisible in-memory success claim to
-the next stage. See [where handoff state lives](skills/defensefactory/references/handoff-state.md).
+the next stage. See [where handoff state lives](skills/defensefactory/references/handoff-state.md)
+and the [resumable workflow gates](skills/defensefactory/references/workflow-gates.md).
 
 ## Self-improvement without rewriting history
 

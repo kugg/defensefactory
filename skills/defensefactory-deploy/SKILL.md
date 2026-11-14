@@ -29,6 +29,8 @@ Build the exact subject, record toolchain/commands and artifact digest, and exec
 
 Carry portable component/claim/fence IDs and generated integration receipts into artifact/configuration binding using the [component claim procedure](references/component-claims.md). Do not copy or rewrite the canonical definitions as deployment state.
 
+Before release admission, follow the [workflow gate procedure](references/workflow-gates.md). Define the project's cross-component alignment points in a portable deployment contract, capture protected observations through its adapter, and run `deployment-contract`. A satisfied exact-subject deployment-binding receipt is mandatory; violated or unknown origin, route/socket, authentication, application-variable, TLS-name/trust-policy, or equivalent project-declared alignment points block rollout.
+
 Use the [host release lifecycle](references/release-lifecycle.md) and its release-admit/rollout/confirm/maintain operations. Finish the authorized demo scope with actual evidence. Production isolation/platform/research criteria belong in linked future tickets; do not turn them into a new approval barrier. Treat developers and agents as normal component owners under existing repository policy.
 
 Before handing state to another stage, read [state, capture and replay](references/handoff-state.md). Save input snapshots, comparison recipes/results and artifact build/use bindings; archive the whole registered evidence inventory. The runner’s finalized postflight audit qualifies the worker’s prefix report. Local paths, console Booleans and remembered conclusions alone are incomplete handoff evidence.
@@ -49,8 +51,8 @@ For comparison builds, runtime probes and required CodeIntel work, use the [supp
       "id": "deployment-workflow",
       "section": "Defense Factory deploy",
       "rules": ["DF-TICKET-CURRENT", "DF-SCOPE-BEFORE-WORK", "DF-EXACT-SUBJECT", "DF-RETAIN-EVIDENCE", "DF-PUBLISH-READBACK", "DF-TERMINAL-STOPS", "DF-NO-IMPLICIT-AUTHORITY", "DEPLOY-BUILD-IDENTIFIED-ARTIFACT", "DEPLOY-AUTHORIZED-SCOPE-ONLY"],
-      "actions": ["fetch_ticket", "publish_scope", "bind_subject", "retain_evidence", "publish_receipt", "readback_ticket", "stop_work", "build_artifact", "deploy_authorized"],
-      "evidence": ["ticket_snapshot", "opening_receipt", "subject_receipt", "execution_receipt", "publication_readback", "artifact_receipt", "deployment_receipt"]
+      "actions": ["fetch_ticket", "publish_scope", "bind_subject", "retain_evidence", "publish_receipt", "readback_ticket", "stop_work", "build_artifact", "validate_deployment_binding", "deploy_authorized"],
+      "evidence": ["ticket_snapshot", "opening_receipt", "subject_receipt", "execution_receipt", "publication_readback", "artifact_receipt", "deployment_binding_receipt", "deployment_receipt"]
     },
     {"id": "deployment-helpers", "section": "Execution and evidence helpers", "rules": ["DF-RETAIN-EVIDENCE", "DEPLOY-BUILD-IDENTIFIED-ARTIFACT"], "actions": [], "evidence": []}
   ]

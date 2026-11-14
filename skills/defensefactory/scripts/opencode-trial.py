@@ -157,8 +157,12 @@ def execute(target, manifest, otel_log=None):
             requirements=json.loads(requirements.read_text()) if requirements.exists() else None,finalized=True)
         result['postflight_inventory']=str(target/'postflight/inventory.json')
         result['whole_attempt_handoff_ready']=audit['whole_attempt_handoff_ready']
+        result['whole_attempt_handoff_reason']=audit.get('whole_attempt_handoff_reason')
+        result['whole_attempt_handoff_problems']=audit['problems']
     except (OSError,ValueError,KeyError,TypeError) as exc:
         result['whole_attempt_handoff_ready']=False
+        result['whole_attempt_handoff_reason']='postflight_audit_failed'
+        result['whole_attempt_handoff_problems']=[str(exc)]
         result['postflight_error']=str(exc)
     with (target / 'invocation-result.json').open('x') as f:
         json.dump(result, f, indent=2)

@@ -11,6 +11,21 @@ and stops at a draft PR with construction evidence.
   "inherits": ["defensefactory/RULES.md"],
   "rules": [
     {
+      "id": "REPAIR-ELIGIBILITY-REQUIRED",
+      "scope": "repair",
+      "strength": "must",
+      "when": {"stage_state": "opened", "applicability": "active"},
+      "requires": {"actions": ["admit_repair"], "evidence": ["eligibility_receipt"], "postconditions": ["repair_admitted"]},
+      "forbids": {"actions": ["edit_candidate", "create_draft_pr"]},
+      "allows": {},
+      "terminal": "either",
+      "mutation": "read_only",
+      "overrides": [],
+      "precedence": 80,
+      "safety": true,
+      "fulfillment": "procedure"
+    },
+    {
       "id": "REPAIR-BUGCLASS-BEFORE-EDIT",
       "scope": "repair",
       "strength": "must",

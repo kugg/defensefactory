@@ -35,6 +35,8 @@ Introduce or repair the hard invariant contract specified by assessment, with a 
 
 Before handing state to another stage, read [state, capture and replay](references/handoff-state.md). Save input snapshots, comparison recipes/results and artifact build/use bindings; archive the whole registered evidence inventory. The runner’s finalized postflight audit qualifies the worker’s prefix report. Local paths, console Booleans and remembered conclusions alone are incomplete handoff evidence.
 
+Repair admission follows the [workflow gate procedure](references/workflow-gates.md). Retrieve the current `assess_eligibility` receipt from the ticket and include it in repair `stage-scope`. Scope preparation refuses missing, changed, stale-subject or stale-contract eligibility. An open structured decision gate returns the case to assessment; do not edit first and qualify the omission later.
+
 ## Execution and evidence helpers
 
 The bundled `scripts/stage.py` accepts one explicit operation with JSON input/output and refuses to overwrite a receipt. Use supported generic operations for claim validation, assessment/readiness, source/evaluator identity, bounded check execution, admission, confirmation and maintenance. Project-specific compilation/build/deployment requires a ticket-linked, authorized adapter with verified bytes; an absent adapter is unsupported, never a default example. A helper result grants no tool permissions or lifecycle authority. Publish its raw receipt with the stage outcome and verify readback.
@@ -50,11 +52,11 @@ For comparison builds, runtime probes and required CodeIntel work, use the [supp
     {
       "id": "repair-workflow",
       "section": "Defense Factory repair",
-      "rules": ["DF-TICKET-CURRENT", "DF-SCOPE-BEFORE-WORK", "DF-EXACT-SUBJECT", "DF-RETAIN-EVIDENCE", "DF-PUBLISH-READBACK", "DF-TERMINAL-STOPS", "DF-NO-IMPLICIT-AUTHORITY", "REPAIR-BUGCLASS-BEFORE-EDIT", "REPAIR-BOUNDED-CANDIDATE", "REPAIR-NO-AUTHORITY-HOLDS"],
-      "actions": ["fetch_ticket", "publish_scope", "bind_subject", "retain_evidence", "publish_receipt", "readback_ticket", "stop_work", "discover_bugclass", "evaluate_bugclass_membership", "define_bugclass", "design_class_repair", "edit_candidate", "create_draft_pr"],
-      "evidence": ["ticket_snapshot", "opening_receipt", "subject_receipt", "execution_receipt", "publication_readback", "bugclass_discovery", "bugclass_membership", "bugclass_definition", "bugclass_repair_contract", "repair_receipt", "draft_pr_reference"]
+      "rules": ["DF-TICKET-CURRENT", "DF-SCOPE-BEFORE-WORK", "DF-EXACT-SUBJECT", "DF-RETAIN-EVIDENCE", "DF-PUBLISH-READBACK", "DF-TERMINAL-STOPS", "DF-NO-IMPLICIT-AUTHORITY", "REPAIR-ELIGIBILITY-REQUIRED", "REPAIR-BUGCLASS-BEFORE-EDIT", "REPAIR-BOUNDED-CANDIDATE", "REPAIR-NO-AUTHORITY-HOLDS"],
+      "actions": ["fetch_ticket", "publish_scope", "bind_subject", "retain_evidence", "publish_receipt", "readback_ticket", "stop_work", "admit_repair", "discover_bugclass", "evaluate_bugclass_membership", "define_bugclass", "design_class_repair", "edit_candidate", "create_draft_pr"],
+      "evidence": ["ticket_snapshot", "opening_receipt", "subject_receipt", "execution_receipt", "publication_readback", "eligibility_receipt", "bugclass_discovery", "bugclass_membership", "bugclass_definition", "bugclass_repair_contract", "repair_receipt", "draft_pr_reference"]
     },
-    {"id": "repair-helpers", "section": "Execution and evidence helpers", "rules": ["DF-RETAIN-EVIDENCE", "REPAIR-BUGCLASS-BEFORE-EDIT", "REPAIR-BOUNDED-CANDIDATE"], "actions": [], "evidence": []}
+    {"id": "repair-helpers", "section": "Execution and evidence helpers", "rules": ["DF-RETAIN-EVIDENCE", "REPAIR-ELIGIBILITY-REQUIRED", "REPAIR-BUGCLASS-BEFORE-EDIT", "REPAIR-BOUNDED-CANDIDATE"], "actions": [], "evidence": []}
   ]
 }
 ```

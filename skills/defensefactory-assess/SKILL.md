@@ -17,6 +17,8 @@ For new trials, follow the [stage admission and capture procedure](references/tr
 
 Use the [assessment resolution procedure](references/assessment-resolution.md) when a finding is nonactive, a hold is proposed, or impact is inherited from a reporter. Finish bounded source dispositions without demanding lifecycle-wide inventory; route real decisions to the stage they block and preserve deferred obligations. Require direct evidence for each claimed effect.
 
+Follow the [workflow gate procedure](references/workflow-gates.md). Represent each unresolved product/deployment choice with `decision-request`, not prose, and publish the matching decision receipt before resuming. For an active exact subject, assessment finishes only after `assess-eligibility-receipt` binds the reproduced counterexample, applicable contract version, resolved blocking decisions and authorized repair scope. Use `stalled-findings` to surface intake-only tickets; only an explicit park receipt suppresses that next action.
+
 For a bounded source trial, use the [scoped-source and bundle procedure](references/handoff-completeness.md). Missing global deployment inventory does not block authorized source assessment. Unknown historical references are background unless declared trial targets; recover their originating namespace before declaring them unavailable. Keep actual trust/provisioning decisions as repair-contract blockers, and never use a source-only gate to authorize closure.
 
 Start with the bundled [preflight and applicability procedure](references/experiment-preflight.md). A source observation is not a support-policy decision. Record actual performer/delegation separately; the connector account owner is not automatically the reviewer. Hypothetical scope comparisons cannot authorize closure.
@@ -87,8 +89,8 @@ For comparison builds, runtime probes and required CodeIntel work, use the [supp
       "id": "assessment-workflow",
       "section": "Defense Factory assess",
       "rules": ["DF-TICKET-CURRENT", "DF-SCOPE-BEFORE-WORK", "DF-EXACT-SUBJECT", "DF-RETAIN-EVIDENCE", "DF-PUBLISH-READBACK", "DF-TERMINAL-STOPS", "DF-NO-IMPLICIT-AUTHORITY", "ASSESS-ELIGIBILITY-FIRST", "ASSESS-INACTIVE-STOPS", "ASSESS-ACTIVE-BINDS-REPAIR", "ASSESS-UNKNOWN-HOLDS"],
-      "actions": ["fetch_ticket", "publish_scope", "bind_subject", "retain_evidence", "publish_receipt", "readback_ticket", "stop_work", "evaluate_eligibility", "assess_finding", "request_guidance", "discover_bugclass"],
-      "evidence": ["ticket_snapshot", "opening_receipt", "subject_receipt", "execution_receipt", "publication_readback", "assessment_receipt", "e2e_guidance", "bugclass_discovery"]
+      "actions": ["fetch_ticket", "publish_scope", "bind_subject", "retain_evidence", "publish_receipt", "readback_ticket", "stop_work", "evaluate_eligibility", "issue_eligibility_receipt", "record_decision_request", "record_owner_decision", "detect_stalled_findings", "assess_finding", "request_guidance", "discover_bugclass"],
+      "evidence": ["ticket_snapshot", "opening_receipt", "subject_receipt", "execution_receipt", "publication_readback", "assessment_receipt", "eligibility_receipt", "decision_request", "decision_receipt", "stalled_findings_report", "e2e_guidance", "bugclass_discovery"]
     },
     {"id": "assessment-e2e", "section": "End-to-end testing guidance", "rules": ["ASSESS-ACTIVE-BINDS-REPAIR", "ASSESS-UNKNOWN-HOLDS"], "actions": [], "evidence": []},
     {"id": "assessment-handoff", "section": "Contract and handoff", "rules": ["DF-PUBLISH-READBACK", "ASSESS-ACTIVE-BINDS-REPAIR"], "actions": [], "evidence": []},

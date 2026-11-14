@@ -6,6 +6,80 @@ from .evidence_records import dependency, select, now, strict_json
 from .trial_controls import index_subject
 
 
+COVERAGE_STATES = {'coverage_available', 'coverage_zero_occurrence',
+                   'coverage_unavailable', 'coverage_partial'}
+
+
+def coverage_disposition(subject, index_record, observation):
+    """Separate index/query coverage from a claim verdict or publication decision."""
+    require(index_record.get('subject') == subject, 'Coverage index differs from the exact subject')
+    require(isinstance(observation, dict), 'CodeIntel coverage observation required')
+    occurrences = observation.get('occurrences')
+    require(occurrences is None or type(occurrences) is int and occurrences >= 0,
+            'SCIP occurrence count must be a nonnegative integer or unknown')
+    query_succeeded = observation.get('query_succeeded') is True
+    source_reads = observation.get('source_reads')
+    require(type(source_reads) is int and source_reads >= 0, 'Source-read count required')
+    warnings = observation.get('warnings', [])
+    require(isinstance(warnings, list), 'Coverage warnings must be an array')
+    if not index_record.get('exact_index_available'):
+        state = 'coverage_unavailable'
+    elif occurrences == 0:
+        state = 'coverage_zero_occurrence'
+    elif not query_succeeded or occurrences is None or source_reads == 0 or warnings:
+        state = 'coverage_partial'
+    else:
+        state = 'coverage_available'
+    body = {'record_type':'codeintel_coverage','schema_version':1,'subject':subject,
+            'index_observation_sha256':identity(index_record),'coverage_disposition':state,
+            'observation':observation,'semantic_coverage_supported':state == 'coverage_available',
+            'result':'satisfied_within_scope' if state == 'coverage_available' else 'unsupported',
+            'publication_effect':'normal' if state == 'coverage_available' else 'operator_scope_decision_required',
+            'limitation':'Coverage classifies retained index/query observations; it does not establish a security claim or unpublish evidence.'}
+    body['coverage_sha256'] = identity(body)
+    return body
+
+
+def verify_coverage(record, subject):
+    require(record.get('record_type') == 'codeintel_coverage' and
+            record.get('coverage_disposition') in COVERAGE_STATES, 'CodeIntel coverage receipt required')
+    require(record.get('subject') == subject, 'CodeIntel coverage is bound to another subject')
+    require(record.get('coverage_sha256') == identity({k:v for k,v in record.items() if k != 'coverage_sha256'}),
+            'CodeIntel coverage receipt changed')
+    return record
+
+
+def _gate(body):
+    body['coverage_gate_sha256']=identity(body)
+    return body
+
+
+def coverage_publish_gate(record, decision=None):
+    """Unsupported semantic coverage never silently passes or unpublishes evidence."""
+    verify_coverage(record, record.get('subject'))
+    state = record['coverage_disposition']
+    if state == 'coverage_available':
+        return _gate({'result':'satisfied_within_scope','publish_permitted':True,
+                'semantic_claim_permitted':True,'coverage_disposition':state,
+                'coverage_sha256':record['coverage_sha256']})
+    if not isinstance(decision, dict):
+        return _gate({'result':'blocked','publish_permitted':False,'semantic_claim_permitted':False,
+                'coverage_disposition':state,'coverage_sha256':record['coverage_sha256'],
+                'problem':'semantic coverage unsupported; explicit operator scope decision required'})
+    require(decision.get('scope') in ('non_semantic', 'semantic_required') and decision.get('decided_by')
+            and isinstance(decision.get('reference'),str) and decision['reference']
+            and not decision['reference'].startswith('file://') and decision.get('reason'),
+            'Coverage decision needs scope, decider, reference and reason')
+    if decision['scope'] == 'semantic_required':
+        return _gate({'result':'blocked','publish_permitted':False,'semantic_claim_permitted':False,
+                'coverage_disposition':state,'coverage_sha256':record['coverage_sha256'],
+                'decision':decision,'problem':'semantic coverage unsupported for a semantic-required scope'})
+    return _gate({'result':'satisfied_with_limitation','publish_permitted':True,
+            'semantic_claim_permitted':False,'coverage_disposition':state,
+            'coverage_sha256':record['coverage_sha256'],'decision':decision,
+            'limitation':'Evidence may be published for the declared non-semantic scope; no claim-wide semantic coverage is granted.'})
+
+
 def index_observation(subject, branch, request_repository, source_file, pointer, fields=None, activation=None, repository_pointer='/body/id'):
     raw = Path(source_file).read_bytes()
     mapping = fields or ({'branch':'/branch','commitHash':'/commitHash'} if activation else
@@ -128,6 +202,12 @@ def check(requirement, observations, records, read_file, subject):
                 result=_payload(e)
             require(not (isinstance(result,dict) and (result.get('error') or result.get('isError'))), 'CodeIntel query returned an error')
         require(requirement.get('coverage_limitations') is not None, 'Retain query/SCIP coverage limitations separately')
+        coverage=json.loads(read_file(requirement['coverage_receipt']))
+        verify_coverage(coverage,subject)
+        gate=coverage_publish_gate(coverage,requirement.get('operator_scope_decision'))
+        require(gate['publish_permitted'],gate.get('problem','CodeIntel coverage does not permit publication'))
+        require(requirement.get('coverage_disposition')==coverage['coverage_disposition'],
+                'Declared CodeIntel coverage disposition differs from retained receipt')
     except (ValueError,OSError,KeyError,TypeError) as error:
         problems.append('CodeIntel: '+str(error))
     return problems

@@ -4,16 +4,18 @@ from .core import require,identity,authorize
 from .lifecycle import deployment_event,confirm,maintain
 
 
-def admit_release(case,actor,policy,integration,build,units,claims,fences):
+def admit_release(case,actor,policy,integration,build,units,claims,fences,deployment_binding):
     authorize(policy,actor,'build',case);authorize(policy,actor,'deploy',case)
     cfg=policy['release_cases'][case]
     require(cfg['mode']=='demo','Protected/production platform qualification is a separate capability; no fallback to demo')
     require(integration.get('result')=='satisfied_within_scope' and integration.get('integrated_revision')==build.get('source'),'Accepted integrated source/build correspondence missing')
     require(build.get('artifact_sha256') and build.get('build',{}).get('result')=='satisfied_within_scope','Identified successful artifact build required')
+    from .deployment_contract import validate_binding
+    validate_binding(deployment_binding,build['source'])
     require(units and set(units)==set(cfg['units']),'Declared rollout units differ from authority')
     require(claims and fences,'Claim/fence identities must follow the artifact')
     for name,unit in units.items():require(unit.get('configuration_sha256') and unit.get('binding') and unit.get('evidence_reference'),'Configuration/binding/evidence locator required for '+name)
-    r={'schema_version':1,'stage':'deploy','case':case,'mode':'demo','source':build['source'],'artifact_sha256':build['artifact_sha256'],'integration_sha256':identity(integration),'build_sha256':identity(build),'units':copy.deepcopy(units),'claim_ids':list(claims),'fence_ids':list(fences),'policy_sha256':identity(policy),'rollout_performed':False,'result':'satisfied_within_scope','closure_permitted':False}
+    r={'schema_version':1,'stage':'deploy','case':case,'mode':'demo','source':build['source'],'artifact_sha256':build['artifact_sha256'],'integration_sha256':identity(integration),'build_sha256':identity(build),'deployment_binding_sha256':deployment_binding['deployment_binding_sha256'],'units':copy.deepcopy(units),'claim_ids':list(claims),'fence_ids':list(fences),'policy_sha256':identity(policy),'rollout_performed':False,'result':'satisfied_within_scope','closure_permitted':False}
     r['release_sha256']=identity(r);return r
 
 

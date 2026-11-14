@@ -37,7 +37,11 @@ from factorycore.input_examples import describe
 from factorycore.invocation_recovery import recovery_receipt
 from factorycore.trial_controls import scope_prepare,stage_start,stage_command,mutation_plan,mutation_result,index_subject
 from factorycore.runtime_plan import declare as declare_runtime, outcomes as runtime_outcomes
-from factorycore.codeintel_gate import index_observation
+from factorycore.codeintel_gate import index_observation,coverage_disposition,coverage_publish_gate
+from factorycore.workflow_gates import (decision_request,record_decision,decision_gate,
+    issue_eligibility,repair_admission,stalled_findings)
+from factorycore.deployment_contract import evaluate as evaluate_deployment_contract
+from factorycore.evidence_inventory import publication_gate as handoff_publication_gate
 from factorycore.source_export import export_sources
 from factorycore.rules_contracts import (claim_status as rules_status,evaluate_candidate as rules_evaluate,
     parse_rules,resolve_contracts,rules_change_gate,run_contracts,semantic_diff as rules_diff,semantic_model,transitional_compare)
@@ -62,6 +66,8 @@ def run(operation, data):
     if operation=='runtime-plan':return declare_runtime(record('opening'),data['probes'],data['reference'])
     if operation=='runtime-result':return runtime_outcomes(record('declaration'),record('opening'),[json.loads(Path(p).read_text()) for p in data['execution_files']],lambda p:Path(p).read_bytes())
     if operation=='codeintel-index-observation':return index_observation(data['subject'],data['branch'],data['request_repository'],data['source_file'],data['manifest_pointer'],data.get('fields'),data.get('activation'),data.get('repository_pointer','/body/id'))
+    if operation=='codeintel-coverage':return coverage_disposition(data['subject'],record('index_observation'),data['observation'])
+    if operation=='codeintel-coverage-gate':return coverage_publish_gate(record('coverage'),data.get('operator_scope_decision'))
     if operation=='source-export':return export_sources(data['repo'],data['revisions'],data['destination'],data.get('timeout_seconds',60))
     if operation=='codeintel-index-subject':return index_subject(data['subject'],data['manifests'],data['branch'],request_repository=data['request_repository'],job_active=data.get('job_active',False),warnings=data.get('warnings'),scip=data.get('scip'))
     if operation=='invocation-recovery':return recovery_receipt(data)
@@ -84,6 +90,16 @@ def run(operation, data):
     if operation=='probe-assert':return assertions(data['subject'],data['check_id'],data['expectations'],data['observations'])
     if operation=='assess-observe':return observe(data['packet'],data['actor'])
     if operation=='assess-eligibility':return evaluate(data.get('packet',{}),data.get('policy'),data.get('actor'))
+    if operation=='assess-eligibility-receipt':return issue_eligibility(record('assessment'),data['subject'],data['counterexample'],data['contract'],data['authorized_scope'],data.get('decision_gates',[]))
+    if operation=='repair-admission':return repair_admission(record('eligibility_receipt') if data.get('eligibility_receipt') or data.get('eligibility_receipt_file') else None,data['subject'],data.get('contract_version'),data.get('scope_reference'))
+    if operation=='decision-request':return decision_request(data)
+    if operation=='decision-record':return record_decision(record('request'),data['selection'],data['decider'],data['decided_at'],data['reference'],data['scope'])
+    if operation=='decision-gate':return decision_gate(record('request'),record('decision') if data.get('decision') or data.get('decision_file') else None)
+    if operation=='stalled-findings':return stalled_findings(data['findings'])
+    if operation=='deployment-contract':return evaluate_deployment_contract(data['contract'],data['observations'])
+    if operation=='handoff-publication-gate':
+        inventory=record('inventory')
+        return handoff_publication_gate(inventory,lambda path:Path(path).read_bytes(),data.get('override'))
     if operation=='component-inspect':return inspect_component(data['repo'],data['before'],data['after'],data['path'])
     if operation=='ledger-parse':return parse_document(data['content'])
     if operation=='ledger-prepare':return prepare_publication(data['checkpoint'],data['expected'],{key:Path(path).read_bytes() for key,path in data['resource_files'].items()},data.get('preparation_exit_code',0))
@@ -95,7 +111,7 @@ def run(operation, data):
         backend=CodeEvidenceBackend(configured_host_client(),data['allowed_repositories'])
         return backend.evaluate(data['subject'],data['tool'],data['arguments'],policy_sha256=data['policy_sha256'],extractor=data['extractor'])
     if operation=='exposure-graph':return exposure_graph(data['graph'])
-    if operation=='release-admit':return admit_release(data['case'],data['actor'],data['policy'],data['integration'],data['build'],data['units'],data['claim_ids'],data['fence_ids'])
+    if operation=='release-admit':return admit_release(data['case'],data['actor'],data['policy'],data['integration'],data['build'],data['units'],data['claim_ids'],data['fence_ids'],data['deployment_binding'])
     if operation=='release-rollout':return record_rollout(data['release'],data.get('current',{}),data['event'],data.get('rollback_release'))
     if operation=='release-confirm':return confirm_release(data['release'],data['rollout'],data['observations'],data['now'],data['max_age'])
     if operation=='release-maintain':return maintain_release(data['release'],data['rollout'],data['current'],data['records'],data.get('exceptions',[]),data.get('counterexamples',[]),data['now'],data.get('existing_actions'))
@@ -184,7 +200,7 @@ def main():
         with out.open('x') as stream:stream.write(json.dumps(result,indent=2)+'\n')
     except FileExistsError:p.error('Output appeared during execution; preserve it and use a new receipt path')
     print(json.dumps({'operation':a.operation,'output':str(out),'result':result.get('result','recorded')}))
-    return 1 if result.get('result') in ('violated','inconclusive','unsupported','failed') else 0
+    return 1 if result.get('result') in ('violated','inconclusive','unsupported','failed','blocked','diverged') else 0
 
 
 if __name__=='__main__':sys.exit(main())

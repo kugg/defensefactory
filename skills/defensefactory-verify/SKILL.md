@@ -25,6 +25,8 @@ Record execution outcome, security finding/premise, assessment completeness, ver
 
 Retrieve the exact candidate, requirement authority, frozen evaluator/check definitions, formal disposition and E2E guidance from the ticket, independently of the repair narrative. Use controlled fresh inputs and record the verifier's actual identity and permissions. Another checkout or persona alone is not independently protected acceptance.
 
+When the ticket requires a fresh-context comparison, use the [workflow gate procedure](references/workflow-gates.md) and `scripts/independent-eval.py`. Preserve per-obligation divergence. Fresh clean processes demonstrate context separation only; do not call them protected or organizationally independent acceptance without separate authenticated evidence.
+
 Follow the [execution and report protocol](references/verification-execution.md). Freeze a declared test-output format and named inventory; exit code zero without required execution is incomplete. Keep bounded model results separate from exact implementation/check correspondence.
 
 Run the required full source gate, original exploit, variants, legitimate journeys, architecture checks and authorized E2E gates on the same subject. Follow the case's testing plan. Distinguish real and stubbed legs, fixture tests, actual runtime observations and production evidence. A scoped pass cannot replace a failed required suite. If guidance needed to execute these checks is absent, return to assessment and ask for it; do not invent a substitute.
