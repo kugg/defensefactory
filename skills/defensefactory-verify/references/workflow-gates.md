@@ -31,6 +31,16 @@ then `resume`. Eligibility accepts a decided gate only for the same exact repair
 subject; a valid gate for another repository or revision cannot be replayed.
 Ticket prose such as “decision needed” is context, not gate state.
 
+## External evaluation follow-up
+
+Posting an evaluation request opens work; it does not supply a result. Retain
+the evaluation ticket identifier and requested exact subject in the current
+release or trial checklist. Before claiming readiness, creating a replacement
+request or moving to the next release gate, retrieve the ticket again and read
+its latest result comments. Bind every verdict to the exact evaluated subject,
+record limitations, and reconcile contradictory verdicts explicitly. A label,
+status or remembered request is not evaluation evidence.
+
 ## CodeIntel coverage
 
 Index identity, source querying, SCIP coverage and a security conclusion are

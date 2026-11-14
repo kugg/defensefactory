@@ -267,7 +267,9 @@ the failed attempt.
 3. Run repository and package validation inside that image.
 4. Run the five trial scenarios with fresh containers and preserve all failures.
 5. Review the ticket/evidence graph without access to stage workspaces.
-6. Reconcile linked gate evaluations and record remaining qualifications.
+6. Refresh every linked evaluation ticket, read its result comments, bind each
+   verdict to its exact evaluated subject, and reconcile contradictions and
+   remaining qualifications. Creating the eval ticket is not completion.
 7. Generate the release manifest and alpha release notes.
 8. Tag the exact commit `v0.1.0-alpha.1` and publish the image by digest.
 9. Run the installation and replay test from the published artifacts.
