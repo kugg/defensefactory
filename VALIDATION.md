@@ -7,11 +7,14 @@ from these factory-only checks.
 
 Three focused README-evidence checks bind the published synthetic JSON to a fresh
 run of the real bug-class helper fixture, require the displayed class outcome and
-explicit no-live-product qualification, validate the PNG/GIF/WebM signatures and
-all five labeled SVG source frames, and reject missing local README links or media
-targets. The animation and poster were visually inspected at their published
-dimensions; the WebM was decoded as VP9 at 1280x720 and the GIF as 960x540. The
-flow is deliberately described as a synthetic helper demo. These checks do not
+explicit no-live-product qualification, validate the PNG/GIF/WebM signatures,
+three published static evidence frames and all five labeled SVG source frames,
+and reject missing local README links or media targets. The animation, poster
+and frames were visually inspected at their published dimensions; the WebM was
+decoded as VP9 at 1280x720 and the GIF as 960x540. GitHub rendered the candidate
+in its default light and dark themes and at a 390x844 viewport; the account's
+original sync-with-system preference was restored after the light-theme check.
+The flow is deliberately described as a synthetic helper demo. These checks do not
 establish live-agent adherence, source indexing, ticket mutation, PR mutation,
 runtime confirmation or deployment.
 

@@ -39,6 +39,15 @@ class ReadmeEvidenceTests(unittest.TestCase):
             (assets / "dark-factory-demo-poster.png").read_bytes()[:8],
             b"\x89PNG\r\n\x1a\n",
         )
+        for name in (
+            "dark-factory-demo-report.png",
+            "dark-factory-demo-repair.png",
+            "dark-factory-demo-learn.png",
+        ):
+            self.assertEqual(
+                (assets / name).read_bytes()[:8],
+                b"\x89PNG\r\n\x1a\n",
+            )
         self.assertEqual(
             (assets / "dark-factory-demo.gif").read_bytes()[:6], b"GIF89a"
         )

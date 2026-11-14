@@ -17,11 +17,12 @@
   </p>
 </div>
 
-Defense Factory is a ticket-driven security-remediation workflow. A finding is
-qualified against an exact source subject, expanded into an architectural bug
-class, repaired at the boundary it violates, and bound to a deterministic hard
-fence. The ticket is the durable ledger: inputs, decisions, evidence, failures
-and the next action survive every stage handoff.
+Defense Factory is a ticket-driven security-remediation workflow for developers
+and security reviewers. A finding is qualified against an exact source subject,
+expanded into an architectural bug class, repaired at the boundary it violates,
+and bound to a deterministic hard fence. The ticket is the durable ledger:
+inputs, decisions, evidence, failures and the next action survive every stage
+handoff.
 
 > [!IMPORTANT]
 > This is an **experimental, manually operated workflow**. It does not provide
@@ -37,7 +38,10 @@ This animation replays a **deterministic, offline helper fixture**. It proves th
 displayed helper path, not a live remediation or autonomous product change.
 [Watch the WebM](docs/assets/dark-factory-demo.webm), inspect the
 [structured record](docs/demo/synthetic-trial.json), or read the
-[media provenance](docs/demo/README.md).
+[media provenance](docs/demo/README.md). Static evidence frames show the
+[report](docs/assets/dark-factory-demo-report.png),
+[repair](docs/assets/dark-factory-demo-repair.png), and
+[versioned learning](docs/assets/dark-factory-demo-learn.png) handoffs.
 
 ## The end-to-end flow
 

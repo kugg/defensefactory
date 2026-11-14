@@ -26,10 +26,13 @@ ffmpeg -y -framerate 1/2 -i docs/demo/frames/%02d.png \
   -vf "fps=30,scale=1280:-2:flags=lanczos,format=yuv420p" \
   -c:v libvpx-vp9 -crf 34 -b:v 0 docs/assets/dark-factory-demo.webm
 cp docs/demo/frames/01.png docs/assets/dark-factory-demo-poster.png
+cp docs/demo/frames/01.png docs/assets/dark-factory-demo-report.png
+cp docs/demo/frames/03.png docs/assets/dark-factory-demo-repair.png
+cp docs/demo/frames/05.png docs/assets/dark-factory-demo-learn.png
 rsvg-convert --width 1200 --height 400 docs/assets/dark-factory-logo.svg \
   --output docs/assets/dark-factory-logo.png
 ```
 
-The PNG frames are reproducible intermediates and are ignored. The source SVGs,
-poster, GIF and WebM are published. Keep the persistent synthetic qualification
-on every frame when revising the story.
+The PNG frames are reproducible intermediates and are ignored. Three named
+static frames, the poster, source SVGs, GIF and WebM are published. Keep the
+persistent synthetic qualification on every frame when revising the story.
