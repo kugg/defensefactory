@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img">
+  <rect width="1280" height="720" fill="#000"/>
+  <rect x="28" y="28" width="1224" height="664" rx="10" fill="none" stroke="#333" stroke-width="2"/>
+  <text x="70" y="82" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" letter-spacing="3">DARK FACTORY</text>
+  <text x="1210" y="82" text-anchor="end" fill="#777" font-family="Menlo, Consolas, monospace" font-size="18">SYNTHETIC HELPER DEMO · 3/5</text>
+  <text x="70" y="132" fill="#777" font-family="Menlo, Consolas, monospace" font-size="18">OFFLINE DETERMINISTIC FIXTURE · NO MODEL OR SERVICE CALLS</text>
+  <rect x="70" y="172" width="210" height="72" rx="4" fill="#fff"/><text x="175.0" y="217" text-anchor="middle" fill="#000" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">BUG CLASS</text>
+<path d="M294 208h56m-18-16 18 16-18 16" fill="none" stroke="#fff" stroke-width="5"/>
+<rect x="372" y="172" width="328" height="72" rx="4" fill="#fff"/><text x="536.0" y="217" text-anchor="middle" fill="#000" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">ARCHITECTURAL REPAIR</text>
+<path d="M714 208h56m-18-16 18 16-18 16" fill="none" stroke="#fff" stroke-width="5"/>
+<rect x="792" y="172" width="210" height="72" rx="4" fill="#fff"/><text x="897.0" y="217" text-anchor="middle" fill="#000" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">HARD FENCE</text>
+  <text x="70" y="319" fill="#777" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="700" letter-spacing="2">03 · REPAIR</text>
+  <text x="70" y="357" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="31" font-weight="700">Repair the boundary, not only the symptom</text>
+  <text x="76" y="390" fill="#7d7d7d" font-family="Menlo, Consolas, monospace" font-size="23">paths       </text><text x="270" y="390" fill="#fff" font-family="Menlo, Consolas, monospace" font-size="23">primary · retry · fallback</text><text x="76" y="442" fill="#7d7d7d" font-family="Menlo, Consolas, monospace" font-size="23">also        </text><text x="270" y="442" fill="#fff" font-family="Menlo, Consolas, monospace" font-size="23">alternate constructor · configuration</text><text x="76" y="494" fill="#7d7d7d" font-family="Menlo, Consolas, monospace" font-size="23">fence       </text><text x="270" y="494" fill="#fff" font-family="Menlo, Consolas, monospace" font-size="23">PEER-IDENTITY-FENCE · PEER-REGRESSION</text>
+  <rect x="58" y="578" width="1164" height="72" rx="4" fill="#111" stroke="#333"/>
+  <circle cx="86" cy="614" r="6" fill="#fff"/>
+  <text x="106" y="622" fill="#fff" font-family="Menlo, Consolas, monospace" font-size="20">repair  restores PEER-AUTH across every declared path</text>
+  <text x="70" y="677" fill="#666" font-family="Arial, Helvetica, sans-serif" font-size="15">Synthetic metadata and execution evidence only · no live product, source index, PR mutation or deployment claim</text>
+</svg>

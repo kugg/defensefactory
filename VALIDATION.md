@@ -1,9 +1,32 @@
 # Validation scope
 
 Validated on 2026-11-14. These are bounded checks of this experimental package.
-The consolidated release candidate passes 125 offline tests plus both disposable
+The consolidated release candidate passes 128 offline tests plus both disposable
 rule evaluators. No ticket, model, external service or cyber evaluation is inferred
 from these factory-only checks.
+
+Three focused README-evidence checks bind the published synthetic JSON to a fresh
+run of the real bug-class helper fixture, require the displayed class outcome and
+explicit no-live-product qualification, validate the PNG/GIF/WebM signatures,
+three published static evidence frames and all five labeled SVG source frames,
+and reject missing local README links or media targets. The animation, poster
+and frames were visually inspected at their published dimensions; the WebM was
+decoded as VP9 at 1280x720 and the GIF as 960x540. GitHub rendered the candidate
+in its default light and dark themes and at a 390x844 viewport; the account's
+original sync-with-system preference was restored after the light-theme check.
+The flow is deliberately described as a synthetic helper demo. These checks do not
+establish live-agent adherence, source indexing, ticket mutation, PR mutation,
+runtime confirmation or deployment.
+
+Every command displayed in the README was then run from a fresh local clone of
+the candidate. The synthetic transcript completed with its explicit no-live-
+product limitation; 128 tests passed; both rule evaluations satisfied their
+declared offline scope. Installer check reported `practice_only`; interactive
+plan returned `planned`, and install returned `installed` with nine skill links.
+The installer run used a disposable `/tmp` state/evidence/skills root, a
+`source_only` practice profile and an explicit no-production-authority reference.
+It performed no service authentication, indexing, model call, ticket mutation,
+PR mutation or deployment.
 
 The installer surface check requires exactly one public source entry point and
 one canonical packaged implementation. The relocated standalone-package test now

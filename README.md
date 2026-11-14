@@ -1,188 +1,216 @@
-# Defense Factory
+<div align="center">
+  <img src="docs/assets/dark-factory-logo.svg" width="900" alt="Defense Factory — an upside-down white factory on a black background">
+  <h3>A dark factory turning bugs into architectural enforcement.</h3>
+  <p><strong>Bugs go in security architecture comes out.</strong></p>
+  <p>
+    <a href="https://jerkeby.se">jerkeby.se</a> ·
+    <a href="#try-the-factory-offline">Quickstart</a> ·
+    <a href="#the-end-to-end-flow">How it works</a> ·
+    <a href="#claims-contracts-and-fences">Claims &amp; fences</a> ·
+    <a href="#evidence-and-limitations">Evidence</a>
+  </p>
+  <p>
+    <img alt="Status: experimental" src="https://img.shields.io/badge/status-experimental-111111?style=flat-square">
+    <img alt="Workflow: manually operated" src="https://img.shields.io/badge/workflow-manually_operated-111111?style=flat-square">
+    <img alt="Python 3.10 or newer" src="https://img.shields.io/badge/python-3.10%2B-111111?style=flat-square">
+    <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-111111?style=flat-square"></a>
+  </p>
+</div>
 
-Manually invoked skills for ticket-driven security remediation. The ticket holds
-the current requirements, decisions, receipts and next action. Developers own
-component claims and their controls under normal repository policy.
+Defense Factory is a ticket-driven security-remediation workflow for developers
+and security reviewers. A finding is qualified against an exact source subject,
+expanded into an architectural bug class, repaired at the boundary it violates,
+and bound to a deterministic hard fence. The ticket is the durable ledger:
+inputs, decisions, evidence, failures and the next action survive every stage
+handoff.
 
-This is an **experimental, manually operated workflow**. It does not provide
-enforced agent isolation, independent acceptance or demonstrated reliable
-end-to-end autonomy. Human review is required. No scheduler, CI, branch
-protection, credential store or production deployment is installed.
+> [!IMPORTANT]
+> This is an **experimental, manually operated workflow**. It does not provide
+> enforced agent isolation, independent acceptance or demonstrated reliable
+> end-to-end autonomy. Human review is required. Installing it does not install
+> a scheduler, CI, branch protection, credentials or production deployment.
 
-## Qualify and install for OpenCode
+## See the idea in 10 seconds
 
-Use Python 3.10+ and an installed OpenCode executable. Git is needed for source
-operations; the bundled synthetic evaluation also needs Go 1.22+. Project
-toolchains and test environments come from the ticket.
+![A synthetic Defense Factory walkthrough from a bug report to a versioned architectural improvement](docs/assets/dark-factory-demo.gif)
+
+This animation replays a **deterministic, offline helper fixture**. It proves the
+displayed helper path, not a live remediation or autonomous product change.
+[Watch the WebM](docs/assets/dark-factory-demo.webm), inspect the
+[structured record](docs/demo/synthetic-trial.json), or read the
+[media provenance](docs/demo/README.md). Static evidence frames show the
+[report](docs/assets/dark-factory-demo-report.png),
+[repair](docs/assets/dark-factory-demo-repair.png), and
+[versioned learning](docs/assets/dark-factory-demo-learn.png) handoffs.
+
+## The end-to-end flow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Reporter
+    participant Ticket as Durable ticket ledger
+    participant Factory as Factory worker
+    participant Source as Source + CodeIntel
+    participant Rules as Claims + fences
+    participant Delivery as PR + deployment
+
+    Reporter->>Ticket: Report finding and original evidence
+    Note over Ticket,Factory: Bootstrap freezes ticket input, skill version, source ref and authorized stop
+    Factory->>Ticket: Read back the current scope and decisions
+    Factory->>Source: Resolve exact source subject and indexed revision
+    Factory->>Factory: Assess exposure and attack complexity
+    alt Bug is fixed, component removed, deprecated, or invalid
+        Factory->>Ticket: Justified early disposition + evidence
+    else Finding is active
+        Factory->>Rules: Bind violated claim, boundary and invariant
+        Factory->>Ticket: Discover and evaluate current + historical bug-class candidates
+        Factory->>Source: Construct repair across every declared path
+        Factory->>Rules: Introduce or strengthen deterministic hard fence
+        Factory->>Source: Verify exact candidate, legitimate behavior and runtime obligations
+        Factory->>Delivery: Create draft PR with variant-by-variant proof
+        Delivery->>Ticket: Link candidate, evidence, limitations and next action
+        opt Separately authorized lifecycle work
+            Delivery->>Delivery: Integrate, deploy, confirm and maintain
+            Delivery->>Ticket: Record actual artifact and rollout receipts
+        end
+    end
+    Factory->>Ticket: Preserve failures and publish learning record
+    Factory->>Rules: Suggest versioned architecture improvement
+    Note over Ticket,Rules: Future attempts consume versioned rules while prior evidence remains frozen
+```
+
+The important output is not simply “bug fixed.” It is a portable claim about
+what the component is allowed to do, one or more executable contracts that find
+possible violations, a hard fence that controls the relevant flow, and receipts
+showing what was actually evaluated.
+
+## Try the factory offline
+
+The fastest trustworthy first look makes no model, ticket, CodeIntel, product,
+pull-request or deployment call:
 
 ```sh
 git clone https://github.com/kugg/defensefactory.git
 cd defensefactory
+python3 docs/demo/synthetic_trial.py
+python3 -m unittest discover -s tests -v
+python3 skills/defensefactory/scripts/eval-rules.py --output /tmp/factory-rules-eval-new
+python3 skills/defensefactory/scripts/eval-stage-rules.py \
+  --skills skills --output /tmp/factory-stage-rules-eval-new
+```
+
+The synthetic transcript should end with a generated PR proof section, an exact
+merge subject and an explicit “no live product or deployment claim” limitation.
+The broader evaluations exercise disposable Git and Go fixtures and refuse to
+overwrite prior output.
+
+## Bootstrap a real practice environment
+
+Python 3.10+ and OpenCode are required. Git is required for source operations;
+the bundled evaluation also uses Go 1.22+. Product toolchains and end-to-end
+plans come from the ticket.
+
+```sh
 ./scripts/install-defensefactory --check
 ./scripts/install-defensefactory --plan --installation-id my-practice
 ./scripts/install-defensefactory --install --installation-id my-practice
 ```
 
-This environment-aware installer is the supported onboarding entry point. The
-first command is read-only host discovery. Plan mode asks separately where safe
-practice may run and where production use is intended, but changes nothing.
-Install mode refuses missing mandatory capabilities, writes a versioned nonsecret
-profile and immutable release, and preserves unrelated OpenCode configuration.
-Use `--answers skills/defensefactory/references/environment-profile.example.json
---noninteractive` after replacing every placeholder for deterministic setup.
+The bootstrap is a trust boundary, not setup ceremony. It inventories mandatory
+and optional capabilities, separates a disposable practice target from a
+production plan, records the selected model and ticket project, and asks for
+CodeIntel or an exact-revision equivalent. It records missing confidence layers
+instead of pretending they ran. It never asks for credential values: profiles
+use references such as `env:NAME`, `op://…` or `keychain://…`.
 
-The installer distinguishes mandatory contracts from recommended/replaceable
-confidence services. It asks for the preferred model, Linear project,
-CodeIntel or an exact-revision equivalent, OTel settings, private evidence path,
-practice isolation and a separately reviewed production plan. TLA+/TLC,
-CodeIntel, Python, container runtimes and other product names are capabilities,
-not universal policy: missing optional layers report the confidence lost. The
-small shell bootstrap checks the Python prerequisite before invoking the sole
-canonical installer implementation.
+`scripts/install-defensefactory` is the only supported installer entry point.
+It creates an immutable, versioned release plus a nonsecret environment profile;
+it does not grant merge, deployment, lifecycle or production authority. See the
+[installation guide](skills/defensefactory/references/installation.md) and
+[manual trial controls](skills/defensefactory/references/trial-controls.md).
 
-It never asks for or stores credential values. Use `env:NAME`, `op://…` or
-`keychain://…` references. Authenticate providers and native connections
-separately. Practice defaults prohibit production credentials and real provider
-calls. Supplying a production target records intent only; installation grants no
-merge, deploy, lifecycle or production authority.
+## Claims, contracts and fences
 
-The optional CodeIntel tools-only stdio bridge supports POST-only deployments;
-direct remote transport is also available. Workspace keys normally use
-`X-Api-Key`; an explicitly selected Authorization header uses Bearer. New native
-entries are named `factory_linear` and `factory_codeintel`. See the
-[transport and host API contract](skills/defensefactory/references/codeintel-host-api.md).
+Each component owns one concise `RULES.md`—the repository root may itself be the
+component. Developers change it under the same repository policy as their code,
+dependencies and CODEOWNERS.
 
-`scripts/install-defensefactory` is the only supported installer entry point. Its
-small shell bootstrap invokes the canonical Python implementation packaged with
-the orchestration skill; there is no second legacy installer or profile format.
-It copies a versioned release and creates skill links plus an external host
-profile. Installation IDs are append-only and are never updated in place. Use a
-new ID and, when preserving a frozen/manual installation, a separate directory
-ending in `skills/`. Global OpenCode JSON/JSONC is not rewritten. Answer-file
-installs use the profile's state root and reject a conflicting CLI root.
-Evaluation and resume recompute the installed release digest before using it, so
-a changed release is preserved as a failure rather than silently trusted.
+| Concept | What it records | Example |
+| --- | --- | --- |
+| **Claim** | The boundary within which a component is allowed to exist. | Credentials reach only a verified peer. |
+| **Contract** | A runnable candidate detector for an invariant. False positives are expected and evaluated. | A test, type, CUE constraint, CodeQL/Semgrep query, runtime assertion or formal model. |
+| **Hard fence** | A deterministic control that governs the relevant flow. | A regression test and peer-identity type that every credential path must satisfy. |
+| **Soft fence** | Intent and review guidance complementing hard controls. | `AGENTS.md`, review policy or an architectural explanation. |
+| **Receipt** | Computed identity and result for an exact attempt. | Git ref, artifact hash, execution result and evidence locator. |
 
-Evaluate an installed profile with
-`--evaluate --installation-id ID`, resume an interrupted post-install evaluation
-with `--resume ID`, inspect it with `--report`, and retire only installer-owned
-links/settings with `--uninstall-profile`. Evidence, receipts and immutable
-release bytes are preserved. A live practice evaluation additionally requires an
-explicit prompt, project, ticket-backed opening and new destination.
+Claims remain portable when a component moves. They reference their controls and
+the Git refs that introduced them; changing repositories does not change their
+meaning. Hashes and verdicts stay in receipts, not authored claim definitions.
+Checker output creates candidates. A separate evaluation decides whether the
+claim holds. Read [component claims](skills/defensefactory/references/component-claims.md)
+and [architectural bug classes](skills/defensefactory/references/bug-classes.md).
 
-See the complete
-[installation procedure](skills/defensefactory/references/installation.md).
+## Stage pipeline
 
-## Start a manual trial
-
-1. In a preparation conversation, load the relevant stage skill and fetch the
-   live ticket. Prepare, publish and separately read back its narrow stage scope
-   before any product checkout or execution. Create `stage-start`, attach the
-   opening receipt to the ticket, and retrieve it. The operator reviews this
-   bootstrap; do not describe it as unassisted worker preflight.
-2. Start a fresh worker using the installed `scripts/opencode-trial.py`, supplying
-   `--config`, `--opening`, `--prompt`, `--project`, a new `--destination`, and
-   `--run`. It refuses to spawn without the opening, snapshots consumed inputs,
-   requests the selected model with `--thinking`, and retains status/usage.
-3. The worker fetches the ticket and opening afresh, verifies correspondence,
-   then uses `scripts/stage-exec.py` for direct producers. Stop at the authorized
-   boundary: a draft PR or a justified disposition is a useful trial outcome.
-4. The runner writes a finalized postflight audit after exit. The manual operator
-   publishes its qualification and final resource/readback checkpoint before the
-   next stage relies on the worker's result. A live worker snapshot covers only
-   its observed prefix.
-
-Follow [manual kickoff and execution](skills/defensefactory/references/trial-controls.md).
-Caller-supplied connector records are checked for correspondence and ordering;
-the helpers do not authenticate those records or restrict arbitrary host tools.
-A passing process or bundle check does not grant acceptance or closure.
-
-See [where state and evidence live](skills/defensefactory/references/handoff-state.md)
-for local working files, client caches, ticket attachments and transient context.
-The new helpers save/replay comparison inputs and recipes, bind artifacts to actual
-build receipts, assert child exits, and inventory every registered evidence file.
-Archive verification closes non-execution dependencies as well as execution logs.
-Unwrapped/compound shell commands remain visible as incomplete capture; no OS
-sandbox prevents bypass.
-
-Use the [supported verification paths](skills/defensefactory/references/supported-verification.md)
-for baseline setup, admitted comparison subjects, frozen direct runtime probes,
-local source export and actual CodeIntel evidence. Registered-trial CLI legacy
-capture cannot substitute for stage admission. A successful helper test does
-not demonstrate a fresh agent will follow these paths.
-
-For partial source packages, use the [fixture/runtime/readback path](skills/defensefactory/references/fixture-runtime-handoff.md). It assembles approved archives offline, separates fixture subjects from product subjects, binds test selection to captured discovery, and checks required runtime probes from the published scope. Bundle preparation emits the exact machine requirements sidecar; paired native readback verifies both downloaded assets. `trial-status.py` recovers current invocation paths and measured timing after compaction; fetch the live ticket for current decisions.
-
-## Stages
-
-| Skill | Purpose |
+| Stage | Durable outcome |
 | --- | --- |
-| `defensefactory` | Route a manually invoked workflow using live ticket state. |
-| `defensefactory-intake` | Register a finding with source, evidence and scope. |
-| `defensefactory-assess` | Qualify, close/disqualify when justified, or bind active repair requirements. |
-| `defensefactory-repair` | Construct a bounded remediation candidate. |
-| `defensefactory-verify` | Evaluate security, legitimate behavior, architecture and required runtime obligations. |
-| `defensefactory-integrate` | Check the actual merge subject and governing policy. |
-| `defensefactory-deploy` | Build/roll out only within separately authorized scope. |
-| `defensefactory-confirm` | Confirm the identified deployed artifact and configuration. |
-| `defensefactory-maintain` | Perform an explicitly requested drift/variant maintenance pass. |
+| **Intake** | Finding, original evidence, exact source and authorized scope. |
+| **Assess** | Early disposition, or active exposure, attack complexity and repair obligations. |
+| **Repair** | Bounded candidate restoring the governing claim across the declared bug class. |
+| **Verify** | Exact-subject security, behavior, architecture and runtime evidence. |
+| **Integrate** | Merge-subject and governing-policy decision. |
+| **Deploy** | Identified artifact rolled out only within separately authorized scope. |
+| **Confirm** | Actual deployed artifact, configuration and rollout scope checked. |
+| **Maintain** | Explicit drift, exception and new-variant pass. |
 
-Each stage package contains its own helper modules and references. Project
-models, build/deployment adapters and E2E plans are case resources, not universal
-defaults. Host preferences supply discovery hints, not ticket state or authority.
+Every stage has a standalone skill. The orchestration skill routes using freshly
+retrieved ticket state; it does not pass an invisible in-memory success claim to
+the next stage. See [where handoff state lives](skills/defensefactory/references/handoff-state.md).
 
-## Claims and evidence
+## Self-improvement without rewriting history
 
-Keep one concise component-owned `RULES.md` as the sole authored claim and
-boundary source (the repository root can itself be the component). It references
-developer-owned invariant contracts implemented with the repository's useful
-tests, types, CUE, CodeQL, Semgrep/OpenGrep, AST analyzers, runtime assertions or
-formal tools. Checker output is a candidate until separately evaluated. Claim
-state depends on declared coverage, not finding count. Controls retain their
-introduction Git references across moves; computed hashes and execution verdicts
-belong in receipts. Developers amend rules and contracts under normal repository
-policy. Legacy `claims.json` is only a migration input. See [component claims and
-contracts](skills/defensefactory/references/component-claims.md).
+Failures are factory output. The workflow preserves the failed attempt, records
+which rule, helper or handoff was insufficient, changes the skill or fence in a
+new version, and evaluates that version in a fresh trial. Old evidence remains
+addressable and unchanged. This lets maintainers improve the gradient of
+confidence without retroactively making a failed run look successful.
 
-Repair PRs use an architectural bug class rather than treating the triggering
-ticket in isolation. Current and historical findings are discovered as
-candidates, separately evaluated against the same claim/invariant and compatible
-boundary, and bound into a class repair contract before product edits. The exact
-merge subject then gets a proof row for every included variant plus the governing
-claim and hard fence. The PR and all included tickets are linked in both
-directions without changing historical lifecycle state. Similarity is never
-membership, and incomplete discovery or proof yields an inconclusive or
-member-only result rather than a class-wide claim. See [architectural bug
-classes](skills/defensefactory/references/bug-classes.md).
-Generate a non-overwriting, receipt-linked input walk for all nine bug-class
-commands with `python3 skills/defensefactory/scripts/bugclass.py templates
---output /new/walk-directory`.
+The bootstrap pins the version and environment used by each attempt. The
+learning record identifies a future change; it never silently hot-patches an
+active or frozen trial. See [lessons and limitations](LESSONS.md) and the
+[prepublication checks](VALIDATION.md).
 
-Use CodeIntel against the exact indexed subject and report query/SCIP coverage
-limits. When formal checks apply, separate bounded model results from actual
-implementation conformance. Publish raw evidence and external bundle requirements
-as shareable ticket resources, then retrieve both and verify. Reconcile all
-executions, including failures, against the published inventory.
+## Evidence and limitations
 
-## Evaluate the helpers
+Source search must be scoped to the exact indexed subject and carry CodeIntel or
+equivalent coverage warnings. Formal checks distinguish bounded model results
+from implementation conformance. Runtime results identify the selected probe,
+artifact and environment. Shareable ticket attachments are retrieved and
+verified before the next stage relies on them. A passing process, archive or
+helper check does not grant acceptance or closure.
 
-```sh
-python3 -m unittest discover -s tests -v
-python3 skills/defensefactory/scripts/eval-rules.py --output /tmp/factory-rules-eval-new
-python3 skills/defensefactory/scripts/eval-stage-rules.py --skills skills --output /tmp/factory-stage-rules-eval-new
-```
+The helpers save comparison inputs, reproduction recipes, artifact bindings,
+child exits and evidence inventories. They cannot authenticate arbitrary
+caller-supplied connector records or prevent an operator from bypassing them
+with unwrapped host commands. Supported paths and remaining qualifications are
+documented in [verification paths](skills/defensefactory/references/supported-verification.md),
+[fixture/runtime handoff](skills/defensefactory/references/fixture-runtime-handoff.md)
+and [evaluation scope](skills/defensefactory/references/evaluation.md).
 
-The evaluation runs disposable Git/Go fixtures for bypass, deny-all, missing
-controls, claim amendments and component transfer. It makes no model, ticket or
-service calls and refuses to overwrite previous output. This is a helper
-regression evaluation, not proof that an agent follows the procedures. See
-[evaluation scope](skills/defensefactory/references/evaluation.md) and
-[lessons and limitations](LESSONS.md). See the [prepublication checks](VALIDATION.md)
-for the tested scope and unresolved qualifications.
+## Repository map
 
-Export standalone stage archives with `python3 scripts/package-skills.py --output
-/new/package-directory`. Every package includes the repository's MIT license.
-Each stage archive also carries the one inherited universal rule source under
-`dependencies/defensefactory/RULES.md`. Validate rules and skill conformance with
-`python3 <package>/scripts/stage-rules.py check <package>` before opening work;
-the opening receipt binds the exact effective digest and source-byte identities.
+| Path | Start here when… |
+| --- | --- |
+| [`skills/`](skills/) | Reading or packaging the orchestration and stage skills. |
+| [`scripts/install-defensefactory`](scripts/install-defensefactory) | Qualifying and installing an environment. |
+| [`tests/`](tests/) | Inspecting deterministic helper regressions. |
+| [`docs/demo/`](docs/demo/) | Reproducing the README evidence and media. |
+| [`LESSONS.md`](LESSONS.md) | Reviewing observed failures and unresolved limitations. |
+| [`VALIDATION.md`](VALIDATION.md) | Checking the exact prepublication evaluation scope. |
+
+Standalone stage archives are created with
+`python3 scripts/package-skills.py --output /new/package-directory`. Every
+archive includes the MIT license and inherited universal rule source. Follow
+the [stage rules](skills/defensefactory/references/stage-rules.md) before relying
+on a packaged stage.

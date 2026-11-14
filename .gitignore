@@ -5,3 +5,4 @@ __pycache__/
 .run/
 outputs/
 config.local.json
+docs/demo/frames/*.png
