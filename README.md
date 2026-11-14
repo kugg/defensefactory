@@ -73,7 +73,7 @@ sequenceDiagram
     end
     Factory->>Ticket: Preserve failures and publish learning record
     Factory->>Rules: Suggest versioned architecture improvement
-    Note over Ticket,Rules: A future attempt consumes the new rule; frozen prior evidence is never rewritten
+    Note over Ticket,Rules: Future attempts consume versioned rules while prior evidence remains frozen
 ```
 
 The important output is not simply “bug fixed.” It is a portable claim about
