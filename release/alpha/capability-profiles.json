@@ -1,0 +1,62 @@
+{
+  "schema": "defensefactory/alpha-capability-profiles/v1",
+  "qualification": "These profiles constrain the supported alpha runner and document intended authority. They do not turn Docker into an adversarial sandbox.",
+  "stages": {
+    "intake": {
+      "allow": ["source_read", "ticket_read", "ticket_write"],
+      "deny": ["deployment_mutation", "merge", "source_write"],
+      "session": "fresh",
+      "skill": "defensefactory-intake",
+      "workspace": "ephemeral"
+    },
+    "assess": {
+      "allow": ["codeintel_read", "source_read", "ticket_read", "ticket_write"],
+      "deny": ["deployment_mutation", "merge", "source_write"],
+      "session": "fresh",
+      "skill": "defensefactory-assess",
+      "workspace": "ephemeral"
+    },
+    "repair": {
+      "allow": ["draft_candidate_write", "source_read", "source_write", "ticket_read", "ticket_write"],
+      "deny": ["deployment_mutation", "merge"],
+      "session": "fresh",
+      "skill": "defensefactory-repair",
+      "workspace": "ephemeral"
+    },
+    "verify": {
+      "allow": ["codeintel_read", "disposable_runtime", "source_read", "ticket_read", "ticket_write"],
+      "deny": ["deployment_mutation", "merge", "source_publish"],
+      "session": "fresh",
+      "skill": "defensefactory-verify",
+      "workspace": "ephemeral"
+    },
+    "integrate": {
+      "allow": ["merge_subject_read", "policy_read", "ticket_read", "ticket_write"],
+      "deny": ["deployment_mutation", "merge", "source_write"],
+      "session": "fresh",
+      "skill": "defensefactory-integrate",
+      "workspace": "ephemeral"
+    },
+    "deploy": {
+      "allow": ["local_fixture_deploy", "synthetic_artifact_read", "ticket_read", "ticket_write"],
+      "deny": ["merge", "production_credentials", "production_deploy"],
+      "session": "fresh",
+      "skill": "defensefactory-deploy",
+      "workspace": "ephemeral"
+    },
+    "confirm": {
+      "allow": ["local_fixture_read", "ticket_read", "ticket_write"],
+      "deny": ["deployment_mutation", "merge", "source_write"],
+      "session": "fresh",
+      "skill": "defensefactory-confirm",
+      "workspace": "ephemeral"
+    },
+    "maintain": {
+      "allow": ["rules_read", "source_read", "ticket_read", "ticket_write"],
+      "deny": ["background_schedule", "deployment_mutation", "lifecycle_mutation", "merge"],
+      "session": "fresh",
+      "skill": "defensefactory-maintain",
+      "workspace": "ephemeral"
+    }
+  }
+}

@@ -5,6 +5,32 @@ The consolidated release candidate passes 128 offline tests plus both disposable
 rule evaluators. No ticket, model, external service or cyber evaluation is inferred
 from these factory-only checks.
 
+The disposable-stage alpha harness adds five offline protocol checks and a
+local Docker development trial. The repository suite now completes 140 tests.
+The protocol checks reconstruct all eight stage outputs from an exact Git
+fixture and the preceding ledger attachment, stop an early disposition before
+repair, reject a changed image/profile binding, and refuse a tampered prior
+attachment without publishing the receiving-stage receipt. Package sync and
+both rules evaluators still pass.
+
+The first Compose attempt preserved a real topology failure: an internal-only
+network prevented the trusted host controller from reaching loopback-published
+ledger and source ports. The correction gives only the auxiliary services a
+separate control network; disposable stage containers remain on the internal
+network. A subsequent development trial completed intake through maintain with
+eight distinct container identities, a fresh exact checkout per stage, eight
+digest-bound evidence attachments and eight OTel spans. Services, stage
+containers and the ledger volume were removed after export.
+
+That development image included uncommitted harness bytes and therefore is not
+a releasable artifact. The controller now refuses dirty builds/runs and requires
+the image revision label to equal the clean current Git commit. A clean rebuild,
+full replay, corruption scenario, early-disposition container scenario and
+published-image replay remain release-candidate gates. The deterministic worker
+qualifies transport and artifact reconstruction only; it does not establish
+live OpenCode adherence, Linear/GitHub effects, independent evaluation,
+adversarial container isolation or production deployment.
+
 Three focused README-evidence checks bind the published synthetic JSON to a fresh
 run of the real bug-class helper fixture, require the displayed class outcome and
 explicit no-live-product qualification, validate the PNG/GIF/WebM signatures,

@@ -208,6 +208,7 @@ and [evaluation scope](skills/defensefactory/references/evaluation.md).
 | [`tests/`](tests/) | Inspecting deterministic helper regressions. |
 | [`docs/demo/`](docs/demo/) | Reproducing the README evidence and media. |
 | [`docs/alpha-release-plan.md`](docs/alpha-release-plan.md) | Reviewing the first disposable-stage alpha boundary and acceptance gates. |
+| [`release/alpha/`](release/alpha/) | Building and running the same-image, fresh-container handoff qualification. |
 | [`LESSONS.md`](LESSONS.md) | Reviewing observed failures and unresolved limitations. |
 | [`VALIDATION.md`](VALIDATION.md) | Checking the exact prepublication evaluation scope. |
 

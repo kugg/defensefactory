@@ -1,0 +1,63 @@
+name: defensefactory-alpha
+
+x-factory-image: &factory-image
+  image: ${FACTORY_IMAGE:?Set FACTORY_IMAGE to the locally built, pinned candidate image}
+
+services:
+  ledger:
+    <<: *factory-image
+    command: ["ledger"]
+    init: true
+    restart: "no"
+    ports:
+      - "127.0.0.1:${FACTORY_LEDGER_PORT:-18080}:8080"
+    volumes:
+      - ledger-data:/var/lib/defensefactory-ledger
+    networks: [factory, control]
+
+  source:
+    <<: *factory-image
+    command: ["source"]
+    init: true
+    restart: "no"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+    ports:
+      - "127.0.0.1:${FACTORY_SOURCE_PORT:-18081}:8081"
+    networks: [factory, control]
+
+  otel:
+    image: ${FACTORY_OTEL_IMAGE:-otel/opentelemetry-collector-contrib:0.114.0}
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    restart: "no"
+    volumes:
+      - ./otel-collector.yaml:/etc/otelcol-contrib/config.yaml:ro
+      - ${FACTORY_OUTPUT_ROOT:?Set FACTORY_OUTPUT_ROOT to a private trial directory}/otel:/var/lib/otel
+    ports:
+      - "127.0.0.1:${FACTORY_OTEL_HTTP_PORT:-14318}:4318"
+    networks: [factory, control]
+
+  stage:
+    <<: *factory-image
+    command: ["validate"]
+    profiles: ["stages"]
+    init: true
+    user: "65534:65534"
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m
+      - /work:rw,noexec,nosuid,size=64m
+    environment:
+      FACTORY_WORK_ROOT: /work
+    networks: [factory]
+
+networks:
+  factory:
+    internal: true
+  control:
+
+volumes:
+  ledger-data:
