@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / 'skills/defensefactory/scripts'
 sys.path.insert(0, str(SCRIPTS))
 from factorycore.core import GateError
+from factorycore.environment_install import SCHEMA
 from factorycore.execution_capture import capture
 from factorycore.handoff_bundle import prepare_bundle, verify_bundle
 from factorycore.installation import install, load_config
@@ -102,6 +103,19 @@ class ReleaseTests(unittest.TestCase):
         self.assertTrue(verify_bundle(Path(result['file']).read_bytes(), result['requirements'])['bundle_complete'])
         self.assertEqual(record['result'], 'violated')
 
+    def test_single_supported_installer_surface(self):
+        self.assertEqual([path.name for path in sorted((ROOT / 'scripts').glob('install*'))],
+                         ['install-defensefactory'])
+        self.assertEqual([path.name for path in sorted(SCRIPTS.glob('install*'))],
+                         ['install-defensefactory.py'])
+        syntax = subprocess.run(['/bin/sh', '-n', str(ROOT / 'scripts/install-defensefactory')],
+                                capture_output=True, text=True)
+        self.assertEqual(syntax.returncode, 0, syntax.stderr)
+        result = subprocess.run([str(ROOT / 'scripts/install-defensefactory'), '--help'],
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn('--installation-id', result.stdout)
+
     def test_standalone_archives_relocate_with_licenses_and_working_installer(self):
         packager = module('release_packager', ROOT / 'scripts/package-skills.py')
         packages = packager.sync(check=True)
@@ -125,13 +139,44 @@ class ReleaseTests(unittest.TestCase):
             self.assertEqual(parsed['result'], 'satisfied')
             if package.name != 'defensefactory':
                 self.assertTrue((relocated / 'dependencies/defensefactory/RULES.md').is_file())
+        answers = self.root / 'environment.json'
+        answers.write_text(json.dumps({
+            'schema': SCHEMA, 'installation_id': 'relocated-fixture',
+            'model': 'fixture/model', 'launcher': str(Path(shutil.which('true')).resolve()),
+            'ticket': {'system': 'linear', 'workspace': 'fixture', 'team': 'fixture',
+                'project': 'Example project', 'endpoint': '', 'credential_reference': '',
+                'write_qualification': False},
+            'source_intelligence': {'kind': 'source_only', 'mcp_url': '', 'index_api_url': '',
+                'credential_reference': '', 'required': False, 'sample_repository': '', 'sample_ref': ''},
+            'telemetry': {'otel_endpoint': '', 'otel_log': '', 'thinking_retained_local': True,
+                'retention_policy': 'private local only'},
+            'paths': {'skills_directory': str(self.root / 'client/skills'),
+                'private_evidence_root': str(self.root / 'evidence'),
+                'state_root': str(self.root / 'state')},
+            'practice': {'kind': 'source_only', 'location': 'relocated fixture',
+                'allowed_repositories': ['fixture/repository'], 'allowed_network_destinations': [],
+                'external_provider_calls': False, 'credential_class': 'synthetic',
+                'cleanup_policy': 'preserve evidence', 'resource_limits': 'bounded',
+                'deployment_tests': False, 'runtime_evidence': 'none'},
+            'production': {'target_kind': 'developer_workstation', 'description': 'declared only',
+                'repositories': [], 'ticket_project': 'Example project', 'pr_repository': '',
+                'branch_policy': '', 'deployment_environments': [],
+                'authorization_reference': 'fixture reviewed plan', 'secret_references': [],
+                'evidence_retention': 'fixture', 'operators': [], 'reviewers': [],
+                'governance': 'fixture'},
+            'safety': {'default_stop': 'draft_pr_or_justified_disposition',
+                'allowed_external_mutations': [], 'evidence_upload_policy': 'shareable receipts only'},
+            'alternatives': {},
+        }))
         env = {**os.environ, 'PYTHONDONTWRITEBYTECODE': '1'}
-        result = subprocess.run([sys.executable, '-I', str(isolated / 'defensefactory/scripts/install-factory.py'),
-            '--yes', '--model', 'fixture/model', '--linear-project', 'Example project',
-            '--launcher', shutil.which('true'), '--config', str(self.root / 'config/config.json'),
-            '--skills-directory', str(self.root / 'client/skills')], env=env, cwd=self.root,
+        result = subprocess.run([sys.executable, '-I',
+            str(isolated / 'defensefactory/scripts/install-defensefactory.py'), '--install',
+            '--answers', str(answers), '--noninteractive'], env=env, cwd=self.root,
             capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
+        installed = json.loads(result.stdout)
+        self.assertEqual(installed['result'], 'installed')
+        self.assertTrue((self.root / 'client/skills/defensefactory').is_symlink())
 
     def test_evidence_helpers_import_only_their_package_under_isolated_python(self):
         for name in ('evidence-compare.py','handoff-audit.py','restore-artifact.py','ticket-transfer.py',

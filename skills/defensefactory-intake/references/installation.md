@@ -70,40 +70,38 @@ aliases or non-shell tool calls can evade that classification and therefore need
 operator review; they do not become authorized merely because the monitor did not
 flag them.
 
-## Legacy bounded runtime-profile helper
+## Installed runtime profile
 
-From the source checkout, run `python3 scripts/install-factory.py`. From a release,
-unpack all nine stage archives into one directory, then run
-`python3 /path/to/defensefactory/scripts/install-factory.py`.
+`scripts/install-defensefactory` is the sole supported installer entry point.
+The shell file only checks for Python and invokes the canonical implementation at
+`skills/defensefactory/scripts/install-defensefactory.py`; standalone packages
+contain that same implementation rather than a second installer.
 
-The installer asks for a provisioned `provider/model`, Linear project name/ID,
-optional Linear and CodeIntel **complete MCP endpoint URLs**, a separate optional
-CodeIntel host indexing API base URL, a transport choice (stdio tools bridge or
-remote), credential header name (normally X-Api-Key), and an optional
-CodeIntel credential **environment variable name**, GitHub repository hint,
-OpenCode executable/OTel wrapper, skills directory and trial output directory.
-Use an empty MCP URL to retain an already configured native connection. A web UI
-base URL is not necessarily its MCP endpoint: supply the actual endpoint; no
-`/mcp` suffix or working connectivity is guessed.
+The environment profile records a provisioned `provider/model`, Linear project,
+optional Linear and CodeIntel **complete MCP endpoint URLs**, an optional
+CodeIntel host indexing API base URL, credential references, OpenCode/OTel
+launcher, skills directory, private evidence root, practice boundary and a
+separately authorized production target. An empty MCP URL retains an already
+configured native connection. A web UI base URL is not necessarily its MCP
+endpoint: supply the actual endpoint; no `/mcp` suffix or connectivity is guessed.
 
-Settings live in `$XDG_CONFIG_HOME/defensefactory/config.json` (normally
-`~/.config/defensefactory/config.json`), outside the portable skills. Installed
-skills link to a copied release under that directory, so later source edits do
-not silently change the installation. Existing unrelated skills are refused
-before installation. Identical reinstallation is a no-op. Explicit `--update`
-backs up changed settings under `history/` and can change only this installer's
-managed skill links; old releases remain. It cannot overwrite frozen links or
-other installations. Keep in-progress trials on their recorded packages.
+Settings, receipts, ownership and the immutable release live below
+`paths.state_root/<installation_id>`. The generated runtime profile is
+`runtime/config.json`; installed skills link to the copied release, so later
+source edits cannot silently change an installation. Installation IDs are
+append-only and one-shot: a changed profile uses a new ID, and the installer
+refuses an existing ID or unrelated/different skill links. Keep in-progress
+trials on their recorded packages.
 
-For noninteractive installation, supply `--yes --model PROVIDER/MODEL
---linear-project PROJECT` and other desired options (`--help` lists them).
-`--source`, `--config`, `--skills-directory` and `--output-directory` support
-custom locations. The installer makes no model/API calls, authenticates nothing,
-does not fetch dependencies and does not edit your global OpenCode JSON/JSONC.
-Provider credentials and GitHub/Linear/CodeIntel permissions remain host setup.
-No passwords, API keys or bearer tokens are prompted for or stored in the profile.
+For noninteractive installation, provide a complete `--answers FILE` and
+`--noninteractive`. `--source` and `--state-root` support explicit locations;
+the latter must match `paths.state_root`. The installer makes no model/API calls,
+authenticates nothing, fetches no dependencies and does not edit global OpenCode
+JSON/JSONC. Provider credentials and GitHub/Linear/CodeIntel permissions remain
+host setup. It accepts credential references but never password, API-key or
+bearer-token values.
 
-The adjacent `opencode.json` is an additive native configuration using
+The adjacent runtime `opencode.json` is an additive native configuration using
 `factory_linear`/`factory_codeintel` names for newly selected endpoints, retaining
 existing same-named connections. It contains the
 model and any selected remote MCP connections. Start OpenCode with
@@ -131,8 +129,8 @@ native tool inventory and exact source indexing in a fresh session.
 
 ## Read preferences without importing case state
 
-At stage startup, read the optional profile selected by `DEFENSEFACTORY_CONFIG`
-(fall back to the default path above). Its Linear project and repository are
+At stage startup, read the optional runtime profile selected by an explicit
+`--config` or `DEFENSEFACTORY_CONFIG`. Its Linear project and repository are
 discovery hints. Fetch the live ticket and verify its actual project/repository;
 do not move tickets or silently substitute source subjects to match defaults.
 An explicit ticket/user scope takes precedence. An empty optional CodeIntel endpoint does not prove that the existing native

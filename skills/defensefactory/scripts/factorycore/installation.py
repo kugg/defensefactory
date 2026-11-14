@@ -1,11 +1,9 @@
 """Operator preferences and local OpenCode installation; no service or credential calls."""
-import datetime
 import hashlib
 import json
 import os
 from pathlib import Path
 import re
-import shutil
 import sys
 import tempfile
 from urllib.parse import urlsplit
@@ -107,8 +105,8 @@ def package_files(source):
     return result
 
 
-def install(source, config_path, preferences, *, update=False):
-    """Preflight all conflicts. Keep old releases and back up settings on update."""
+def install(source, config_path, preferences):
+    """Install one immutable release without replacing existing configuration."""
     source, config_path = Path(source).resolve(), Path(config_path).expanduser().absolute()
     if config_path.is_symlink():
         raise ValueError('Configuration must be a regular file, not a symlink')
@@ -122,14 +120,11 @@ def install(source, config_path, preferences, *, update=False):
         raise ValueError('Choose a factory config filename other than opencode.json')
     expected = {config_path: (json.dumps(profile, indent=2) + '\n').encode(),
                 fragment_path: (json.dumps(opencode_config(profile), indent=2) + '\n').encode()}
-    changed = []
     for path, raw in expected.items():
         if path.is_symlink() or (path.exists() and not path.is_file()):
             raise ValueError('Refusing nonregular configuration: ' + str(path))
         if path.exists() and path.read_bytes() != raw:
-            if not update:
-                raise ValueError('Settings differ; use --update to preserve a backup and replace them')
-            changed.append(path)
+            raise ValueError('Settings differ; use a new installation ID and preserve the existing profile')
     destination = Path(profile['skills_directory'])
     links = []
     for stage in STAGES:
@@ -137,21 +132,12 @@ def install(source, config_path, preferences, *, update=False):
         if link.is_symlink() and link.resolve() == target:
             continue
         if link.exists() or link.is_symlink():
-            managed = (link.is_symlink() and link.resolve().parent.parent == release.parent
-                       and link.resolve().name == stage and (link.resolve() / 'SKILL.md').is_file())
-            if not update or not managed:
-                raise ValueError('Refusing existing unmanaged/different skill: ' + str(link))
+            raise ValueError('Refusing existing unmanaged/different skill: ' + str(link))
         links.append((link, target, os.readlink(link) if link.is_symlink() else None))
     if release.exists():
         if package_files(release) != files:
             raise ValueError('Existing release bytes changed; preserve and investigate: ' + str(release))
     config_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-    if changed:
-        stamp = datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S.%fZ')
-        backup = config_path.parent / 'history' / stamp
-        backup.mkdir(parents=True, mode=0o700)
-        for path in changed:
-            shutil.copy2(path, backup / path.name)
     if not release.exists():
         release.parent.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(dir=release.parent) as temp:
@@ -188,7 +174,7 @@ def install(source, config_path, preferences, *, update=False):
     return {'configuration': str(config_path), 'opencode_config': str(fragment_path),
             'opencode_config_directory': str(destination.parent),
             'release': str(release), 'skills_linked': len(links),
-            'settings_updated': bool(changed), 'connections_verified': False,
+            'settings_updated': False, 'connections_verified': False,
             'scope': 'Local installation only; no authentication, indexing, model call or ticket mutation.'}
 
 

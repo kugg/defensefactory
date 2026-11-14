@@ -37,8 +37,8 @@ CodeIntel or an exact-revision equivalent, OTel settings, private evidence path,
 practice isolation and a separately reviewed production plan. TLA+/TLC,
 CodeIntel, Python, container runtimes and other product names are capabilities,
 not universal policy: missing optional layers report the confidence lost. The
-small shell bootstrap explains the Python requirement; an equivalent installer
-may satisfy the same documented contract.
+small shell bootstrap checks the Python prerequisite before invoking the sole
+canonical installer implementation.
 
 It never asks for or stores credential values. Use `env:NAME`, `op://…` or
 `keychain://…` references. Authenticate providers and native connections
@@ -52,17 +52,18 @@ direct remote transport is also available. Workspace keys normally use
 entries are named `factory_linear` and `factory_codeintel`. See the
 [transport and host API contract](skills/defensefactory/references/codeintel-host-api.md).
 
+`scripts/install-defensefactory` is the only supported installer entry point. Its
+small shell bootstrap invokes the canonical Python implementation packaged with
+the orchestration skill; there is no second legacy installer or profile format.
 It copies a versioned release and creates skill links plus an external host
-profile. Identical reinstallation is a no-op. Explicit `--update` backs up changed
-settings and replaces only its own managed links; old releases remain. For an
-existing manually installed or frozen factory, choose a separate directory ending
-in `skills/` to preserve it. Global OpenCode JSON/JSONC is not rewritten.
-Answer-file installs use the profile's state root and reject a conflicting CLI
-root. Evaluation and resume recompute the installed release digest before using
-it, so a changed release is preserved as a failure rather than silently trusted.
+profile. Installation IDs are append-only and are never updated in place. Use a
+new ID and, when preserving a frozen/manual installation, a separate directory
+ending in `skills/`. Global OpenCode JSON/JSONC is not rewritten. Answer-file
+installs use the profile's state root and reject a conflicting CLI root.
+Evaluation and resume recompute the installed release digest before using it, so
+a changed release is preserved as a failure rather than silently trusted.
 
-The legacy `scripts/install-factory.py` remains a bounded runtime-profile helper;
-new users should use `install-defensefactory`. Evaluate an installed profile with
+Evaluate an installed profile with
 `--evaluate --installation-id ID`, resume an interrupted post-install evaluation
 with `--resume ID`, inspect it with `--report`, and retire only installer-owned
 links/settings with `--uninstall-profile`. Evidence, receipts and immutable

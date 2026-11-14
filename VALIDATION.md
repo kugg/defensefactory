@@ -1,9 +1,16 @@
 # Validation scope
 
 Validated on 2026-11-14. These are bounded checks of this experimental package.
-The consolidated release candidate passes 124 offline tests plus both disposable
+The consolidated release candidate passes 125 offline tests plus both disposable
 rule evaluators. No ticket, model, external service or cyber evaluation is inferred
 from these factory-only checks.
+
+The installer surface check requires exactly one public source entry point and
+one canonical packaged implementation. The relocated standalone-package test now
+installs through the environment-profile workflow; the obsolete runtime-profile
+installer, its wrappers and its in-place update path are absent. These checks
+establish packaging and deterministic installation behavior only, not live
+provider, ticket, CodeIntel, OTel or production readiness.
 
 A Docker-hosted Python 3.11.2 installation exposed use of the Python 3.12-only
 `tarfile.extractall(filter=...)` interface despite the documented Python 3.10+
