@@ -13,3 +13,20 @@ Use local disposable tests and the bundled evaluation. Do not contact live
 services, mutate tickets, start model calls or publish from a test. Preserve
 failed evidence and state the actual qualification of any live experiment.
 The MIT copyright notice must accompany every standalone package.
+
+## One installer
+
+Keep exactly one supported installation workflow. The public source-checkout
+entry point is `scripts/install-defensefactory`; it may be a small prerequisite
+bootstrap, but it must invoke the sole canonical implementation at
+`skills/defensefactory/scripts/install-defensefactory.py`. Extend and version
+that implementation and its environment profile instead of adding a parallel
+installer, wrapper or profile format.
+
+This repository is pre-release. When a new implementation replaces an earlier
+one, remove the superseded entry point, implementation, documentation and tests
+in the same change. Do not retain or describe code as “legacy” unless a concrete
+current user, deployed installation and migration requirement are documented in
+the governing ticket. Standalone-package tests must exercise the canonical
+installer, and repository tests must fail if another installer-shaped entry
+point appears.

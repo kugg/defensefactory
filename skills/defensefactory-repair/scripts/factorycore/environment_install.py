@@ -226,7 +226,7 @@ def append_receipt(home, kind, record):
     return _write_new(receipts / f"{sequence:04d}-{kind}.json", envelope)
 
 
-def apply_install(spec, source, state_root, *, update=False):
+def apply_install(spec, source, state_root):
     spec = validate_spec(spec); state_root = Path(state_root).resolve(); home = state_root / spec["installation_id"]
     intended = plan(spec, source, state_root)
     if intended["result"] == "blocked": raise ValueError("Mandatory environment capability missing; inspect discovery before installation")
@@ -242,7 +242,7 @@ def apply_install(spec, source, state_root, *, update=False):
             "codeintel_token_env": token_env, "codeintel_transport": "stdio", "codeintel_header_name": "X-Api-Key",
             "github_repository": spec["production"]["pr_repository"], "launcher": spec["launcher"],
             "skills_directory": spec["paths"]["skills_directory"], "output_directory": spec["paths"]["private_evidence_root"]}
-        result = install(Path(source), runtime, preferences, update=update)
+        result = install(Path(source), runtime, preferences)
         evidence = Path(spec["paths"]["private_evidence_root"]); evidence.mkdir(parents=True, exist_ok=True, mode=0o700)
         installed_profile = {"schema": "defensefactory/installed-environment-profile/v1", "installer": INSTALLER,
             "installed_at": timestamp(), "environment_spec": spec, "environment_spec_sha256": identity(spec),
