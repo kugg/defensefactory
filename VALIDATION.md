@@ -18,6 +18,16 @@ The flow is deliberately described as a synthetic helper demo. These checks do n
 establish live-agent adherence, source indexing, ticket mutation, PR mutation,
 runtime confirmation or deployment.
 
+Every command displayed in the README was then run from a fresh local clone of
+the candidate. The synthetic transcript completed with its explicit no-live-
+product limitation; 128 tests passed; both rule evaluations satisfied their
+declared offline scope. Installer check reported `practice_only`; interactive
+plan returned `planned`, and install returned `installed` with nine skill links.
+The installer run used a disposable `/tmp` state/evidence/skills root, a
+`source_only` practice profile and an explicit no-production-authority reference.
+It performed no service authentication, indexing, model call, ticket mutation,
+PR mutation or deployment.
+
 The installer surface check requires exactly one public source entry point and
 one canonical packaged implementation. The relocated standalone-package test now
 installs through the environment-profile workflow; the obsolete runtime-profile
