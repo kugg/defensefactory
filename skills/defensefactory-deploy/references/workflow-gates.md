@@ -14,9 +14,12 @@ decision is resolved, and repair scope is authorized, run
 assessment, counterexample, contract version and authorization reference.
 
 Every repair `stage-scope` must carry that retrieved receipt as
-`eligibility_receipt`. Scope preparation calls `repair-admission` and refuses a
-missing, changed or stale subject. Do not recreate a receipt after editing; return
-to assessment and issue a new one from current evidence.
+`eligibility_receipt` plus the currently governing `contract_version` and
+authorization `scope_reference`. Scope preparation calls `repair-admission` and
+refuses a missing, changed, stale-subject, stale-contract or stale-scope receipt.
+The current values come from freshly retrieved ticket authority, not from the
+receipt being tested. Do not recreate a receipt after editing; return to
+assessment and issue a new one from current evidence.
 
 ## Structured owner decisions
 
@@ -24,7 +27,9 @@ Use `decision-request` with one question, at least two option/consequence pairs,
 the exact subject and blocking stage. Publish it while open. Use `decision-record`
 only after the owner chooses; retain the decision reference, decider, time and
 scope. `decision-gate` returns `blocked` until the matching receipt is supplied,
-then `resume`. Ticket prose such as “decision needed” is context, not gate state.
+then `resume`. Eligibility accepts a decided gate only for the same exact repair
+subject; a valid gate for another repository or revision cannot be replayed.
+Ticket prose such as “decision needed” is context, not gate state.
 
 ## CodeIntel coverage
 

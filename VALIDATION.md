@@ -5,13 +5,25 @@ The consolidated release candidate passes 128 offline tests plus both disposable
 rule evaluators. No ticket, model, external service or cyber evaluation is inferred
 from these factory-only checks.
 
-The disposable-stage alpha harness adds five offline protocol checks and a
-local Docker development trial. The repository suite now completes 140 tests.
+The disposable-stage alpha harness and evaluation reconciliation add six offline
+protocol checks and a local Docker development trial. The repository suite now
+completes 141 tests.
 The protocol checks reconstruct all eight stage outputs from an exact Git
 fixture and the preceding ledger attachment, stop an early disposition before
 repair, reject a changed image/profile binding, and refuse a tampered prior
 attachment without publishing the receiving-stage receipt. Package sync and
 both rules evaluators still pass.
+
+Reconciliation of the decision-gate evaluation retained two contradictory
+verdicts against the same frozen source. Direct exact-ref inspection reproduced
+the earlier report: malformed decision subjects were accepted and a valid gate
+for another revision could satisfy repair blockers. The correction validates the
+request subject, binds every eligibility gate to the repair subject, and adds a
+regression for both cases. Repair stage opening now also requires current
+contract-version and authorization-reference inputs independent of the receipt,
+closing a caller-path gap noted by the assessment-eligibility evaluation. These
+are local factory-helper corrections; the prior evaluation records remain
+unchanged and a new exact-ref evaluation is still required.
 
 The first Compose attempt preserved a real topology failure: an internal-only
 network prevented the trusted host controller from reaching loopback-published
