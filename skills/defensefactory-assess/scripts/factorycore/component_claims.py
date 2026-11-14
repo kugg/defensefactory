@@ -12,6 +12,7 @@ import tarfile
 import tempfile
 import time
 from .core import require,identity,sha,GateError
+from .archives import extract_data
 from .registry import source_blob
 from .verification import git,command,evaluator_guard
 from .check_results import qualify_execution
@@ -201,7 +202,7 @@ def execute_fences(repo,receipt,checks,expected_checks_sha256,evaluator_manifest
     if guard['result']!='satisfied_within_scope':output['result']='violated';return output
     with tempfile.TemporaryDirectory(prefix='factory-fences-') as temp:
         root=Path(temp);archive=root/'source.tar';archive.write_bytes(git(repo,'archive',revision));source=root/'source';source.mkdir()
-        with tarfile.open(archive) as tar:tar.extractall(source,filter='data')
+        with tarfile.open(archive) as tar:extract_data(tar,source)
         snapshot=lambda:{str(p.relative_to(source)):sha(p.read_bytes()) for p in source.rglob('*') if p.is_file()}
         before=snapshot();started=time.monotonic()
         for check in checks:

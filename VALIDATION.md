@@ -1,9 +1,15 @@
 # Validation scope
 
 Validated on 2026-11-14. These are bounded checks of this experimental package.
-The consolidated release candidate passes 122 offline tests plus both disposable
+The consolidated release candidate passes 124 offline tests plus both disposable
 rule evaluators. No ticket, model, external service or cyber evaluation is inferred
 from these factory-only checks.
+
+A Docker-hosted Python 3.11.2 installation exposed use of the Python 3.12-only
+`tarfile.extractall(filter=...)` interface despite the documented Python 3.10+
+minimum. The shared extractor now validates archive paths, member types and
+bounded symlinks without that interface; traversal and escaping-symlink fixtures
+are rejected. The original failed installed-evaluation receipt is retained.
 
 The architectural bug-class update adds ten focused checks that distinguish
 discovery candidates from evaluated

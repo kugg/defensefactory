@@ -18,6 +18,7 @@ import tempfile
 import time
 
 from .core import GateError, identity, require, sha
+from .archives import extract_data
 from .registry import source_blob
 from .verification import command, git
 
@@ -452,7 +453,7 @@ def run_contracts(repo: str | Path, revision: str, rules_path: str, output: str 
         root = Path(temp); archive = root / "source.tar"; archive.write_bytes(git(repo, "archive", revision))
         source = root / "source"; source.mkdir()
         with tarfile.open(archive) as handle:
-            handle.extractall(source, filter="data")
+            extract_data(handle, source)
         snapshot = lambda: {str(path.relative_to(source)): sha(path.read_bytes()) for path in source.rglob("*") if path.is_file()}
         source_before = snapshot()
         started = time.monotonic()

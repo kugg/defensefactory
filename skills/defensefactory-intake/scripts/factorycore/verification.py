@@ -9,6 +9,7 @@ import tarfile
 import tempfile
 import time
 from .core import require, sha, identity
+from .archives import extract_data
 from .claims import validate_claim
 from .check_results import qualify_execution
 
@@ -63,7 +64,7 @@ def verify(repo, revision, claim, checks, evaluator_manifest, *, max_seconds=300
         return {'stage':'verify','candidate':revision,'claim_sha256':identity(claim),'check_specs_sha256':identity(checks),'result':'violated','evaluator_guard':guard,'checks':[], 'reason':'Evaluator changed; do not execute/accept weakened candidate checks.'}
     with tempfile.TemporaryDirectory(prefix='factory-verifier-') as temp:
         root=Path(temp);archive=root/'source.tar';archive.write_bytes(git(repo,'archive',revision));source=root/'source';source.mkdir()
-        with tarfile.open(archive) as tar:tar.extractall(source,filter='data')
+        with tarfile.open(archive) as tar:extract_data(tar,source)
         before={str(p.relative_to(source)):sha(p.read_bytes()) for p in source.rglob('*') if p.is_file()}
         for check in checks:
             remaining=max_seconds-(time.time()-start)
