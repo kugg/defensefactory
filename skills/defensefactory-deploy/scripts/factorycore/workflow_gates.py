@@ -39,14 +39,16 @@ def decision_request(spec):
             "Unknown blocking stage")
     _timestamp(spec["created_at"], "Decision request")
     _shareable(spec["scope_reference"], "Decision scope reference")
+    subject = _subject(spec["subject"])
     options = spec["options"]
     require(isinstance(options, list) and len(options) >= 2, "At least two decision options required")
+    require(all(isinstance(item, dict) for item in options), "Decision options must be objects")
     require(len({item.get("id") for item in options}) == len(options), "Decision option IDs must be unique")
     for item in options:
         require(set(item) == {"id", "consequence"} and item["id"] and item["consequence"],
                 "Each decision option needs only id and consequence")
     body = {"record_type": "decision_request", "schema_version": 1, "state": "open",
-            **copy.deepcopy(spec), "result": "recorded",
+            **copy.deepcopy(spec), "subject": subject, "result": "recorded",
             "next_action": "Record one owner choice in a decision receipt, then re-evaluate this gate.",
             "limitation": "Tracks an explicit owner decision; it does not decide policy or authenticate the named owner."}
     body["decision_request_sha256"] = identity(body)
@@ -79,6 +81,10 @@ def verify_decision_request(request):
     require(request.get('state')=='open' and request.get('id') and request.get('blocking_stage')
             and request.get('subject') and isinstance(request.get('options'),list) and len(request['options'])>=2,
             'Decision request shape is incomplete')
+    _subject(request['subject'])
+    require(all(isinstance(item,dict) and set(item)=={'id','consequence'} and
+                item.get('id') and item.get('consequence') for item in request['options']),
+            'Decision request options are invalid')
     digest = request.get("decision_request_sha256")
     require(digest == identity({key: value for key, value in request.items() if key != "decision_request_sha256"}),
             "Decision request changed")
@@ -139,6 +145,7 @@ def issue_eligibility(assessment, subject, counterexample, contract, authorized_
     require(len(gates)==len(decision_gates),'Duplicate decision gate identity')
     require(blockers == gates.keys(), "Decision gates must exactly cover every repair blocker")
     require(all(gates[key].get("resume_permitted") is True and gates[key].get("blocking_stage") == "repair"
+                and gates[key].get('subject') == subject
                 and gates[key].get('decision_gate_sha256')==
                     identity({k:v for k,v in gates[key].items() if k!='decision_gate_sha256'})
                 for key in blockers), "An open/stale decision still blocks repair")

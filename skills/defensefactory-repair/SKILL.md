@@ -35,7 +35,7 @@ Introduce or repair the hard invariant contract specified by assessment, with a 
 
 Before handing state to another stage, read [state, capture and replay](references/handoff-state.md). Save input snapshots, comparison recipes/results and artifact build/use bindings; archive the whole registered evidence inventory. The runner’s finalized postflight audit qualifies the worker’s prefix report. Local paths, console Booleans and remembered conclusions alone are incomplete handoff evidence.
 
-Repair admission follows the [workflow gate procedure](references/workflow-gates.md). Retrieve the current `assess_eligibility` receipt from the ticket and include it in repair `stage-scope`. Scope preparation refuses missing, changed, stale-subject or stale-contract eligibility. An open structured decision gate returns the case to assessment; do not edit first and qualify the omission later.
+Repair admission follows the [workflow gate procedure](references/workflow-gates.md). Retrieve the current `assess_eligibility` receipt from the ticket and include it in repair `stage-scope` together with the currently governing `contract_version` and authorization `scope_reference`. Scope preparation refuses missing, changed, stale-subject, stale-contract or stale-scope eligibility. An open structured decision gate returns the case to assessment; do not edit first and qualify the omission later.
 
 ## Execution and evidence helpers
 

@@ -44,14 +44,39 @@ class WorkflowGateTests(unittest.TestCase):
         prepared=scope_prepare({'case':'FIXTURE-1','attempt':'fixture','stage':'repair','subject':self.subject,
             'performed_by':'fixture','package':str(ROOT/'skills/defensefactory-repair'),
             'authorization_reference':'fixture scope','boundaries':'offline fixture',
-            'eligibility_receipt':receipt})
+            'eligibility_receipt':receipt,'contract_version':self.contract['version'],
+            'scope_reference':self.scope['reference']})
         self.assertEqual(prepared['scope']['eligibility_sha256'],receipt['eligibility_sha256'])
         bad=dict(receipt);bad['contract']={**bad['contract'],'version':'changed'}
         with self.assertRaisesRegex(ValueError,'Repair admission refused'):
             scope_prepare({'case':'FIXTURE-1','attempt':'fixture','stage':'repair','subject':self.subject,
                 'performed_by':'fixture','package':str(ROOT/'skills/defensefactory-repair'),
                 'authorization_reference':'fixture scope','boundaries':'offline fixture',
-                'eligibility_receipt':bad})
+                'eligibility_receipt':bad,'contract_version':self.contract['version'],
+                'scope_reference':self.scope['reference']})
+        changed_contract={**self.contract,'version':'2'}
+        changed_scope={**self.scope,'reference':'https://linear.invalid/new-authorization'}
+        reissued=issue_eligibility(self.assessment,self.subject,self.counterexample,
+            changed_contract,changed_scope)
+        with self.assertRaisesRegex(ValueError,'contract version'):
+            scope_prepare({'case':'FIXTURE-1','attempt':'fixture','stage':'repair','subject':self.subject,
+                'performed_by':'fixture','package':str(ROOT/'skills/defensefactory-repair'),
+                'authorization_reference':'fixture scope','boundaries':'offline fixture',
+                'eligibility_receipt':reissued,'contract_version':self.contract['version'],
+                'scope_reference':self.scope['reference']})
+        rescope=issue_eligibility(self.assessment,self.subject,self.counterexample,
+            self.contract,changed_scope)
+        with self.assertRaisesRegex(ValueError,'authorized scope'):
+            scope_prepare({'case':'FIXTURE-1','attempt':'fixture','stage':'repair','subject':self.subject,
+                'performed_by':'fixture','package':str(ROOT/'skills/defensefactory-repair'),
+                'authorization_reference':'fixture scope','boundaries':'offline fixture',
+                'eligibility_receipt':rescope,'contract_version':self.contract['version'],
+                'scope_reference':self.scope['reference']})
+        with self.assertRaisesRegex(ValueError,'current contract version'):
+            scope_prepare({'case':'FIXTURE-1','attempt':'fixture','stage':'repair','subject':self.subject,
+                'performed_by':'fixture','package':str(ROOT/'skills/defensefactory-repair'),
+                'authorization_reference':'fixture scope','boundaries':'offline fixture',
+                'eligibility_receipt':receipt})
 
     def test_structured_decision_blocks_then_resumes_and_can_admit_eligibility(self):
         request=decision_request({'id':'owner-choice','question':'Which boundary?','blocking_stage':'repair',
@@ -65,6 +90,27 @@ class WorkflowGateTests(unittest.TestCase):
         assessment={**self.assessment,'repair_contract_blockers':[{'id':'owner-choice'}]}
         receipt=issue_eligibility(assessment,self.subject,self.counterexample,self.contract,self.scope,[gate])
         self.assertTrue(receipt['repair_permitted'])
+
+    def test_decision_request_and_repair_gate_reject_cross_subject_replay(self):
+        invalid={"repository":"fixture/repository","revision":"deadbeef"}
+        with self.assertRaisesRegex(ValueError,'Exact repository'):
+            decision_request({'id':'bad-subject','question':'Which boundary?',
+                'blocking_stage':'repair','requested_by':'fixture',
+                'created_at':'2026-01-01T00:00:00+00:00',
+                'scope_reference':'https://linear.invalid/request','subject':invalid,
+                'options':[{'id':'a','consequence':'Use A'},{'id':'b','consequence':'Use B'}]})
+        other={**self.subject,'revision':'c'*40}
+        request=decision_request({'id':'owner-choice','question':'Which boundary?',
+            'blocking_stage':'repair','requested_by':'fixture',
+            'created_at':'2026-01-01T00:00:00+00:00',
+            'scope_reference':'https://linear.invalid/request','subject':other,
+            'options':[{'id':'a','consequence':'Use A'},{'id':'b','consequence':'Use B'}]})
+        decision=record_decision(request,'a','fixture-owner','2026-01-01T01:00:00+00:00',
+            'https://linear.invalid/decision','other subject')
+        gate=decision_gate(request,decision)
+        assessment={**self.assessment,'repair_contract_blockers':[{'id':'owner-choice'}]}
+        with self.assertRaisesRegex(ValueError,'open/stale decision'):
+            issue_eligibility(assessment,self.subject,self.counterexample,self.contract,self.scope,[gate])
 
     def test_zero_occurrence_is_explicit_and_needs_operator_scope_decision(self):
         index={'subject':self.subject,'exact_index_available':True}

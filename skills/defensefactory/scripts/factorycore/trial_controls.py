@@ -56,10 +56,15 @@ def scope_prepare(data):
                  stage_rules=rules_binding)
     if stage == 'repair':
         from .workflow_gates import repair_admission
-        gate=repair_admission(data.get('eligibility_receipt'),scope['subject'])
+        require(data.get('contract_version') not in (None,'') and data.get('scope_reference'),
+                'Repair stage scope needs the current contract version and authorization scope reference')
+        gate=repair_admission(data.get('eligibility_receipt'),scope['subject'],
+                              data['contract_version'],data['scope_reference'])
         require(gate['repair_permitted'], 'Repair admission refused: '+ '; '.join(gate.get('problems',[])))
         scope['eligibility_receipt']=data['eligibility_receipt']
         scope['eligibility_sha256']=data['eligibility_receipt']['eligibility_sha256']
+        scope['contract_version']=data['contract_version']
+        scope['scope_reference']=data['scope_reference']
     if 'comparisons' in data:
         comparisons = data['comparisons']
         require(isinstance(comparisons, list) and len({c['id'] for c in comparisons}) == len(comparisons), 'Unique comparison subjects required')

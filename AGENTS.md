@@ -14,6 +14,16 @@ services, mutate tickets, start model calls or publish from a test. Preserve
 failed evidence and state the actual qualification of any live experiment.
 The MIT copyright notice must accompany every standalone package.
 
+## Evaluation requests are open work
+
+Creating or commenting on an evaluation ticket is not a completed evaluation.
+Whenever you request an external evaluation, retain its issue identifier and
+exact Git subject as pending work. Before reporting readiness, cutting a release
+candidate, or asking for another evaluation, refresh that ticket and read its
+latest result comments. Reconcile the verdict, limitations and exact evaluated
+subject; preserve contradictory or superseded results instead of silently
+choosing the newest label or comment.
+
 ## One installer
 
 Keep exactly one supported installation workflow. The public source-checkout
