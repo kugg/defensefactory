@@ -114,6 +114,36 @@ observations from judgments, and stops on a justified source disposition.
       "precedence": 90,
       "safety": true,
       "fulfillment": "procedure"
+    },
+    {
+      "id": "ASSESS-BACKLOG-REQUIRES-PARK",
+      "scope": "assess",
+      "strength": "must",
+      "when": {"stage_state": "handoff", "disposition_class": "hold", "backlog_park": "present"},
+      "requires": {"actions": ["record_park_decision"], "evidence": ["park_receipt"]},
+      "forbids": {},
+      "allows": {"actions": ["leave_in_backlog"]},
+      "terminal": "nonterminal",
+      "mutation": "write_allowed",
+      "overrides": [],
+      "precedence": 85,
+      "safety": true,
+      "fulfillment": "procedure"
+    },
+    {
+      "id": "ASSESS-NO-IMPLICIT-BACKLOG",
+      "scope": "assess",
+      "strength": "must_not",
+      "when": {"stage_state": "handoff", "disposition_class": "hold", "backlog_park": "absent"},
+      "requires": {},
+      "forbids": {"actions": ["leave_in_backlog"]},
+      "allows": {},
+      "terminal": "nonterminal",
+      "mutation": "write_allowed",
+      "overrides": [],
+      "precedence": 90,
+      "safety": true,
+      "fulfillment": "procedure"
     }
   ]
 }

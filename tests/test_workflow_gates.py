@@ -162,7 +162,7 @@ class WorkflowGateTests(unittest.TestCase):
             {'id':'FIX-2','subject':self.subject,'receipts':[intake],
              'park_receipt':{'record_type':'finding_park','finding':'FIX-2','subject':self.subject,
                  'reason':'Owner-scheduled','decided_by':'fixture-owner','reference':'https://linear.invalid/park',
-                 'parked_at':'2026-01-01T00:00:00+00:00'}}]
+                 'parked_at':'2026-01-01T00:00:00+00:00','review_condition':'Review at the next release boundary'}}]
         report=stalled_findings(findings)
         self.assertEqual([row['finding'] for row in report['stalled']],['FIX-1'])
         self.assertEqual(report['stalled'][0]['required_stage'],'assess')

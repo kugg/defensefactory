@@ -93,10 +93,12 @@ EXAMPLES = {
         'assessment': {'disposition':'already_fixed','receipt_reference':'https://REPLACE/SHAREABLE/ASSESSMENT',
             'receipt_sha256':'REPLACE_64_HEX_SHA256'},
         'policy': {'schema_version':1,'id':'REPLACE_PROJECT_LIFECYCLE_POLICY',
-            'statuses': {'complete':'Done','canceled':'Canceled','backlog':'Backlog','in_progress':'In Progress'},
+            'statuses': {'complete':'Done','canceled':'Canceled','parked':'Backlog',
+                'queued':'Todo','in_progress':'In Progress'},
             'labels': {'active':'Active','owner_decision':'Owner decision','inconclusive':'Inconclusive',
                 'already_fixed':'Already fixed','accepted_risk':'Accepted risk',
                 'false_positive':'False positive','invalid_report':'Invalid report'}},
+        'routing': {'queue_state':'default'},
         'authorization': {'authorized':True,'reference':'REPLACE_NATIVE_MUTATION_AUTHORITY'},
         'planned_at':'2025-01-01T00:01:00Z'},
     'disposition-lifecycle-verify': {

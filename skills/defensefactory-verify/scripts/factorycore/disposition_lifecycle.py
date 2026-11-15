@@ -10,8 +10,8 @@ from .core import identity, require
 VALIDATOR = "defensefactory-disposition-lifecycle/1"
 DISPOSITIONS = {
     "active": {"lifecycle_class": "in_progress", "terminal": False},
-    "owner_decision": {"lifecycle_class": "backlog", "terminal": False},
-    "inconclusive": {"lifecycle_class": "backlog", "terminal": False},
+    "owner_decision": {"lifecycle_class": "queued", "terminal": False},
+    "inconclusive": {"lifecycle_class": "queued", "terminal": False},
     "already_fixed": {"lifecycle_class": "complete", "terminal": True},
     "accepted_risk": {"lifecycle_class": "canceled", "terminal": True},
     "false_positive": {"lifecycle_class": "canceled", "terminal": True},
@@ -44,7 +44,7 @@ def _policy(policy):
             "Lifecycle policy has unknown or missing fields")
     require(policy["schema_version"] == 1 and isinstance(policy["id"], str) and policy["id"],
             "Lifecycle policy identity required")
-    require(set(policy["statuses"]) == {"complete", "canceled", "backlog", "in_progress"},
+    require(set(policy["statuses"]) == {"complete", "canceled", "parked", "queued", "in_progress"},
             "Lifecycle policy must map every semantic state class")
     require(set(policy["labels"]) == set(DISPOSITIONS),
             "Lifecycle policy must map every canonical disposition")
@@ -57,7 +57,31 @@ def _policy(policy):
     return policy
 
 
-def plan_lifecycle_transition(ticket, assessment, policy, authorization, planned_at):
+def _routing(ticket, routing):
+    routing = {"queue_state": "default"} if routing is None else routing
+    require(isinstance(routing, dict) and routing.get("queue_state") in ("default", "parked"),
+            "Queue routing must select default or parked")
+    if routing["queue_state"] == "default":
+        require(set(routing) == {"queue_state"}, "Default queue routing has unknown fields")
+        return {"queue_state": "default", "park_receipt": None, "park_receipt_sha256": None}
+    require(set(routing) == {"queue_state", "park_receipt"} and isinstance(routing["park_receipt"], dict),
+            "Parked routing requires one park receipt")
+    park = routing["park_receipt"]
+    require(set(park) == {"record_type", "finding", "subject", "reason", "decided_by", "reference",
+                          "parked_at", "review_condition"},
+            "Park receipt has unknown or missing fields")
+    require(park["record_type"] == "finding_park" and park["finding"] == ticket["identifier"] and
+            isinstance(park["subject"], dict) and park["subject"] and
+            all(isinstance(park[key], str) and park[key] for key in
+                ("reason", "decided_by", "reference", "parked_at", "review_condition")),
+            "Park receipt must bind the ticket, subject, owner, reason and review condition")
+    require(not park["reference"].startswith("file://"), "Park receipt needs a shareable reference")
+    _timestamp(park["parked_at"], "Park")
+    return {"queue_state": "parked", "park_receipt": dict(park),
+            "park_receipt_sha256": identity(park)}
+
+
+def plan_lifecycle_transition(ticket, assessment, policy, authorization, planned_at, routing=None):
     """Create a portable plan; this function never calls or mutates a ticket service."""
     require(isinstance(ticket, dict) and set(ticket) == {"identifier", "updated_at", "status", "labels"},
             "Ticket snapshot has unknown or missing fields")
@@ -89,8 +113,12 @@ def plan_lifecycle_transition(ticket, assessment, policy, authorization, planned
         require(authorization["reference"] is None, "Unauthorized plans cannot cite mutation authority")
 
     semantics = DISPOSITIONS[disposition]
+    routing = _routing(ticket, routing)
+    require(not (semantics["terminal"] and routing["queue_state"] == "parked"),
+            "Terminal dispositions cannot be parked")
+    lifecycle_class = "parked" if routing["queue_state"] == "parked" else semantics["lifecycle_class"]
     desired = {
-        "status": policy["statuses"][semantics["lifecycle_class"]],
+        "status": policy["statuses"][lifecycle_class],
         "disposition_label": policy["labels"][disposition],
     }
     already_matches = (ticket["status"] == desired["status"] and
@@ -106,7 +134,10 @@ def plan_lifecycle_transition(ticket, assessment, policy, authorization, planned
         "ticket_updated_at": ticket["updated_at"],
         "assessment": dict(assessment),
         "disposition": disposition,
-        "lifecycle_class": semantics["lifecycle_class"],
+        "lifecycle_class": lifecycle_class,
+        "queue_state": routing["queue_state"],
+        "park_receipt": routing["park_receipt"],
+        "park_receipt_sha256": routing["park_receipt_sha256"],
         "terminal": semantics["terminal"],
         "desired": desired,
         "configured_disposition_labels": sorted(policy["labels"].values()),

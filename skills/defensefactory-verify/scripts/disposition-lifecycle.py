@@ -21,7 +21,7 @@ def main():
         data = strict_json(args.input.read_bytes())
         if args.operation == "plan":
             result = plan_lifecycle_transition(data["ticket"], data["assessment"], data["policy"],
-                                               data["authorization"], data["planned_at"])
+                                               data["authorization"], data["planned_at"], data.get("routing"))
         else:
             result = verify_lifecycle_readback(data["plan"], data["observed"])
     except (OSError, KeyError, ValueError, TypeError, UnicodeError) as error:
