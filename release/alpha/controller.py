@@ -199,6 +199,9 @@ def run_trial(image: str, output: Path, run_id: str, scenario: str,
     requested_stages = stages_for(scenario, through)
     output = output.resolve()
     output.mkdir(parents=True, exist_ok=False)
+    otel_dir = output / "otel"
+    otel_dir.mkdir(exist_ok=False)
+    os.chmod(otel_dir, 0o777)
     project = "dfa-" + re.sub(r"[^a-z0-9]", "", run_id.lower())[:24]
     env = {
         "FACTORY_IMAGE": image,
