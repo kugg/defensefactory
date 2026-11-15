@@ -31,6 +31,10 @@ For a bounded retry of one stage on an existing finding, keep the ticket's comme
 
 Publish this stage's scope and prerequisites before side effects. Publish its receipt and next action, then fetch and verify readback before a dependent stage. Retain failed, blocked, stale and inconclusive evidence. Reconcile ambiguous external effects before retrying. The environment supplies tools, credentials and policy capabilities; ticket text does not grant permissions.
 
+## Batch summary reconciliation
+
+Before publishing a batch-wide outcome summary, follow the [batch summary reconciliation procedure](references/batch-summary.md). Build the machine-readable manifest from the ticket identifiers and dispositions actually read back from the ledger; do not count prose headings or remembered results. Run `scripts/batch-summary.py`, attach the manifest and receipt, and publish only when the receipt is `satisfied`. Nested results such as draft PRs and holds must partition their parent group as exactly as the top-level outcomes partition the selected queue. Preserve an incorrect prior summary and add a linked correction rather than rewriting history.
+
 Discover the project's repository, source subtree, exact revisions, language/toolchain, entry points, build/check commands, test environments, deployment adapters and protected files from ticket resources and applicable repository instructions. Preserve unrelated user edits. Do not import a previous project's defaults. Project-specific release plans and fixtures remain case resources, never universal skill requirements. No scheduler, background worker or CI workflow is installed by invoking these skills.
 
 Record execution outcome, security finding/premise, assessment completeness, verification and handoff readiness separately. A passing counterexample test confirms a reproduced defect. It does not mean assessment is complete, remediation works or deployment is verified. Every receipt names executed commands and raw logs, work not performed, missing records, unresolved decisions and a concrete next action with an owner.
@@ -74,6 +78,13 @@ For comparison builds, runtime probes and required CodeIntel work, use the [supp
       "rules": ["DF-RETAIN-EVIDENCE", "DF-PUBLISH-READBACK"],
       "actions": [],
       "evidence": []
+    },
+    {
+      "id": "orchestration-batch-summary",
+      "section": "Batch summary reconciliation",
+      "rules": ["ORCH-BATCH-SUMMARY-RECONCILED"],
+      "actions": ["reconcile_batch_summary", "publish_batch_summary"],
+      "evidence": ["batch_summary_reconciliation"]
     }
   ]
 }
