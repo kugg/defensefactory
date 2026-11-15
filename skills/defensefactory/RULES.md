@@ -17,15 +17,16 @@ profiles, digests, observations and outcomes live in receipts.
       "disposition_class": ["none", "continue", "hold", "stop", "complete"],
       "authorization": ["absent", "present"],
       "applicability": ["unknown", "active", "inactive"],
-      "bugclass_state": ["unknown", "evaluated"]
+      "bugclass_state": ["unknown", "evaluated"],
+      "summary_kind": ["none", "batch"]
     },
     "effects": {
-      "facts": ["ticket_current", "scope_bound", "subject_exact", "evidence_retained", "handoff_readable", "eligibility_known", "repair_admitted", "handoff_publication_decided", "component_claim_publication_decided", "candidate_bounded", "verification_complete", "integration_admitted", "artifact_identified", "deployment_bound", "deployment_observed", "maintenance_current"],
-      "actions": ["fetch_ticket", "publish_scope", "bind_subject", "execute_bounded_work", "retain_evidence", "publish_receipt", "readback_ticket", "stop_work", "select_stage", "register_finding", "preserve_original_evidence", "evaluate_eligibility", "issue_eligibility_receipt", "admit_repair", "record_decision_request", "record_owner_decision", "classify_codeintel_coverage", "evaluate_handoff_publication", "compare_isolated_evaluators", "detect_stalled_findings", "validate_deployment_binding", "assess_finding", "request_guidance", "discover_bugclass", "evaluate_bugclass_membership", "define_bugclass", "design_class_repair", "evaluate_component_claim_publication", "evaluate_bugclass", "link_bugclass", "discover_bugclass_variants", "edit_candidate", "create_draft_pr", "run_checks", "evaluate_candidate", "evaluate_merge", "merge_authorized", "build_artifact", "deploy_authorized", "rollback", "observe_deployment", "request_closure", "refresh_evidence", "open_corrective_work", "execute_without_scope", "discard_evidence", "infer_authority", "install_automation"],
-      "evidence": ["ticket_snapshot", "opening_receipt", "subject_receipt", "execution_receipt", "publication_readback", "handoff_publication_gate", "intake_receipt", "assessment_receipt", "eligibility_receipt", "decision_request", "decision_receipt", "codeintel_coverage_receipt", "isolated_evaluator_comparison", "stalled_findings_report", "e2e_guidance", "bugclass_discovery", "bugclass_membership", "bugclass_definition", "bugclass_repair_contract", "bugclass_proof_matrix", "bugclass_verification", "bugclass_linkage_readback", "component_claim_publication_receipt", "repair_receipt", "draft_pr_reference", "verification_receipt", "candidate_evaluations", "integration_receipt", "artifact_receipt", "deployment_binding_receipt", "deployment_receipt", "confirmation_receipt", "maintenance_receipt"],
+      "facts": ["ticket_current", "scope_bound", "subject_exact", "evidence_retained", "handoff_readable", "batch_summary_reconciled", "eligibility_known", "repair_admitted", "handoff_publication_decided", "component_claim_publication_decided", "candidate_bounded", "verification_complete", "integration_admitted", "artifact_identified", "deployment_bound", "deployment_observed", "maintenance_current"],
+      "actions": ["fetch_ticket", "publish_scope", "bind_subject", "execute_bounded_work", "retain_evidence", "publish_receipt", "readback_ticket", "stop_work", "select_stage", "reconcile_batch_summary", "publish_batch_summary", "publish_unreconciled_batch_summary", "register_finding", "preserve_original_evidence", "evaluate_eligibility", "issue_eligibility_receipt", "admit_repair", "record_decision_request", "record_owner_decision", "classify_codeintel_coverage", "evaluate_handoff_publication", "compare_isolated_evaluators", "detect_stalled_findings", "validate_deployment_binding", "assess_finding", "request_guidance", "discover_bugclass", "evaluate_bugclass_membership", "define_bugclass", "design_class_repair", "evaluate_component_claim_publication", "evaluate_bugclass", "link_bugclass", "discover_bugclass_variants", "edit_candidate", "create_draft_pr", "run_checks", "evaluate_candidate", "evaluate_merge", "merge_authorized", "build_artifact", "deploy_authorized", "rollback", "observe_deployment", "request_closure", "refresh_evidence", "open_corrective_work", "execute_without_scope", "discard_evidence", "infer_authority", "install_automation"],
+      "evidence": ["ticket_snapshot", "opening_receipt", "subject_receipt", "execution_receipt", "publication_readback", "batch_summary_reconciliation", "handoff_publication_gate", "intake_receipt", "assessment_receipt", "eligibility_receipt", "decision_request", "decision_receipt", "codeintel_coverage_receipt", "isolated_evaluator_comparison", "stalled_findings_report", "e2e_guidance", "bugclass_discovery", "bugclass_membership", "bugclass_definition", "bugclass_repair_contract", "bugclass_proof_matrix", "bugclass_verification", "bugclass_linkage_readback", "component_claim_publication_receipt", "repair_receipt", "draft_pr_reference", "verification_receipt", "candidate_evaluations", "integration_receipt", "artifact_receipt", "deployment_binding_receipt", "deployment_receipt", "confirmation_receipt", "maintenance_receipt"],
       "transitions": ["continue", "hold", "stop", "handoff", "draft_pr", "merge", "deploy", "close"],
       "outcomes": ["continue", "hold", "stopped", "registered", "disqualified", "active_finding", "draft_pr", "verified", "integrated", "deployed", "confirmed", "maintained", "closed"],
-      "postconditions": ["ticket_current", "scope_bound", "exact_subject_bound", "evidence_retained", "handoff_readable", "eligibility_known", "repair_admitted", "handoff_publication_decided", "bugclass_evaluated", "component_claim_publication_decided", "candidate_bounded", "verification_complete", "integration_admitted", "artifact_identified", "deployment_bound", "deployment_observed", "maintenance_current"]
+      "postconditions": ["ticket_current", "scope_bound", "exact_subject_bound", "evidence_retained", "handoff_readable", "batch_summary_reconciled", "eligibility_known", "repair_admitted", "handoff_publication_decided", "bugclass_evaluated", "component_claim_publication_decided", "candidate_bounded", "verification_complete", "integration_admitted", "artifact_identified", "deployment_bound", "deployment_observed", "maintenance_current"]
     },
     "terminal_outcomes": ["stopped", "disqualified", "draft_pr", "integrated", "deployed", "confirmed", "maintained", "closed"],
     "exclusive_outcome_groups": [["continue", "hold"], ["active_finding", "disqualified"]],
@@ -35,6 +36,7 @@ profiles, digests, observations and outcomes live in receipts.
       "exact_subject_bound": {"actions": ["bind_subject"], "evidence": ["subject_receipt"]},
       "evidence_retained": {"actions": ["retain_evidence"], "evidence": ["execution_receipt"]},
       "handoff_readable": {"actions": ["publish_receipt", "readback_ticket"], "evidence": ["publication_readback"]},
+      "batch_summary_reconciled": {"actions": ["reconcile_batch_summary"], "evidence": ["batch_summary_reconciliation"]},
       "eligibility_known": {"actions": ["evaluate_eligibility"], "evidence": ["assessment_receipt"]},
       "repair_admitted": {"actions": ["admit_repair"], "evidence": ["eligibility_receipt"]},
       "handoff_publication_decided": {"actions": ["evaluate_handoff_publication"], "evidence": ["handoff_publication_gate"]},
@@ -168,6 +170,21 @@ profiles, digests, observations and outcomes live in receipts.
       "overrides": [],
       "precedence": 20,
       "safety": false,
+      "fulfillment": "procedure"
+    },
+    {
+      "id": "ORCH-BATCH-SUMMARY-RECONCILED",
+      "scope": "orchestrate",
+      "strength": "must",
+      "when": {"stage_state": "handoff", "summary_kind": "batch"},
+      "requires": {"actions": ["reconcile_batch_summary"], "evidence": ["batch_summary_reconciliation"], "postconditions": ["batch_summary_reconciled"]},
+      "forbids": {"actions": ["publish_unreconciled_batch_summary"]},
+      "allows": {"actions": ["publish_batch_summary"]},
+      "terminal": "either",
+      "mutation": "write_allowed",
+      "overrides": [],
+      "precedence": 80,
+      "safety": true,
       "fulfillment": "procedure"
     }
   ]
