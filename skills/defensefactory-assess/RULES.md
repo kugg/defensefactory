@@ -69,6 +69,51 @@ observations from judgments, and stops on a justified source disposition.
       "precedence": 40,
       "safety": false,
       "fulfillment": "procedure"
+    },
+    {
+      "id": "ASSESS-DISPOSITION-PLANNED",
+      "scope": "assess",
+      "strength": "must",
+      "when": {"stage_state": "handoff", "disposition_class": ["hold", "stop", "complete"]},
+      "requires": {"actions": ["plan_lifecycle_transition"], "evidence": ["lifecycle_transition_plan"]},
+      "forbids": {"actions": ["leave_unmarked_disposition"]},
+      "allows": {"actions": ["apply_lifecycle_transition", "verify_lifecycle_readback"], "evidence": ["lifecycle_transition_readback"]},
+      "terminal": "either",
+      "mutation": "write_allowed",
+      "overrides": [],
+      "precedence": 70,
+      "safety": true,
+      "fulfillment": "procedure"
+    },
+    {
+      "id": "ASSESS-AUTHORIZED-DISPOSITION-READBACK",
+      "scope": "assess",
+      "strength": "must",
+      "when": {"stage_state": "handoff", "disposition_class": ["hold", "stop", "complete"], "lifecycle_authority": "present"},
+      "requires": {"actions": ["apply_lifecycle_transition", "verify_lifecycle_readback"], "evidence": ["lifecycle_transition_readback"], "postconditions": ["disposition_visible"]},
+      "forbids": {},
+      "allows": {},
+      "terminal": "either",
+      "mutation": "write_required",
+      "overrides": [],
+      "precedence": 80,
+      "safety": true,
+      "fulfillment": "procedure"
+    },
+    {
+      "id": "ASSESS-NO-LIFECYCLE-WITHOUT-AUTHORITY",
+      "scope": "assess",
+      "strength": "must_not",
+      "when": {"stage_state": "handoff", "disposition_class": ["hold", "stop", "complete"], "lifecycle_authority": "absent"},
+      "requires": {},
+      "forbids": {"actions": ["apply_lifecycle_transition"]},
+      "allows": {},
+      "terminal": "either",
+      "mutation": "read_only",
+      "overrides": [],
+      "precedence": 90,
+      "safety": true,
+      "fulfillment": "procedure"
     }
   ]
 }
