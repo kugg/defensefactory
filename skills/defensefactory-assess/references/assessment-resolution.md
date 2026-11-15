@@ -46,8 +46,9 @@ continue only the active subjects. Whole-ticket close/disqualify still requires
 complete declared lifecycle scope, actual review bindings and authorized native
 transition/readback. When the assessment concludes a nonterminal hold, use the
 [native disposition lifecycle procedure](disposition-lifecycle.md) to distinguish
-an owner decision from insufficient evidence in the visible ticket label. No new
-review actor or security-team approval is introduced.
+an owner decision from insufficient evidence in the visible ticket label. Queue
+either as actionable work unless a current explicit park receipt justifies
+Backlog. No new review actor or security-team approval is introduced.
 
 ## Before declaring a hold
 

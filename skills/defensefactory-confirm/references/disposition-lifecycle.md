@@ -10,17 +10,18 @@ run might find it convenient.
 
 Discover the team's current native status and label configuration through the
 ticket connector. Bind the selected mapping in a versioned project policy. The
-portable helper uses four semantic state classes (`complete`, `canceled`,
-`backlog`, `in_progress`) and these canonical dispositions:
+portable helper separates disposition from queue placement. It uses five
+semantic state classes (`complete`, `canceled`, `parked`, `queued`,
+`in_progress`) and these default routes:
 
-| Factory disposition | Semantic state | Terminal |
+| Factory disposition | Default semantic state | Terminal |
 | --- | --- | --- |
 | `already_fixed` | `complete` | yes |
 | `accepted_risk` | `canceled` | yes |
 | `false_positive` | `canceled` | yes |
 | `invalid_report` | `canceled` | yes |
-| `owner_decision` | `backlog` | no |
-| `inconclusive` | `backlog` | no |
+| `owner_decision` | `queued` | no |
+| `inconclusive` | `queued` | no |
 | `active` | `in_progress` | no |
 
 The policy maps those semantic values to the project's actual status and label
@@ -28,7 +29,37 @@ names. Status names such as `Done` are not universal. Configure the policy
 through the installation/project profile or a ticket-bound resource; never infer
 it from finding prose. Create missing labels only with explicit administrative
 authority. A single-select disposition label group is recommended so stale and
-current dispositions cannot coexist.
+current dispositions cannot coexist. For a Linear project with `Todo`, map
+`queued` to `Todo`; a project with a native `Blocked` status may select that
+instead. Map `parked` to Backlog.
+
+## Backlog is an explicit park decision
+
+A nonterminal disposition is actionable state, not permission to hide the issue
+in Backlog. `owner_decision` and `inconclusive` route to `queued` by default.
+Route a nonterminal ticket to `parked` only with a current `finding_park` receipt
+that binds the ticket and records the deciding owner, reason, shareable reference,
+time and concrete review condition. A label, old comment, missing assignee or
+runner convenience is not a park decision. Terminal dispositions cannot be
+parked.
+
+Use `routing:{"queue_state":"default"}` for ordinary work. Parked routing uses:
+
+```json
+{
+  "queue_state": "parked",
+  "park_receipt": {
+    "record_type": "finding_park",
+    "finding": "TICKET-123",
+    "subject": {"repository": "OWNER/REPOSITORY", "revision": "FULL_COMMIT"},
+    "reason": "Why work is intentionally deferred",
+    "decided_by": "OWNER",
+    "reference": "SHAREABLE_DECISION_REFERENCE",
+    "parked_at": "ISO-8601",
+    "review_condition": "Concrete event or date that reopens review"
+  }
+}
+```
 
 ## Plan, apply and read back
 
@@ -39,7 +70,7 @@ After publishing and reading back the assessment receipt:
 2. Run `scripts/stage.py disposition-lifecycle-plan` (or
    `scripts/disposition-lifecycle.py plan`) with the current ticket snapshot,
    shareable assessment receipt reference and digest, project mapping, explicit
-   mutation authority and plan time. Save and attach the plan.
+   queue routing, mutation authority and plan time. Save and attach the plan.
 3. If the plan is `pending`, do not mutate the ticket or describe it as closed.
    The assessment result remains valid and its missing lifecycle authority is a
    concrete next action.
@@ -57,6 +88,8 @@ The verifier checks the exact ticket, fresh retrieval time, configured status,
 required disposition label and absence of conflicting configured disposition
 labels. It does not re-evaluate the security evidence. Terminal readback stops
 the pipeline; nonterminal readback names the remaining owner or evidence action.
+Batch success must distinguish a correctly queued ticket from a deliberately
+parked one; merely labeling every old Backlog issue is not backlog cleanup.
 
 ## Batch and bounded trials
 

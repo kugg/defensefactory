@@ -210,7 +210,8 @@ def stalled_findings(findings):
         if park is not None:
             require(park.get("record_type") == "finding_park" and park.get("finding") == finding["id"]
                     and park.get("subject") == finding["subject"] and park.get("reason")
-                    and park.get("decided_by") and park.get("reference") and park.get("parked_at"),
+                    and park.get("decided_by") and park.get("reference") and park.get("parked_at")
+                    and park.get("review_condition"),
                     "Park receipt is incomplete or belongs to a different finding/subject")
             _timestamp(park["parked_at"], "Park")
             _shareable(park["reference"], "Park reference")

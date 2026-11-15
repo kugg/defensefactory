@@ -21,7 +21,8 @@ class DispositionLifecycleTests(unittest.TestCase):
                            "receipt_sha256": "a" * 64}
         self.policy = {"schema_version": 1, "id": "fixture-linear-v1",
                        "statuses": {"complete": "Done", "canceled": "Canceled",
-                                    "backlog": "Backlog", "in_progress": "In Progress"},
+                                    "parked": "Backlog", "queued": "Todo",
+                                    "in_progress": "In Progress"},
                        "labels": {"active": "Active", "owner_decision": "Owner decision",
                                   "inconclusive": "Inconclusive", "already_fixed": "Already fixed",
                                   "accepted_risk": "Accepted risk", "false_positive": "False positive",
@@ -29,10 +30,10 @@ class DispositionLifecycleTests(unittest.TestCase):
         self.authorization = {"authorized": True, "reference": "https://policy.invalid/lifecycle"}
         self.planned_at = "2026-01-01T00:01:00Z"
 
-    def plan(self, disposition="already_fixed"):
+    def plan(self, disposition="already_fixed", routing=None):
         assessment = {**self.assessment, "disposition": disposition}
         return plan_lifecycle_transition(self.ticket, assessment, self.policy,
-                                         self.authorization, self.planned_at)
+                                         self.authorization, self.planned_at, routing)
 
     def observed(self, status, label):
         return {"identifier": "SEC-1", "updated_at": "2026-01-01T00:02:00Z",
@@ -42,8 +43,8 @@ class DispositionLifecycleTests(unittest.TestCase):
     def test_every_disposition_has_explicit_state_label_and_terminal_semantics(self):
         expected = {
             "active": ("In Progress", "Active", False),
-            "owner_decision": ("Backlog", "Owner decision", False),
-            "inconclusive": ("Backlog", "Inconclusive", False),
+            "owner_decision": ("Todo", "Owner decision", False),
+            "inconclusive": ("Todo", "Inconclusive", False),
             "already_fixed": ("Done", "Already fixed", True),
             "accepted_risk": ("Canceled", "Accepted risk", True),
             "false_positive": ("Canceled", "False positive", True),
@@ -55,6 +56,31 @@ class DispositionLifecycleTests(unittest.TestCase):
                 self.assertEqual(plan["desired"], {"status": status, "disposition_label": label})
                 self.assertEqual(plan["terminal"], terminal)
                 self.assertEqual(plan["result"], "ready")
+
+    def test_backlog_requires_an_explicit_bound_park_receipt(self):
+        park = {"record_type": "finding_park", "finding": "SEC-1",
+                "subject": {"repository": "fixture/repository", "revision": "b" * 40},
+                "reason": "Owner deliberately deferred this work", "decided_by": "component-owner",
+                "reference": "https://tickets.invalid/SEC-1/park", "parked_at": "2026-01-01T00:00:30Z",
+                "review_condition": "Review when the upstream media profile is published"}
+        plan = self.plan("owner_decision", {"queue_state": "parked", "park_receipt": park})
+        self.assertEqual(plan["desired"]["status"], "Backlog")
+        self.assertEqual(plan["queue_state"], "parked")
+        self.assertEqual(plan["park_receipt"], park)
+        self.assertEqual(len(plan["park_receipt_sha256"]), 64)
+
+    def test_missing_or_mismatched_park_receipt_and_terminal_parking_are_rejected(self):
+        with self.assertRaisesRegex(ValueError, "requires one park receipt"):
+            self.plan("inconclusive", {"queue_state": "parked"})
+        park = {"record_type": "finding_park", "finding": "OTHER-1",
+                "subject": {"repository": "fixture/repository", "revision": "b" * 40}, "reason": "Deferred",
+                "decided_by": "owner", "reference": "https://tickets.invalid/park",
+                "parked_at": "2026-01-01T00:00:30Z", "review_condition": "Review next release"}
+        with self.assertRaisesRegex(ValueError, "bind the ticket"):
+            self.plan("owner_decision", {"queue_state": "parked", "park_receipt": park})
+        park["finding"] = "SEC-1"
+        with self.assertRaisesRegex(ValueError, "Terminal dispositions cannot be parked"):
+            self.plan("already_fixed", {"queue_state": "parked", "park_receipt": park})
 
     def test_common_report_aliases_normalize_without_changing_policy(self):
         self.assertEqual(self.plan("rejected_false_positive")["disposition"], "false_positive")
@@ -103,7 +129,8 @@ class DispositionLifecycleTests(unittest.TestCase):
             plan_input = root / "plan-input.json"
             plan_output = root / "plan.json"
             plan_input.write_text(json.dumps({"ticket": self.ticket, "assessment": self.assessment,
-                "policy": self.policy, "authorization": self.authorization, "planned_at": self.planned_at}))
+                "policy": self.policy, "routing": {"queue_state": "default"},
+                "authorization": self.authorization, "planned_at": self.planned_at}))
             completed = subprocess.run([sys.executable, str(SCRIPTS / "disposition-lifecycle.py"), "plan",
                                         "--input", str(plan_input), "--output", str(plan_output)],
                                        capture_output=True, text=True)
