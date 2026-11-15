@@ -5,9 +5,16 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import sys
+
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE if (HERE / 'factorycore').exists() else HERE.parent))
+from factorycore.attempt_state import READBACK_SCHEMA, prepare_active_attempt
 
 START = '## Factory checkpoint'
 END = '## Factory resources'
+ATTEMPT_START = '<!-- defensefactory-active-attempt:start -->'
+ATTEMPT_END = '<!-- defensefactory-active-attempt:end -->'
 
 
 def normalize(text):
@@ -26,11 +33,113 @@ def managed(description):
     return description[start:end]
 
 
+def managed_attempt(description):
+    if ATTEMPT_START not in description and ATTEMPT_END not in description:
+        return None
+    if description.count(ATTEMPT_START) != 1 or description.count(ATTEMPT_END) != 1:
+        raise ValueError('Ambiguous or incomplete active-attempt checkpoint; reconcile it in Linear')
+    start, end = description.index(ATTEMPT_START), description.index(ATTEMPT_END) + len(ATTEMPT_END)
+    if end <= start:
+        raise ValueError('Invalid active-attempt checkpoint boundaries')
+    return description[start:end]
+
+
 def checkpoint_id(block):
     found = re.search(r'(?m)^Checkpoint: `?([A-Za-z0-9._:-]+)`?\s*$', block or '')
     if not found:
         raise ValueError('Checkpoint identity missing')
     return found[1]
+
+
+def render_attempt(checkpoint):
+    reusable = {item['id'] for item in checkpoint['inputs'] if item['classification'] == 'reusable'}
+    rows = [ATTEMPT_START, '## Factory active attempt', '',
+            f"Checkpoint: `{checkpoint['checkpoint_id']}`",
+            f"Checkpoint digest: `{checkpoint['checkpoint_sha256']}`",
+            f"Attempt: `{checkpoint['attempt']}`", f"Stage: `{checkpoint['stage']}`",
+            f"Subject: `{checkpoint['subject']['repository']}@{checkpoint['subject']['revision']}`",
+            f"Finding status: {checkpoint['finding_status']}", f"Result: `{checkpoint['result']}`",
+            f"Execution permitted: `{'true' if checkpoint['execution_permitted'] else 'false'}`", '',
+            checkpoint['reason'], '', '### Minimal verified input closure', '',
+            '| ID | Kind | Reference | Binding |', '| --- | --- | --- | --- |']
+    for item in checkpoint['inputs']:
+        if item['id'] not in reusable:
+            continue
+        binding = item['binding'].get('sha256') or item['binding'].get('native_id')
+        rows.append('| ' + ' | '.join(str(value).replace('|', '/') for value in
+                    (item['id'], item['kind'], item['reference'], binding)) + ' |')
+    rows += ['', '### Evidence outside the active closure', '',
+             '| ID | Classification | Rationale |', '| --- | --- | --- |']
+    for item in checkpoint['inputs']:
+        if item['id'] in reusable:
+            continue
+        rows.append('| ' + ' | '.join(str(value).replace('|', '/') for value in
+                    (item['id'], item['classification'], item['rationale'])) + ' |')
+    if all(item['id'] in reusable for item in checkpoint['inputs']):
+        rows.append('| None | historical/stale/refresh-required | No excluded inputs recorded. |')
+    rows += ['', '### Current applicability', '',
+             f"Result: `{checkpoint['applicability']['result']}`  ",
+             f"Evidence: {checkpoint['applicability']['reference']}  ",
+             f"Evidence SHA-256: `{checkpoint['applicability']['sha256']}`", '']
+    rows += ['### Blocking refresh work', '']
+    rows += ['- ' + value for value in checkpoint['blockers']] or ['- None.']
+    rows += ['', '### Boundaries and next action', '', checkpoint['boundaries'], '',
+             f"Next action: {checkpoint['next_action']}", f"Owner: {checkpoint['owner']}", '',
+             'Historical comments and attachments remain append-only evidence. This block is only the current execution pointer.',
+             ATTEMPT_END]
+    rendered = '\n'.join(rows)
+    if rendered.count(ATTEMPT_START) != 1 or rendered.count(ATTEMPT_END) != 1:
+        raise ValueError('Active-attempt text contains reserved boundary markers')
+    return rendered
+
+
+def prepare_attempt(issue, request):
+    if issue.get('id') != request.get('case'):
+        raise ValueError('Ticket/attempt case mismatch')
+    description = issue.get('description') or ''
+    old = managed_attempt(description)
+    predecessor = checkpoint_id(old) if old else None
+    if request.get('previous_checkpoint') != predecessor:
+        raise ValueError('Stale active attempt; fetch the ticket and reconcile its current pointer')
+    checkpoint = prepare_active_attempt(request)
+    if checkpoint['checkpoint_id'] == predecessor:
+        raise ValueError('A bounded retry needs a new active checkpoint identifier')
+    block = render_attempt(checkpoint)
+    patch = ({'op': 'replace', 'old_string': old, 'new_string': block} if old else
+             {'op': 'prepend', 'text': block + '\n\n'})
+    return {
+        'schema': 'defensefactory/active-attempt-publication/v1',
+        'case': issue['id'],
+        'read_updated_at': issue.get('updatedAt'),
+        'read_description_sha256': hashlib.sha256(description.encode()).hexdigest(),
+        'predecessor': predecessor,
+        'checkpoint_id': checkpoint['checkpoint_id'],
+        'checkpoint': checkpoint,
+        'expected_checkpoint': block,
+        'linear_request': {'id': issue['id'], 'patch': [patch]},
+        'note': 'The exact-anchor patch replaces only the active pointer. It is not a server lease and never deletes historical comments or attachments.',
+    }
+
+
+def acknowledge_attempt(issue, prepared):
+    if issue.get('id') != prepared.get('case'):
+        raise ValueError('Active-attempt readback is for another issue')
+    actual = managed_attempt(issue.get('description') or '')
+    if actual is None or checkpoint_id(actual) != prepared['checkpoint_id']:
+        raise ValueError('Active-attempt publication not observed; do not execute the stage')
+    if normalize(actual) != normalize(prepared['expected_checkpoint']):
+        raise ValueError('Active-attempt readback differs from the published pointer')
+    checkpoint = prepared['checkpoint']
+    return {
+        'schema': READBACK_SCHEMA,
+        'case': issue['id'],
+        'checkpoint_id': checkpoint['checkpoint_id'],
+        'checkpoint_sha256': checkpoint['checkpoint_sha256'],
+        'ticket_updated_at': issue.get('updatedAt'),
+        'ticket_description_sha256': hashlib.sha256(issue['description'].encode()).hexdigest(),
+        'publication': 'observed_in_connector_readback',
+        'note': 'Confirms the current ticket pointer only; referenced input bytes and stage acceptance remain separate evidence.',
+    }
 
 
 def render(state):
@@ -131,11 +240,23 @@ def main():
     sub = p.add_subparsers(dest='command', required=True)
     a = sub.add_parser('prepare'); a.add_argument('--issue', required=True); a.add_argument('--state', required=True); a.add_argument('--output', required=True)
     a = sub.add_parser('ack'); a.add_argument('--issue', required=True); a.add_argument('--prepared', required=True); a.add_argument('--output', required=True)
+    a = sub.add_parser('attempt-prepare'); a.add_argument('--issue', required=True); a.add_argument('--state', required=True); a.add_argument('--output', required=True)
+    a = sub.add_parser('attempt-ack'); a.add_argument('--issue', required=True); a.add_argument('--prepared', required=True); a.add_argument('--output', required=True)
     args = p.parse_args()
+    output = Path(args.output)
+    if output.exists():
+        p.error('Use a new output per invocation; do not overwrite a handoff receipt')
     issue = json.loads(Path(args.issue).read_text())
     try:
-        result = prepare(issue, json.loads(Path(args.state).read_text())) if args.command == 'prepare' else acknowledge(issue, json.loads(Path(args.prepared).read_text()))
-        Path(args.output).write_text(json.dumps(result, indent=2) + '\n')
+        if args.command == 'prepare':
+            result = prepare(issue, json.loads(Path(args.state).read_text()))
+        elif args.command == 'ack':
+            result = acknowledge(issue, json.loads(Path(args.prepared).read_text()))
+        elif args.command == 'attempt-prepare':
+            result = prepare_attempt(issue, json.loads(Path(args.state).read_text()))
+        else:
+            result = acknowledge_attempt(issue, json.loads(Path(args.prepared).read_text()))
+        output.write_text(json.dumps(result, indent=2) + '\n')
         print(json.dumps({'case': result['case'], 'checkpoint_id': result['checkpoint_id'], 'output': args.output}))
     except ValueError as exc:
         p.error(str(exc))

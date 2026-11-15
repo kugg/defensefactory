@@ -18,6 +18,33 @@ Derive the project, repository/subtree, exact source/base/candidate or artifact/
 
 After ambiguous publication or external mutation, look for the same receipt/effect identity before retrying. Retain pending publication and do not advance from a successful local command. Exact-anchor patches are overwrite guards, not distributed leases. Changing candidate, requirements or evaluator invalidates affected evidence without erasing counterexamples. Premise disagreement routes to assessment; it does not rewrite approved business requirements.
 
+## Bounded stage retries
+
+A bounded retry resets execution state, not ticket history. Comments, attachments,
+prior checkpoints, failures and lifecycle receipts remain append-only evidence.
+The ticket description may carry one managed `Factory active attempt` block as
+the current pointer. Replace only that exact block after fetching the live issue;
+do not edit old comments to make an attempt appear clean.
+
+Before opening the retried stage, classify every predecessor input:
+
+- `reusable`: verified, applicable to the exact current subject, and required by
+  this stage;
+- `historical`: useful chronology but not an input to the new execution;
+- `stale`: once applicable, but invalidated by its subject, candidate, policy,
+  evaluator or other declared trigger;
+- `refresh_required`: logically required but not yet re-established.
+
+The minimal dependency closure contains exactly the reusable inputs. A saved
+current-source applicability result must be `satisfied_within_scope`; unknown or
+reassessment-required applicability blocks the retry. Publish the generated
+active pointer, fetch the issue again and bind its connector readback into
+`stage-scope` with `attempt_mode: bounded_retry`. A new current pointer does not
+accept the stage, supersede lifecycle authority, or invalidate retained evidence.
+Assessment research may survive a later-stage retry when this applicability test
+passes; candidate-specific construction, semantic coverage, fence execution and
+verification normally require refresh for a new candidate.
+
 ## Portable resources
 
 Apply the [bundle completeness procedure](handoff-completeness.md) before evidence handoff: retain actual evaluator/adapter sources, exact specifications and raw logs, not just hashes or host paths. Verify both outer bytes and required transitive members. Publication, evidence completeness and stage readiness are separate results.
