@@ -1,5 +1,11 @@
 <div align="center">
-  <a href="docs/assets/dark-factory-logo.ansi"><img src="docs/assets/dark-factory-logo.png" width="900" alt="Dark Defense Factory rendered as terminal-green ANSI art"></a>
+  <a href="docs/assets/dark-factory-logo.ansi">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="docs/assets/dark-factory-logo.png">
+      <source media="(prefers-color-scheme: light)" srcset="docs/assets/dark-factory-logo-light.png">
+      <img src="docs/assets/dark-factory-logo-light.png" width="900" alt="Dark Defense Factory rendered as terminal-green ANSI art">
+    </picture>
+  </a>
   <h3>A dark factory turning bugs into architectural enforcement.</h3>
   <p><strong>Bugs go in security architecture comes out.</strong></p>
   <p>
@@ -25,16 +31,21 @@ handoff.
 
 ## See the idea in 10 seconds
 
-![A synthetic Defense Factory walkthrough from a bug report to a versioned architectural improvement](docs/assets/dark-factory-demo.gif)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/dark-factory-demo.gif">
+  <source media="(prefers-color-scheme: light)" srcset="docs/assets/dark-factory-demo-light.gif">
+  <img src="docs/assets/dark-factory-demo-light.gif" alt="One ticket moving through report, intake, assessment, repair, verification and draft pull request">
+</picture>
 
-This animation replays a **deterministic, offline helper fixture**. It proves the
-displayed helper path, not a live remediation or autonomous product change.
-[Watch the WebM](docs/assets/dark-factory-demo.webm), inspect the
-[structured record](docs/demo/synthetic-trial.json), or read the
-[media provenance](docs/demo/README.md). Static evidence frames show the
-[report](docs/assets/dark-factory-demo-report.png),
-[repair](docs/assets/dark-factory-demo-repair.png), and
-[versioned learning](docs/assets/dark-factory-demo-learn.png) handoffs.
+One ticket moves through six durable handoffs before a draft PR exists:
+**Report** captures the bug, **Intake** freezes scope, **Assess** qualifies the
+finding, **Repair** restores the boundary, **Verify** proves the exact candidate,
+and **Draft PR** carries the proof. Each handoff keeps the exact subject,
+evidence, limitations and next action with the ticket.
+
+The animation is generated from a **deterministic, offline helper fixture**. The
+[structured record](docs/demo/synthetic-trial.json) and
+[media provenance](docs/demo/README.md) define what it does—and does not—claim.
 
 ## The end-to-end flow
 

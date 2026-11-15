@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Defense Factory ticket flow: DRAFT PR</title>
+  <desc id="desc">A persistent six-step flow with DRAFT PR highlighted: Carry proof.</desc>
+  <defs>
+    <filter id="phosphor-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <pattern id="scanlines" width="4" height="4" patternUnits="userSpaceOnUse">
+      <path d="M0 3.5h4" stroke="#8affad" stroke-opacity="0.035"/>
+    </pattern>
+  </defs>
+  <rect width="1280" height="720" fill="#020806"/>
+  <rect x="24" y="24" width="1232" height="672" rx="12" fill="none" stroke="#0b5d2a" stroke-width="2"/>
+  <rect width="1280" height="720" fill="url(#scanlines)"/>
+
+  <text x="52" y="78" fill="#effff4" font-family="Arial, Helvetica, sans-serif" font-size="28" font-weight="700" letter-spacing="2">ONE TICKET · SIX DURABLE HANDOFFS</text>
+  <text x="1228" y="78" text-anchor="end" fill="#789582" font-family="Menlo, Consolas, monospace" font-size="18">06 / 06</text>
+  <text x="52" y="116" fill="#789582" font-family="Menlo, Consolas, monospace" font-size="17">OFFLINE DETERMINISTIC FIXTURE · NO MODEL OR SERVICE CALLS</text>
+
+  <g filter="url(#phosphor-glow)">
+    <rect x="1080" y="174" width="130" height="48" rx="24" fill="#39ff78"/>
+    <text x="1145" y="205" text-anchor="middle" fill="#001a08" font-family="Menlo, Consolas, monospace" font-size="17" font-weight="700">TICKET FIX-1</text>
+    <path d="M1145 222v28" stroke="#39ff78" stroke-width="4"/>
+  </g>
+
+
+    <g opacity="1">
+      <rect x="40" y="260" width="170" height="120" rx="8" fill="#0b3d1c" stroke="#1db954" stroke-width="3"/>
+      <text x="125.0" y="308" text-anchor="middle" fill="#caffd7" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">REPORT</text>
+      <text x="125.0" y="342" text-anchor="middle" fill="#caffd7" font-family="Arial, Helvetica, sans-serif" font-size="18">Capture bug</text>
+    </g><path d="M210 320h34m-12-10 12 10-12 10" fill="none" stroke="#1db954" stroke-width="4"/>
+    <g opacity="1">
+      <rect x="244" y="260" width="170" height="120" rx="8" fill="#0b3d1c" stroke="#1db954" stroke-width="3"/>
+      <text x="329.0" y="308" text-anchor="middle" fill="#caffd7" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">INTAKE</text>
+      <text x="329.0" y="342" text-anchor="middle" fill="#caffd7" font-family="Arial, Helvetica, sans-serif" font-size="18">Freeze scope</text>
+    </g><path d="M414 320h34m-12-10 12 10-12 10" fill="none" stroke="#1db954" stroke-width="4"/>
+    <g opacity="1">
+      <rect x="448" y="260" width="170" height="120" rx="8" fill="#0b3d1c" stroke="#1db954" stroke-width="3"/>
+      <text x="533.0" y="308" text-anchor="middle" fill="#caffd7" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">ASSESS</text>
+      <text x="533.0" y="342" text-anchor="middle" fill="#caffd7" font-family="Arial, Helvetica, sans-serif" font-size="18">Qualify finding</text>
+    </g><path d="M618 320h34m-12-10 12 10-12 10" fill="none" stroke="#1db954" stroke-width="4"/>
+    <g opacity="1">
+      <rect x="652" y="260" width="170" height="120" rx="8" fill="#0b3d1c" stroke="#1db954" stroke-width="3"/>
+      <text x="737.0" y="308" text-anchor="middle" fill="#caffd7" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">REPAIR</text>
+      <text x="737.0" y="342" text-anchor="middle" fill="#caffd7" font-family="Arial, Helvetica, sans-serif" font-size="18">Restore boundary</text>
+    </g><path d="M822 320h34m-12-10 12 10-12 10" fill="none" stroke="#1db954" stroke-width="4"/>
+    <g opacity="1">
+      <rect x="856" y="260" width="170" height="120" rx="8" fill="#0b3d1c" stroke="#1db954" stroke-width="3"/>
+      <text x="941.0" y="308" text-anchor="middle" fill="#caffd7" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">VERIFY</text>
+      <text x="941.0" y="342" text-anchor="middle" fill="#caffd7" font-family="Arial, Helvetica, sans-serif" font-size="18">Prove candidate</text>
+    </g><path d="M1026 320h34m-12-10 12 10-12 10" fill="none" stroke="#1db954" stroke-width="4"/>
+    <g opacity="1" filter="url(#phosphor-glow)">
+      <rect x="1060" y="260" width="170" height="120" rx="8" fill="#39ff78" stroke="#39ff78" stroke-width="3"/>
+      <text x="1145.0" y="308" text-anchor="middle" fill="#001a08" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700">DRAFT PR</text>
+      <text x="1145.0" y="342" text-anchor="middle" fill="#001a08" font-family="Arial, Helvetica, sans-serif" font-size="18">Carry proof</text>
+    </g>
+
+  <text x="640" y="474" text-anchor="middle" fill="#789582" font-family="Menlo, Consolas, monospace" font-size="18">CURRENT HANDOFF</text>
+  <text x="640" y="520" text-anchor="middle" fill="#39ff78" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">DRAFT PR · Carry proof</text>
+
+  <path d="M160 592h960" stroke="#25352b" stroke-width="2"/>
+  <text x="640" y="632" text-anchor="middle" fill="#effff4" font-family="Menlo, Consolas, monospace" font-size="19">EXACT SUBJECT  ·  EVIDENCE  ·  LIMITATIONS  ·  NEXT ACTION</text>
+  <text x="640" y="674" text-anchor="middle" fill="#789582" font-family="Arial, Helvetica, sans-serif" font-size="15">Synthetic helper evidence only · no live product, source index, PR mutation or deployment claim</text>
+</svg>
