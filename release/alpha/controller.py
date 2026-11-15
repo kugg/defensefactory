@@ -184,6 +184,15 @@ def export_run(ledger: str, run_id: str, output: Path, manifest: dict) -> dict:
     return summary
 
 
+def lifecycle_span(telemetry: str, name: str, attributes: dict, start_ns: int,
+                   end_ns: int, trace_id: str, status: dict | None = None) -> bool:
+    try:
+        return emit_span(telemetry, name, attributes, start_ns, end_ns,
+                         trace_id=trace_id, status=status, timeout=2.0)
+    except (OSError, ValueError):
+        return False
+
+
 def run_trial(image: str, output: Path, run_id: str, scenario: str,
               through: str, keep_services: bool = False, fault: str = "") -> dict:
     if shutil.which("docker") is None:
@@ -239,12 +248,12 @@ def run_trial(image: str, output: Path, run_id: str, scenario: str,
             session = f"{run_id}-{stage}-{time.time_ns()}"
             expected_refusal = fault == "tamper_after_intake" and stage == "assess"
             lifecycle_start = now_ns()
-            emit_span(telemetry, f"defensefactory.container.{stage}.start", {
+            lifecycle_span(telemetry, f"defensefactory.container.{stage}.start", {
                 "factory.run_id": run_id,
                 "factory.stage": stage,
                 "factory.session_identity": session,
                 "factory.image_digest": digest,
-            }, lifecycle_start, now_ns(), trace_id=attempt_trace, timeout=2.0)
+            }, lifecycle_start, now_ns(), attempt_trace)
             result = docker_compose(project, env, "run", "--rm", "--no-deps", "-T",
                 "-e", f"FACTORY_SESSION_ID={session}", "stage", "stage",
                 "--stage", stage, "--run-id", run_id, "--image-digest", digest,
@@ -254,24 +263,23 @@ def run_trial(image: str, output: Path, run_id: str, scenario: str,
                 summary = json.loads(http("GET", f"{ledger}/v1/runs/{run_id}"))
                 container_identity = summary["receipts"][-1].get("container_identity", "unknown")
             lifecycle_end = now_ns()
-            emit_span(telemetry, f"defensefactory.container.{stage}.exit", {
+            lifecycle_span(telemetry, f"defensefactory.container.{stage}.exit", {
                 "factory.run_id": run_id,
                 "factory.stage": stage,
                 "factory.session_identity": session,
                 "factory.image_digest": digest,
                 "factory.container_identity": container_identity,
                 "factory.exit_code": result.returncode,
-            }, lifecycle_start, lifecycle_end, trace_id=attempt_trace,
+            }, lifecycle_start, lifecycle_end, attempt_trace,
                 status={"code": 2 if result.returncode else 1,
-                        "message": "refused" if result.returncode else "exited"},
-                timeout=2.0)
-            emit_span(telemetry, f"defensefactory.container.{stage}.delete", {
+                        "message": "refused" if result.returncode else "exited"})
+            lifecycle_span(telemetry, f"defensefactory.container.{stage}.delete", {
                 "factory.run_id": run_id,
                 "factory.stage": stage,
                 "factory.session_identity": session,
                 "factory.image_digest": digest,
                 "factory.container_identity": container_identity,
-            }, lifecycle_end, now_ns(), trace_id=attempt_trace, timeout=2.0)
+            }, lifecycle_end, now_ns(), attempt_trace)
             (output / f"stage-{stage}.stdout.json").write_text(result.stdout)
             if result.stderr:
                 (output / f"stage-{stage}.stderr.json").write_text(result.stderr)
