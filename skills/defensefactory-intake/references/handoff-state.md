@@ -17,10 +17,15 @@ are not required inputs to that stage.
 | Comparison or review decision | Input copies plus comparison recipe/result; concise decision with evidence references | Same files, not only a Boolean or narrative conclusion |
 | Invocation trace | Raw `agent.jsonl`, including private reasoning, stays private | Selected tool observations, cache snapshots, prefix identity and postflight audit; never private reasoning text |
 | Credential or signed transfer URL | Provisioned environment/private native metadata | Credential reference/name only; fresh connector lookup for expiring access |
+| Current bounded-attempt pointer | Generated checkpoint and connector patch preparation | One managed ticket-description block plus separate connector readback; prior comments, attachments and checkpoints remain history |
 
 The ticket owns stage state, resource IDs, decisions and next action. Its
 attachments carry machine-readable files. Disk copies are scratch/evidence
 preparation; a receipt naming a local path alone is not a portable handoff.
+For a bounded retry, the current pointer names only the minimal verified input
+closure. Historical, stale and refresh-required resources stay discoverable but
+are excluded from execution admission until explicitly reclassified in a later
+checkpoint with new evidence.
 
 ## Layout and capture
 

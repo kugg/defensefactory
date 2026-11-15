@@ -96,6 +96,29 @@ An unperformed item is incomplete or violated, never implied by a green helper.
 
 ## Open the stage through the ticket
 
+For a fresh case, use the ordinary `stage-scope` flow below. For a bounded retry
+of one stage on an existing ticket, first write an active-attempt request that
+classifies all relevant predecessor resources and names the exact minimal
+reusable closure. Run:
+
+```sh
+python3 scripts/ticket_handoff.py attempt-prepare --issue live-issue.json --state attempt.json --output attempt-publication.json
+```
+
+Apply only the returned exact-anchor patch through the native ticket connector,
+fetch the issue again, then run:
+
+```sh
+python3 scripts/ticket_handoff.py attempt-ack --issue issue-readback.json --prepared attempt-publication.json --output attempt-readback.json
+```
+
+Set `attempt_mode` to `bounded_retry` in the subsequent `stage-scope` input and
+include the generated `attempt_checkpoint` and `attempt_readback`. The stage
+helper binds case, attempt, stage and exact Git subject and refuses a checkpoint
+on hold. Neither command deletes or rewrites comments, attachments or prior
+receipts. Preserve their files and native IDs; classification controls current
+admission, not historical visibility.
+
 1. Read the current ticket and referenced inputs. Load the stage's `SKILL.md`,
    `RULES.md`, `stage-contract.md`, `claim-evidence.md`, and the stage execution reference.
    Validate the effective inherited rules and procedure conformance with

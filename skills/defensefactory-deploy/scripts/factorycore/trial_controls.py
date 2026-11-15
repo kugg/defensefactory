@@ -11,6 +11,7 @@ from .core import require, identity, sha
 from .execution_capture import capture
 from .check_results import qualify_execution
 from .stage_rules import discover_root_package, receipt_binding, validate_package_safe
+from .attempt_state import validate_scope as validate_attempt_scope
 
 
 def now():
@@ -54,6 +55,17 @@ def scope_prepare(data):
     scope.update(package=str(package), loaded_resource_sha256=files, rule_profiles=[str(path) for path in profile_paths],
                  rule_profile_sha256={str(path): sha(path.read_bytes()) for path in profile_paths},
                  stage_rules=rules_binding)
+    attempt_mode = data.get('attempt_mode', 'fresh_case')
+    require(attempt_mode in ('fresh_case', 'bounded_retry'), 'Unknown attempt mode')
+    scope['attempt_mode'] = attempt_mode
+    if attempt_mode == 'bounded_retry':
+        require(isinstance(data.get('attempt_checkpoint'), dict) and
+                isinstance(data.get('attempt_readback'), dict),
+                'Bounded retry needs the current active-attempt checkpoint and connector readback')
+        binding = validate_attempt_scope(data['attempt_checkpoint'], data['attempt_readback'], scope)
+        scope['attempt_checkpoint'] = data['attempt_checkpoint']
+        scope['attempt_readback'] = data['attempt_readback']
+        scope['attempt_binding'] = binding
     if stage == 'repair':
         from .workflow_gates import repair_admission
         require(data.get('contract_version') not in (None,'') and data.get('scope_reference'),
