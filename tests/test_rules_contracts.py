@@ -17,7 +17,8 @@ sys.path.insert(0, str(SCRIPTS))
 from factorycore.core import GateError, identity
 from factorycore.rules_contracts import (CANDIDATE_SCHEMA, CONTRACT_SCHEMA, claim_status,
     evaluate_candidate, migrate_legacy, parse_rules, render_rules, resolve_contracts,
-    rules_change_gate, run_contracts, semantic_diff, semantic_model, transitional_compare, validate_descriptor)
+    repair_claim_publication_gate, rules_change_gate, run_contracts, semantic_diff, semantic_model,
+    transitional_compare, validate_descriptor)
 
 
 class RulesContractTests(unittest.TestCase):
@@ -53,6 +54,29 @@ class RulesContractTests(unittest.TestCase):
         (self.component / "contracts").mkdir(exist_ok=True)
         (self.component / "RULES.md").write_text(render_rules(self.model, preamble="Ordinary explanatory prose remains developer-owned."))
         (self.component / "contracts/boundary-test.contract.json").write_text(json.dumps(descriptor or self.descriptor, indent=2) + "\n")
+
+    def legacy_catalog(self):
+        return {"schema_version": 2, "component": "fixture-service",
+            "bug_classes": [{"id": "UNAUTHENTICATED-PEER", "definition": "A peer is not authenticated."}],
+            "claims": [{"id": "AUTHENTICATED-BOUNDARY", "statement": "Only an authenticated peer crosses the privileged boundary.",
+                        "preserves": ["Authenticated peers continue to cross the boundary."],
+                        "bug_classes": ["UNAUTHENTICATED-PEER"], "fences": ["BOUNDARY-TEST"]}],
+            "fences": [{"id": "BOUNDARY-TEST", "kind": "hard", "mechanism": "test", "check": "boundary-check",
+                        "controls": [{"path": "boundary_test.py", "selector": "raise SystemExit",
+                            "introduced": {"repository": "fixture/repo", "ref": self.descriptor["introduction"]["commit"],
+                                           "path": "service/boundary_test.py"}}]}]}
+
+    def write_legacy(self, catalog=None):
+        (self.component / "claims.json").write_text(json.dumps(catalog or self.legacy_catalog(), indent=2) + "\n")
+
+    def write_migration(self, catalog=None):
+        catalog = catalog or self.legacy_catalog()
+        raw, descriptors = migrate_legacy(catalog, "network-service", ["@fixture"])
+        (self.component / "RULES.md").write_text(raw)
+        contracts = self.component / "contracts"; contracts.mkdir(exist_ok=True)
+        for descriptor in descriptors:
+            (contracts / (descriptor["id"].lower() + ".contract.json")).write_text(json.dumps(descriptor, indent=2) + "\n")
+        return descriptors
 
     def test_concise_rules_round_trip_and_ignore_explanatory_prose_semantically(self):
         original = render_rules(self.model, preamble="First explanation.")
@@ -166,6 +190,85 @@ class RulesContractTests(unittest.TestCase):
         stale = copy.deepcopy(status); stale["subject"]["revision"] = base
         stale["status_sha256"] = identity({key: value for key, value in stale.items() if key != "status_sha256"})
         self.assertTrue(rules_change_gate(self.repo, "fixture/repo", base, subject, [stale], policy, [review])["pr_blocked"])
+
+    def test_repair_publication_refuses_changed_legacy_authority_without_rules(self):
+        self.write_legacy(); base = self.commit("Add legacy claim authority")
+        changed = self.legacy_catalog(); changed["claims"][0]["statement"] = "A changed legacy-only claim."
+        self.write_legacy(changed); subject = self.commit("Change only claims.json")
+        gate = repair_claim_publication_gate(self.repo, "fixture/repo", base, subject,
+                                              {"required_components": ["service"]})
+        self.assertFalse(gate["publication_permitted"]); self.assertEqual(gate["result"], "violated")
+        self.assertIn("Legacy claims.json changed without canonical RULES.md", " ".join(gate["blockers"]))
+        self.assertIn("service/claims.json", gate["claim_definition_paths_changed"])
+        self.assertEqual(gate["changed_paths_sha256"], identity(gate["changed_paths"]))
+
+    def test_repair_publication_admits_complete_migration_for_owner_review(self):
+        self.write_legacy(); base = self.commit("Add legacy claim authority")
+        self.write_migration(); subject = self.commit("Propose canonical migration")
+        gate = repair_claim_publication_gate(self.repo, "fixture/repo", base, subject,
+                                              {"required_components": ["service"]})
+        self.assertTrue(gate["publication_permitted"], gate["blockers"])
+        self.assertEqual(gate["result"], "review_required")
+        self.assertEqual(gate["owner_review_required"], ["service"])
+        checks = gate["components"][0]["checks"]
+        self.assertTrue(next(row for row in checks if row["kind"] == "legacy_reconciliation")["semantically_equal"])
+        self.assertTrue(next(row for row in checks if row["kind"] == "contracts")["contract_ids"])
+
+    def test_repair_publication_refuses_partial_or_divergent_migration(self):
+        self.write_legacy(); base = self.commit("Add legacy claim authority")
+        descriptors = self.write_migration(); missing = self.component / "contracts" / (descriptors[0]["id"].lower() + ".contract.json")
+        missing.unlink(); subject = self.commit("Leave migration descriptor incomplete")
+        gate = repair_claim_publication_gate(self.repo, "fixture/repo", base, subject,
+                                              {"required_components": ["service"]})
+        self.assertFalse(gate["publication_permitted"])
+        self.assertIn("contract resolution failed", " ".join(gate["blockers"]).lower())
+
+    def test_repair_publication_refuses_legacy_reintroduction_to_rules_only_component(self):
+        self.write_rules(); base = self.commit("Add canonical component rules")
+        self.write_legacy(); subject = self.commit("Reintroduce legacy authority")
+        gate = repair_claim_publication_gate(self.repo, "fixture/repo", base, subject,
+                                              {"required_components": ["service"]})
+        self.assertFalse(gate["publication_permitted"])
+        self.assertIn("duplicate authored authority", " ".join(gate["blockers"]))
+
+    def test_repair_publication_refuses_divergent_legacy_removal_even_when_review_is_referenced(self):
+        self.write_legacy(); base = self.commit("Add legacy claim authority")
+        self.write_migration()
+        raw = (self.component / "RULES.md").read_text().replace(
+            "Only an authenticated peer crosses the privileged boundary.",
+            "A different canonical claim that loses the legacy meaning.")
+        (self.component / "RULES.md").write_text(raw); (self.component / "claims.json").unlink()
+        subject = self.commit("Attempt divergent reviewed migration")
+        gate = repair_claim_publication_gate(self.repo, "fixture/repo", base, subject,
+            {"required_components": ["service"], "legacy_removals": {"service": "fixture-owner-review"}})
+        self.assertFalse(gate["publication_permitted"])
+        self.assertIn("diverges from canonical RULES.md", " ".join(gate["blockers"]))
+
+    def test_repair_publication_admits_valid_rules_update_and_binds_semantic_diff(self):
+        self.write_rules(); base = self.commit("Add canonical component rules")
+        self.model["claims"][0]["statement"] = "Only a verified authenticated peer crosses the privileged boundary."
+        self.write_rules(); subject = self.commit("Clarify canonical claim")
+        gate = repair_claim_publication_gate(self.repo, "fixture/repo", base, subject,
+                                              {"required_components": ["service"]})
+        self.assertTrue(gate["publication_permitted"], gate["blockers"])
+        self.assertEqual(gate["result"], "review_required")
+        semantic = next(row for row in gate["components"][0]["checks"] if row["kind"] == "semantic_diff")
+        self.assertIn("AUTHENTICATED-BOUNDARY", semantic["receipt"]["changed_claims"])
+
+    def test_repair_publication_unrelated_json_is_not_claim_authority(self):
+        base = self.git("rev-parse", "HEAD")
+        (self.component / "config.json").write_text('{"port": 5060}\n'); subject = self.commit("Add ordinary config")
+        gate = repair_claim_publication_gate(self.repo, "fixture/repo", base, subject, {})
+        self.assertTrue(gate["publication_permitted"]); self.assertEqual(gate["result"], "not_applicable")
+        self.assertEqual(gate["claim_definition_paths_changed"], [])
+
+    def test_repair_publication_required_component_blocks_unchanged_legacy_only_layout(self):
+        self.write_legacy(); base = self.commit("Add legacy claim authority")
+        (self.component / "implementation.py").write_text("verified = True\n"); subject = self.commit("Change implementation only")
+        gate = repair_claim_publication_gate(self.repo, "fixture/repo", base, subject,
+                                              {"required_components": ["service"]})
+        self.assertFalse(gate["publication_permitted"])
+        self.assertIn("Required component lacks canonical RULES.md", " ".join(gate["blockers"]))
 
     def test_markdown_example_must_be_optional_soft_evidence(self):
         descriptor = copy.deepcopy(self.descriptor); descriptor.update(engine="markdown-example", entrypoint="examples/boundary.md", observation="soft", mandatory=False); descriptor["requires"]["executables"] = []

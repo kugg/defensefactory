@@ -8,7 +8,8 @@ import sys
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from factorycore.core import GateError
 from factorycore.rules_contracts import (claim_status, evaluate_candidate, migrate_legacy, parse_rules,
-    resolve_contracts, run_contracts, semantic_diff, semantic_model, transitional_compare)
+    repair_claim_publication_gate, resolve_contracts, run_contracts, semantic_diff, semantic_model,
+    transitional_compare)
 from factorycore.registry import source_blob
 
 
@@ -38,6 +39,7 @@ def main():
     evaluate = commands.add_parser("evaluate"); evaluate.add_argument("--candidate", required=True); evaluate.add_argument("--decision", required=True); evaluate.add_argument("--output", required=True)
     status = commands.add_parser("status"); status.add_argument("--subject", required=True); status.add_argument("--rules", required=True); status.add_argument("--run", required=True); status.add_argument("--evaluations", nargs="*", default=[]); status.add_argument("--output")
     migrate = commands.add_parser("migrate"); migrate.add_argument("claims", type=Path); migrate.add_argument("rules", type=Path); migrate.add_argument("--component-type", required=True); migrate.add_argument("--owner", action="append", required=True); migrate.add_argument("--descriptors", type=Path, required=True)
+    publication = commands.add_parser("repair-publication-gate"); publication.add_argument("--repo", required=True); publication.add_argument("--repository", required=True); publication.add_argument("--base", required=True); publication.add_argument("--candidate", required=True); publication.add_argument("--policy"); publication.add_argument("--output")
     args = parser.parse_args()
     try:
         if args.command == "check":
@@ -67,6 +69,9 @@ def main():
             args.rules.write_text(raw); args.descriptors.mkdir(parents=True)
             for item in descriptors: (args.descriptors / (item["id"].lower() + ".contract.json")).write_text(json.dumps(item, indent=2, sort_keys=True) + "\n")
             print(json.dumps({"result": "proposed_incomplete", "rules": str(args.rules), "descriptors": len(descriptors), "next_action": "Owner must resolve migration limitations and make descriptor paths match before removing claims.json"}, sort_keys=True))
+        elif args.command == "repair-publication-gate":
+            _write(repair_claim_publication_gate(args.repo, args.repository, args.base, args.candidate,
+                                                 _json(args.policy) if args.policy else {}), args.output)
     except (OSError, ValueError, json.JSONDecodeError, GateError, subprocess.CalledProcessError) as error:
         print(json.dumps({"result": "inconclusive", "error": str(error)}, sort_keys=True), file=sys.stderr); raise SystemExit(2)
 

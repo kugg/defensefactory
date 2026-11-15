@@ -29,7 +29,7 @@ Before any product edit, follow the [architectural bug-class procedure](referenc
 
 Implement missing task-specific test seams/fixtures only when authorized by the contract, keeping them separate from production controls. Use bounded rounds driven by confirmed unmet obligations. Record all construction checks and failures; they are not independent acceptance.
 
-When PR creation is authorized, reconcile an existing branch/PR first, publish a draft and attach it through available platform tooling. Describe the problem, behavior, exact subject and actual evidence. Keep experiment chronology in the ticket journal. Clearly label staged demonstrations; never present them as historical production failures.
+When PR creation is authorized, reconcile an existing branch/PR first. Immediately before publication, run the deterministic `repair-claim-publication-gate` against the exact base and candidate commits, naming assessment-required component roots. Retain its changed-path receipt. A legacy `claims.json` amendment without canonical `RULES.md` and resolved descriptors blocks the draft; a complete migration proposal is owner-review-required; a RULES-only component may not reintroduce legacy authority. Only a publication-permitted receipt allows draft creation. Publish the draft and attach it through available platform tooling. Describe the problem, behavior, exact subject and actual evidence. Keep experiment chronology in the ticket journal. Clearly label staged demonstrations; never present them as historical production failures.
 
 Introduce or repair the hard invariant contract specified by assessment, with a positive behavior check and real control-introduction Git ref. Update only the owning component's canonical `RULES.md` and referenced developer-owned contract files; preserve IDs on moves. Follow the [component claim procedure](references/component-claims.md), keeping candidates separate from evaluations, hashes in receipts, and owner-reviewed requirement amendments separate from implementation.
 
@@ -53,8 +53,8 @@ For comparison builds, runtime probes and required CodeIntel work, use the [supp
       "id": "repair-workflow",
       "section": "Defense Factory repair",
       "rules": ["DF-TICKET-CURRENT", "DF-SCOPE-BEFORE-WORK", "DF-EXACT-SUBJECT", "DF-RETAIN-EVIDENCE", "DF-PUBLISH-READBACK", "DF-TERMINAL-STOPS", "DF-NO-IMPLICIT-AUTHORITY", "REPAIR-ELIGIBILITY-REQUIRED", "REPAIR-BUGCLASS-BEFORE-EDIT", "REPAIR-BOUNDED-CANDIDATE", "REPAIR-NO-AUTHORITY-HOLDS"],
-      "actions": ["fetch_ticket", "publish_scope", "bind_subject", "retain_evidence", "publish_receipt", "readback_ticket", "stop_work", "admit_repair", "discover_bugclass", "evaluate_bugclass_membership", "define_bugclass", "design_class_repair", "edit_candidate", "create_draft_pr"],
-      "evidence": ["ticket_snapshot", "opening_receipt", "subject_receipt", "execution_receipt", "publication_readback", "eligibility_receipt", "bugclass_discovery", "bugclass_membership", "bugclass_definition", "bugclass_repair_contract", "repair_receipt", "draft_pr_reference"]
+      "actions": ["fetch_ticket", "publish_scope", "bind_subject", "retain_evidence", "publish_receipt", "readback_ticket", "stop_work", "admit_repair", "discover_bugclass", "evaluate_bugclass_membership", "define_bugclass", "design_class_repair", "edit_candidate", "evaluate_component_claim_publication", "create_draft_pr"],
+      "evidence": ["ticket_snapshot", "opening_receipt", "subject_receipt", "execution_receipt", "publication_readback", "eligibility_receipt", "bugclass_discovery", "bugclass_membership", "bugclass_definition", "bugclass_repair_contract", "component_claim_publication_receipt", "repair_receipt", "draft_pr_reference"]
     },
     {"id": "repair-helpers", "section": "Execution and evidence helpers", "rules": ["DF-RETAIN-EVIDENCE", "REPAIR-ELIGIBILITY-REQUIRED", "REPAIR-BUGCLASS-BEFORE-EDIT", "REPAIR-BOUNDED-CANDIDATE"], "actions": [], "evidence": []}
   ]

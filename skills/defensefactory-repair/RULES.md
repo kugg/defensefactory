@@ -45,7 +45,7 @@ and stops at a draft PR with construction evidence.
       "scope": "repair",
       "strength": "must",
       "when": {"stage_state": "active", "applicability": "active", "authorization": "present", "bugclass_state": "evaluated"},
-      "requires": {"actions": ["edit_candidate", "create_draft_pr"], "evidence": ["repair_receipt", "draft_pr_reference"], "outcomes": ["draft_pr"], "transitions": ["draft_pr"], "postconditions": ["candidate_bounded"]},
+      "requires": {"actions": ["edit_candidate", "evaluate_component_claim_publication", "create_draft_pr"], "evidence": ["repair_receipt", "component_claim_publication_receipt", "draft_pr_reference"], "outcomes": ["draft_pr"], "transitions": ["draft_pr"], "postconditions": ["component_claim_publication_decided", "candidate_bounded"]},
       "forbids": {},
       "allows": {"actions": ["execute_bounded_work"]},
       "terminal": "terminal",

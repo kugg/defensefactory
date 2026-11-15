@@ -44,7 +44,8 @@ from factorycore.deployment_contract import evaluate as evaluate_deployment_cont
 from factorycore.evidence_inventory import publication_gate as handoff_publication_gate
 from factorycore.source_export import export_sources
 from factorycore.rules_contracts import (claim_status as rules_status,evaluate_candidate as rules_evaluate,
-    parse_rules,resolve_contracts,rules_change_gate,run_contracts,semantic_diff as rules_diff,semantic_model,transitional_compare)
+    parse_rules,repair_claim_publication_gate,resolve_contracts,rules_change_gate,run_contracts,
+    semantic_diff as rules_diff,semantic_model,transitional_compare)
 from factorycore.stage_rules import discover_root_package,validate_package_safe
 
 
@@ -128,6 +129,7 @@ def run(operation, data):
     if operation=='claim-candidate-evaluate':return rules_evaluate(data['candidate'],data['disposition'],data['evaluator'],data['evidence'],data['explanation'],data.get('coverage_limitations',[]),data['next_action'],data.get('duplicate_of'))
     if operation=='claim-rules-status':return rules_status(parse_rules(Path(data['rules_file']).read_bytes()),data['run'],data.get('evaluations',[]))
     if operation=='claim-rules-change-gate':return rules_change_gate(data['repo'],data['repository'],data['base'],data['subject'],data['statuses'],data['policy'],data.get('reviews',[]))
+    if operation=='repair-claim-publication-gate':return repair_claim_publication_gate(data['repo'],data['repository'],data['base'],data['subject'],data.get('policy'))
     if operation=='bug-class-map':return map_bug_classes(data['receipt'],data['bug_classes'])
     if operation=='fence-execute':return execute_fences(data['repo'],data['receipt'],data['checks'],data['expected_checks_sha256'],data['evaluator_manifest'],data.get('max_seconds',120))
     if operation=='fence-health':return fence_health(data['receipt'],data['execution'])

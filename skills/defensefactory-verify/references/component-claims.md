@@ -142,3 +142,14 @@ The migration is intentionally reported as `proposed_incomplete` until owners
 replace inferred boundaries, establish descriptor coverage and reconcile paths.
 Stable IDs and repository-qualified introduction provenance survive component or
 repository moves; unavailable history remains an explicit limitation.
+
+## Repair publication fence
+
+Before creating a draft repair PR, run `claim-rules.py repair-publication-gate`
+against full base and candidate commits. Pass assessment-required component roots
+in the policy input. The receipt binds every changed path and classifies each
+component as `absent`, `legacy_only`, `transitional` or `rules_only`.
+It refuses changed legacy authority without canonical rules, partial migration,
+broken descriptors, silent legacy removal and reintroduced duplicate authority.
+A valid migration or semantic rules amendment remains subject to native owner
+review; publication permission is not approval or integration admission.
