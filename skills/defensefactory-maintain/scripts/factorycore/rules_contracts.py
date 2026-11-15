@@ -666,6 +666,191 @@ def transitional_compare(catalog: dict, model: dict) -> dict:
             "next_action": "Remove claims.json only in an explicit reviewed migration" if not differences else "Reconcile divergence before migration"}
 
 
+def _component_file(root: str, name: str) -> str:
+    return name if root == "." else (PurePosixPath(root) / name).as_posix()
+
+
+def _claim_layout(repo: str | Path, revision: str) -> dict:
+    """Classify authored claim sources without treating arbitrary RULES.md as factory policy."""
+    require(COMMIT_PATTERN.fullmatch(revision or "") is not None, "Full immutable source subject required")
+    git(repo, "cat-file", "-e", revision + "^{commit}")
+    paths = set(git(repo, "ls-tree", "-r", "--name-only", revision).decode().splitlines())
+    roots = {PurePosixPath(path).parent.as_posix() for path in paths if PurePosixPath(path).name == "claims.json"}
+    rules = {}
+    errors = []
+    marker = ("Grammar: `" + GRAMMAR + "`").encode()
+    for path in sorted(path for path in paths if PurePosixPath(path).name == "RULES.md"):
+        raw = source_blob(repo, revision, path)
+        if marker not in raw:
+            continue
+        root = PurePosixPath(path).parent.as_posix(); roots.add(root)
+        try:
+            model = parse_rules(raw)
+            rules[root] = {"path": path, "sha256": sha(raw), "model": model,
+                           "component_id": model["component"]["id"], "state": "valid"}
+        except GateError as error:
+            rules[root] = {"path": path, "sha256": sha(raw), "state": "invalid", "error": str(error)}
+            errors.append({"root": root, "path": path, "error": str(error)})
+    component_ids = [row["component_id"] for row in rules.values() if row["state"] == "valid"]
+    if len(component_ids) != len(set(component_ids)):
+        errors.append({"root": None, "path": None, "error": "Duplicate component identity across RULES.md files"})
+    rows = {}
+    for root in sorted(roots):
+        legacy_path = _component_file(root, "claims.json")
+        rules_path = _component_file(root, "RULES.md")
+        legacy = legacy_path in paths; canonical = rules.get(root)
+        if canonical and canonical["state"] == "invalid":
+            state = "invalid"
+        elif legacy and canonical:
+            state = "transitional"
+        elif legacy:
+            state = "legacy_only"
+        elif canonical:
+            state = "rules_only"
+        else:
+            state = "absent"
+        rows[root] = {"root": root, "state": state, "legacy_path": legacy_path,
+                      "legacy_present": legacy, "legacy_sha256": sha(source_blob(repo, revision, legacy_path)) if legacy else None,
+                      "rules_path": rules_path, "rules_file_present": rules_path in paths,
+                      "rules": copy.deepcopy(canonical) if canonical else None}
+    return {"revision": revision, "paths": paths, "components": rows, "errors": errors}
+
+
+def _changed_path_receipt(repo: str | Path, base: str, subject: str) -> tuple[list[dict], str]:
+    raw = git(repo, "diff", "--name-status", "--find-renames", base, subject, "--")
+    base_paths = set(git(repo, "ls-tree", "-r", "--name-only", base).decode().splitlines())
+    subject_paths = set(git(repo, "ls-tree", "-r", "--name-only", subject).decode().splitlines())
+    rows = []
+    for line in raw.decode().splitlines():
+        parts = line.split("\t"); status = parts[0]
+        if status[:1] in ("R", "C"):
+            require(len(parts) == 3, "Malformed renamed path record")
+            old_path, path = parts[1], parts[2]
+        else:
+            require(len(parts) == 2, "Malformed changed path record")
+            old_path = parts[1] if status[:1] == "D" else None; path = parts[1]
+        row = {"status": status, "path": path, "old_path": old_path}
+        if path in subject_paths: row["subject_sha256"] = sha(source_blob(repo, subject, path))
+        if (old_path or path) in base_paths: row["base_sha256"] = sha(source_blob(repo, base, old_path or path))
+        rows.append(row)
+    return rows, sha(git(repo, "diff", "--binary", "--full-index", base, subject, "--"))
+
+
+def repair_claim_publication_gate(repo: str | Path, repository: str, base: str, subject: str,
+                                  policy: dict | None = None) -> dict:
+    """Refuse a draft repair that creates or changes noncanonical claim authority.
+
+    This is a structural publication fence. Contract execution and native owner
+    approval remain separate receipts; this gate makes their required inputs
+    discoverable and binds the decision to the exact changed Git trees.
+    """
+    policy = copy.deepcopy(policy or {})
+    require(isinstance(repository, str) and repository, "Repository identity required")
+    require(set(policy) <= {"required_components", "legacy_removals"}, "Unknown repair claim-publication policy field")
+    required = policy.get("required_components", [])
+    removals = policy.get("legacy_removals", {})
+    require(isinstance(required, list) and len(required) == len(set(required)), "Required component roots must be unique")
+    require(isinstance(removals, dict), "Legacy removal policy must be a component-to-review-reference object")
+    for root in required: _safe_path(root)
+    for root, reference in removals.items(): _safe_path(root); require(isinstance(reference, str) and reference, "Legacy removal needs a durable owner-review reference")
+    old = _claim_layout(repo, base); new = _claim_layout(repo, subject)
+    changed, diff_sha256 = _changed_path_receipt(repo, base, subject)
+    changed_paths = {row["path"] for row in changed} | {row["old_path"] for row in changed if row.get("old_path")}
+    roots = set(old["components"]) | set(new["components"]) | set(required)
+    components = []; blockers = [row["error"] for row in new["errors"]]; owner_review = []
+    for root in sorted(roots):
+        before = old["components"].get(root, {"root": root, "state": "absent", "legacy_present": False, "rules": None,
+                                                  "legacy_path": _component_file(root, "claims.json"), "rules_path": _component_file(root, "RULES.md")})
+        after = new["components"].get(root, {"root": root, "state": "absent", "legacy_present": False, "rules": None,
+                                                 "legacy_path": _component_file(root, "claims.json"), "rules_path": _component_file(root, "RULES.md")})
+        prefix = "" if root == "." else root + "/"
+        definition_paths = {before["legacy_path"], before["rules_path"], after["legacy_path"], after["rules_path"]}
+        impacted_paths = sorted(path for path in changed_paths if path in definition_paths or path.startswith(prefix + "contracts/"))
+        required_here = root in required
+        row = {"root": root, "base_state": before["state"], "candidate_state": after["state"],
+               "required": required_here, "changed_paths": impacted_paths, "rules_path": after["rules_path"],
+               "legacy_path": after["legacy_path"], "checks": []}
+        if required_here and after["state"] not in ("rules_only", "transitional"):
+            blockers.append("Required component lacks canonical RULES.md: " + root)
+        legacy_changed = after["legacy_path"] in changed_paths or before["legacy_path"] in changed_paths
+        if after["state"] == "invalid":
+            blockers.append("Canonical RULES.md is invalid for component " + root)
+        if legacy_changed and after["state"] == "legacy_only":
+            blockers.append("Legacy claims.json changed without canonical RULES.md and contract descriptors: " + root)
+        if before["state"] in ("absent", "rules_only") and after.get("legacy_present"):
+            blockers.append("Candidate introduced claims.json as duplicate authored authority: " + root)
+        if before["state"] in ("legacy_only", "transitional") and not after.get("legacy_present"):
+            if not removals.get(root):
+                blockers.append("Removing legacy claims.json needs an explicit durable owner-review reference: " + root)
+            else:
+                row["legacy_removal_reference"] = removals[root]
+        if before["state"] == "rules_only" and after["state"] != "rules_only":
+            blockers.append("RULES-only component lost its sole canonical claim authority: " + root)
+        if before["state"] == "transitional" and after["state"] == "legacy_only":
+            blockers.append("Transitional component removed canonical RULES.md: " + root)
+
+        canonical = after.get("rules")
+        if canonical and canonical.get("state") == "valid" and (impacted_paths or required_here):
+            try:
+                contracts = resolve_contracts(repo, subject, canonical["path"])
+                row["checks"].append({"kind": "contracts", "result": "valid", "contracts_sha256": identity(contracts),
+                                      "contract_ids": sorted(item["descriptor"]["id"] for item in contracts["contracts"])})
+            except (GateError, json.JSONDecodeError, subprocess.CalledProcessError) as error:
+                blockers.append("Canonical contract resolution failed for " + root + ": " + str(error))
+                row["checks"].append({"kind": "contracts", "result": "invalid", "error": str(error)})
+            if before.get("rules") and before["rules"].get("state") == "valid":
+                comparison = semantic_diff(source_blob(repo, base, before["rules"]["path"]),
+                                           source_blob(repo, subject, canonical["path"]))
+                row["checks"].append({"kind": "semantic_diff", "result": "valid", "receipt": comparison})
+            else:
+                row["checks"].append({"kind": "semantic_diff", "result": "added_canonical_rules",
+                                      "candidate_rules_sha256": canonical["sha256"]})
+            if impacted_paths: owner_review.append(root)
+
+        if before.get("legacy_present") and not after.get("legacy_present") and canonical and canonical.get("state") == "valid":
+            try:
+                legacy = json.loads(source_blob(repo, base, before["legacy_path"]))
+                comparison = transitional_compare(legacy, canonical["model"])
+                row["checks"].append({"kind": "legacy_removal_reconciliation", **comparison})
+                if not comparison["semantically_equal"]:
+                    blockers.append("Removed legacy authority diverges from canonical RULES.md for " + root + ": " + ", ".join(comparison["differences"]))
+                owner_review.append(root)
+            except (GateError, json.JSONDecodeError) as error:
+                blockers.append("Legacy removal reconciliation failed for " + root + ": " + str(error))
+                row["checks"].append({"kind": "legacy_removal_reconciliation", "state": "invalid", "error": str(error)})
+
+        if after["state"] == "transitional":
+            try:
+                legacy = json.loads(source_blob(repo, subject, after["legacy_path"]))
+                comparison = transitional_compare(legacy, canonical["model"] if canonical else {})
+                row["checks"].append({"kind": "legacy_reconciliation", **comparison})
+                if not comparison["semantically_equal"]:
+                    blockers.append("Legacy and canonical claim definitions diverge for " + root + ": " + ", ".join(comparison["differences"]))
+                owner_review.append(root)
+            except (GateError, json.JSONDecodeError) as error:
+                blockers.append("Legacy migration reconciliation failed for " + root + ": " + str(error))
+                row["checks"].append({"kind": "legacy_reconciliation", "state": "invalid", "error": str(error)})
+        components.append(row)
+
+    blockers = sorted(set(blockers)); owner_review = sorted(set(owner_review))
+    claim_paths = sorted({path for row in components for path in row["changed_paths"]})
+    result_state = "violated" if blockers else "review_required" if owner_review else "not_applicable" if not claim_paths and not required else "satisfied_within_scope"
+    result = {"schema": "defensefactory/repair-claim-publication/v1",
+              "base": {"repository": repository, "revision": base},
+              "subject": {"repository": repository, "revision": subject},
+              "changed_paths": changed, "changed_paths_sha256": identity(changed), "git_diff_sha256": diff_sha256,
+              "policy_sha256": identity(policy),
+              "required_components": sorted(required), "components": components,
+              "claim_definition_paths_changed": claim_paths, "owner_review_required": owner_review,
+              "result": result_state, "publication_permitted": not blockers, "blockers": blockers,
+              "limitations": ["Structural claim-authority and descriptor validation only; contract execution, candidate evaluation and authenticated native owner approval remain separate evidence."],
+              "next_action": "Do not publish the draft PR; repair the canonical RULES.md/contract evidence and rerun this exact-subject gate." if blockers else
+                             "Publish only as an owner-review-required draft and retain this receipt." if owner_review else
+                             "No authored claim source changed; retain the exact changed-path receipt with the repair evidence."}
+    result["receipt_sha256"] = identity(result)
+    return result
+
+
 def discover_rules(repo: str | Path, revision: str) -> dict:
     """Discover only files that declare this grammar; other project RULES.md files are untouched."""
     require(COMMIT_PATTERN.fullmatch(revision or "") is not None, "Full immutable source subject required")
