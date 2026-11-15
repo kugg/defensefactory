@@ -42,6 +42,7 @@ from factorycore.workflow_gates import (decision_request,record_decision,decisio
     issue_eligibility,repair_admission,stalled_findings)
 from factorycore.deployment_contract import evaluate as evaluate_deployment_contract
 from factorycore.evidence_inventory import publication_gate as handoff_publication_gate
+from factorycore.disposition_lifecycle import plan_lifecycle_transition,verify_lifecycle_readback
 from factorycore.source_export import export_sources
 from factorycore.rules_contracts import (claim_status as rules_status,evaluate_candidate as rules_evaluate,
     parse_rules,repair_claim_publication_gate,resolve_contracts,rules_change_gate,run_contracts,
@@ -94,6 +95,8 @@ def run(operation, data):
     if operation=='probe-assert':return assertions(data['subject'],data['check_id'],data['expectations'],data['observations'])
     if operation=='assess-observe':return observe(data['packet'],data['actor'])
     if operation=='assess-eligibility':return evaluate(data.get('packet',{}),data.get('policy'),data.get('actor'))
+    if operation=='disposition-lifecycle-plan':return plan_lifecycle_transition(data['ticket'],data['assessment'],data['policy'],data['authorization'],data['planned_at'])
+    if operation=='disposition-lifecycle-verify':return verify_lifecycle_readback(record('plan'),data['observed'])
     if operation=='assess-eligibility-receipt':return issue_eligibility(record('assessment'),data['subject'],data['counterexample'],data['contract'],data['authorized_scope'],data.get('decision_gates',[]))
     if operation=='repair-admission':return repair_admission(record('eligibility_receipt') if data.get('eligibility_receipt') or data.get('eligibility_receipt_file') else None,data['subject'],data.get('contract_version'),data.get('scope_reference'))
     if operation=='decision-request':return decision_request(data)
