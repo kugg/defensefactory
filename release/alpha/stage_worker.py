@@ -13,7 +13,7 @@ from urllib.request import Request, urlopen
 from .protocol import (EVIDENCE_SCHEMA, ProtocolError, RECEIPT_SCHEMA, STAGES, canonical,
                        identity, read_json, receipt_identity, require, sha256,
                        validate_profiles, validate_receipt, validate_ticket)
-from .telemetry import emit, now_ns
+from .telemetry import attempt_trace_id, emit, now_ns
 
 
 CANDIDATE_PATCH = """diff --git a/component.py b/component.py
@@ -117,7 +117,8 @@ def prior_evidence(ledger: str, run_id: str, ticket: dict, stage: str,
     return value, receipt["receipt_sha256"]
 
 
-def evaluate(stage: str, ticket: dict, previous: dict | None, source: Path) -> tuple[str, dict]:
+def evaluate(stage: str, ticket: dict, previous: dict | None, source: Path,
+             coverage_limitations: list[str] | None = None) -> tuple[str, dict]:
     scenario = ticket["scenario"]
     inherited_patch = previous.get("candidate_patch") if previous else None
     details = {"mode": "deterministic_synthetic_handoff", "external_product_call": False}
@@ -158,6 +159,29 @@ def evaluate(stage: str, ticket: dict, previous: dict | None, source: Path) -> t
 def run(stage: str, ledger: str, run_id: str, profiles_path: Path,
         image_digest: str, telemetry_endpoint: str = "") -> dict:
     start = now_ns()
+    container_identity = os.environ.get("HOSTNAME", "unknown")
+    session_identity = os.environ.get("FACTORY_SESSION_ID", "fresh-process-unreported")
+    trace_id = attempt_trace_id(run_id)
+    try:
+        return _run(stage, ledger, run_id, profiles_path, image_digest,
+                    telemetry_endpoint, start, container_identity, session_identity, trace_id)
+    except (OSError, ProtocolError, subprocess.SubprocessError, json.JSONDecodeError) as error:
+        emit(telemetry_endpoint, f"defensefactory.stage.{stage}", {
+            "factory.run_id": run_id,
+            "factory.stage": stage,
+            "factory.container_identity": container_identity,
+            "factory.session_identity": session_identity,
+            "factory.image_digest": image_digest,
+            "factory.result": "failed",
+            "factory.error": str(error)[:300],
+        }, start, now_ns(), trace_id=trace_id,
+            status={"code": 2, "message": "refused"}) if telemetry_endpoint else None
+        raise
+
+
+def _run(stage: str, ledger: str, run_id: str, profiles_path: Path,
+         image_digest: str, telemetry_endpoint: str, start: int,
+         container_identity: str, session_identity: str, trace_id: str) -> dict:
     require(stage in STAGES, "Unknown stage")
     profiles = validate_profiles(read_json(profiles_path))
     profiles_digest = sha256(profiles_path.read_bytes())
@@ -171,10 +195,13 @@ def run(stage: str, ledger: str, run_id: str, profiles_path: Path,
     previous, previous_receipt_sha = prior_evidence(ledger.rstrip("/"), run_id, ticket,
                                                     stage, summary)
     work_parent = Path(os.environ.get("FACTORY_WORK_ROOT", "/tmp"))
+    coverage_limitations = []
+    if "codeintel_read" in profile["allow"]:
+        coverage_limitations.append("Optional CodeIntel/equivalent confidence service was not available or consulted in this deterministic alpha fixture; no semantic coverage is inferred from its absence.")
     with tempfile.TemporaryDirectory(prefix=f"factory-{stage}-", dir=work_parent) as temporary:
         source = Path(temporary) / "source"
         clone_subject(ticket["subject"], source)
-        result, observation = evaluate(stage, ticket, previous, source)
+        result, observation = evaluate(stage, ticket, previous, source, coverage_limitations)
     evidence = {
         "schema": EVIDENCE_SCHEMA,
         "case": ticket["case"],
@@ -188,6 +215,7 @@ def run(stage: str, ledger: str, run_id: str, profiles_path: Path,
                                "draft_candidate_write", "disposable_runtime",
                                "merge_subject_read", "local_fixture_deploy",
                                "local_fixture_read", "rules_read"}],
+        "coverage_limitations": coverage_limitations if coverage_limitations else None,
         "reproduction": [
             "Fetch the exact ticket snapshot and prior attachment from the ledger.",
             "Clone the exact Git subject into a fresh workspace.",
@@ -208,8 +236,10 @@ def run(stage: str, ledger: str, run_id: str, profiles_path: Path,
         "factory.stage": stage,
         "factory.subject_revision": ticket["subject"]["revision"],
         "factory.image_digest": image_digest,
+        "factory.container_identity": container_identity,
+        "factory.session_identity": session_identity,
         "factory.result": result,
-    }, start, end) if telemetry_endpoint else False
+    }, start, end, trace_id=trace_id) if telemetry_endpoint else False
     receipt = {
         "schema": RECEIPT_SCHEMA,
         "case": ticket["case"],
@@ -221,8 +251,8 @@ def run(stage: str, ledger: str, run_id: str, profiles_path: Path,
         "previous_receipt_sha256": previous_receipt_sha,
         "output_attachment": {"sha256": attachment_sha, "bytes": len(raw)},
         "capability_profile": {"stage": stage, "sha256": identity(profile)},
-        "container_identity": os.environ.get("HOSTNAME", "unknown"),
-        "session_identity": os.environ.get("FACTORY_SESSION_ID", "fresh-process-unreported"),
+        "container_identity": container_identity,
+        "session_identity": session_identity,
         "started_unix_nano": start,
         "ended_unix_nano": end,
         "telemetry_emitted": telemetry_emitted,

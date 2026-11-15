@@ -1,13 +1,19 @@
 """Minimal OTLP/HTTP JSON emission without adding an SDK to the alpha image."""
 from __future__ import annotations
 
+import hashlib
 import json
 import secrets
 import time
 from urllib.request import Request, urlopen
 
 
-def span_payload(name: str, attributes: dict, start_ns: int, end_ns: int) -> dict:
+def attempt_trace_id(attempt: str) -> str:
+    return hashlib.sha256(("defensefactory-alpha/" + (attempt or "")).encode()).hexdigest()[:32]
+
+
+def span_payload(name: str, attributes: dict, start_ns: int, end_ns: int,
+                 trace_id: str | None = None, status: dict | None = None) -> dict:
     def attribute(key, value):
         if isinstance(value, bool):
             encoded = {"boolValue": value}
@@ -23,14 +29,14 @@ def span_payload(name: str, attributes: dict, start_ns: int, end_ns: int) -> dic
             "scopeSpans": [{
                 "scope": {"name": "defensefactory.release.alpha", "version": "1"},
                 "spans": [{
-                    "traceId": secrets.token_hex(16),
+                    "traceId": trace_id or secrets.token_hex(16),
                     "spanId": secrets.token_hex(8),
                     "name": name,
                     "kind": 1,
                     "startTimeUnixNano": str(start_ns),
                     "endTimeUnixNano": str(end_ns),
                     "attributes": [attribute(key, value) for key, value in sorted(attributes.items())],
-                    "status": {"code": 1},
+                    "status": status or {"code": 1},
                 }],
             }],
         }],
@@ -38,11 +44,13 @@ def span_payload(name: str, attributes: dict, start_ns: int, end_ns: int) -> dic
 
 
 def emit(endpoint: str, name: str, attributes: dict, start_ns: int, end_ns: int,
+         trace_id: str | None = None, status: dict | None = None,
          timeout: float = 5.0) -> bool:
     if not endpoint:
         return False
     url = endpoint.rstrip("/") + "/v1/traces"
-    data = json.dumps(span_payload(name, attributes, start_ns, end_ns),
+    data = json.dumps(span_payload(name, attributes, start_ns, end_ns,
+                                   trace_id=trace_id, status=status),
                       separators=(",", ":")).encode()
     request = Request(url, method="POST", data=data,
                       headers={"Content-Type": "application/json"})
