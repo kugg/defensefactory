@@ -243,6 +243,9 @@ def main():
     a = sub.add_parser('attempt-prepare'); a.add_argument('--issue', required=True); a.add_argument('--state', required=True); a.add_argument('--output', required=True)
     a = sub.add_parser('attempt-ack'); a.add_argument('--issue', required=True); a.add_argument('--prepared', required=True); a.add_argument('--output', required=True)
     args = p.parse_args()
+    output = Path(args.output)
+    if output.exists():
+        p.error('Use a new output per invocation; do not overwrite a handoff receipt')
     issue = json.loads(Path(args.issue).read_text())
     try:
         if args.command == 'prepare':
@@ -253,7 +256,7 @@ def main():
             result = prepare_attempt(issue, json.loads(Path(args.state).read_text()))
         else:
             result = acknowledge_attempt(issue, json.loads(Path(args.prepared).read_text()))
-        Path(args.output).write_text(json.dumps(result, indent=2) + '\n')
+        output.write_text(json.dumps(result, indent=2) + '\n')
         print(json.dumps({'case': result['case'], 'checkpoint_id': result['checkpoint_id'], 'output': args.output}))
     except ValueError as exc:
         p.error(str(exc))

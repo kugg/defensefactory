@@ -163,6 +163,12 @@ class ActiveAttemptTests(unittest.TestCase):
                  "--output", str(publication_file)], capture_output=True, text=True)
             self.assertEqual(publish.returncode, 0, publish.stderr)
             self.assertEqual(json.loads(publication_file.read_text())["checkpoint_id"], "bounded-001")
+            repeated = subprocess.run(
+                [sys.executable, str(SCRIPTS / "ticket_handoff.py"), "attempt-prepare",
+                 "--issue", str(issue_file), "--state", str(request_file),
+                 "--output", str(publication_file)], capture_output=True, text=True)
+            self.assertNotEqual(repeated.returncode, 0)
+            self.assertIn("do not overwrite a handoff receipt", repeated.stderr)
 
 
 if __name__ == "__main__":
