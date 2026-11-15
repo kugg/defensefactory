@@ -69,7 +69,10 @@ class ReadmeEvidenceTests(unittest.TestCase):
         )
         self.assertIn("Bugs go in security architecture comes out.", readme)
         self.assertIn("sequenceDiagram", readme)
-        self.assertIn("experimental, manually operated workflow", readme)
+        self.assertIn("Status: alpha", readme)
+        self.assertNotIn("Status: experimental", readme)
+        self.assertNotIn("Workflow: manually operated", readme)
+        self.assertNotIn("experimental, manually operated workflow", readme)
 
         markdown_targets = re.findall(r"\[[^\]]*\]\(([^)]+)\)", readme)
         html_targets = re.findall(r'(?:href|src)="([^"]+)"', readme)

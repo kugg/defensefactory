@@ -10,8 +10,7 @@
     <a href="#evidence-and-limitations">Evidence</a>
   </p>
   <p>
-    <img alt="Status: experimental" src="https://img.shields.io/badge/status-experimental-111111?style=flat-square">
-    <img alt="Workflow: manually operated" src="https://img.shields.io/badge/workflow-manually_operated-111111?style=flat-square">
+    <img alt="Status: alpha" src="https://img.shields.io/badge/status-alpha-111111?style=flat-square">
     <img alt="Python 3.10 or newer" src="https://img.shields.io/badge/python-3.10%2B-111111?style=flat-square">
     <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-111111?style=flat-square"></a>
   </p>
@@ -23,12 +22,6 @@ expanded into an architectural bug class, repaired at the boundary it violates,
 and bound to a deterministic hard fence. The ticket is the durable ledger:
 inputs, decisions, evidence, failures and the next action survive every stage
 handoff.
-
-> [!IMPORTANT]
-> This is an **experimental, manually operated workflow**. It does not provide
-> enforced agent isolation, independent acceptance or demonstrated reliable
-> end-to-end autonomy. Human review is required. Installing it does not install
-> a scheduler, CI, branch protection, credentials or production deployment.
 
 ## See the idea in 10 seconds
 
