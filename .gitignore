@@ -6,3 +6,4 @@ __pycache__/
 outputs/
 config.local.json
 docs/demo/frames/*.png
+docs/demo/frames/*/*.png
