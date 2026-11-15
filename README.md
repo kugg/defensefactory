@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="docs/assets/dark-factory-logo.svg" width="900" alt="Defense Factory — an upside-down white factory on a black background">
+  <a href="docs/assets/dark-factory-logo.ansi"><img src="docs/assets/dark-factory-logo.png" width="900" alt="Dark Defense Factory rendered as terminal-green ANSI art"></a>
   <h3>A dark factory turning bugs into architectural enforcement.</h3>
   <p><strong>Bugs go in security architecture comes out.</strong></p>
   <p>
