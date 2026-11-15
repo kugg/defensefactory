@@ -1,16 +1,52 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400" role="img" aria-labelledby="title desc">
-  <title id="title">Defense Factory</title>
-  <desc id="desc">A monochrome white upside-down factory on a black field.</desc>
-  <rect width="1200" height="400" fill="#000"/>
-  <g fill="#fff">
-    <!-- The factory is deliberately inverted: the building sits above its roofline. -->
-    <path d="M90 70h340v116l-66 54v-52l-70 57v-57l-70 57v-57l-70 57-64-52z"/>
-    <rect x="120" y="78" width="54" height="72" fill="#000"/>
-    <rect x="210" y="78" width="54" height="72" fill="#000"/>
-    <rect x="300" y="78" width="54" height="72" fill="#000"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 620" role="img" aria-labelledby="title desc">
+  <title id="title">Dark Defense Factory</title>
+  <desc id="desc">Terminal-green ANSI art spelling Dark Defense Factory beside an abstract factory silhouette.</desc>
+
+  <defs>
+    <filter id="terminal-glow" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2.4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <pattern id="scanlines" width="4" height="4" patternUnits="userSpaceOnUse">
+      <path d="M0 3.5h4" stroke="#8affad" stroke-opacity="0.035"/>
+    </pattern>
+  </defs>
+
+  <rect width="1280" height="620" rx="20" fill="#020806"/>
+  <rect x="18" y="18" width="1244" height="584" rx="12" fill="none" stroke="#0b5d2a" stroke-width="2"/>
+  <rect width="1280" height="620" rx="20" fill="url(#scanlines)"/>
+
+  <g
+    xml:space="preserve"
+    transform="matrix(1.28 0 0 1 -10 0)"
+    fill="#39ff78"
+    filter="url(#terminal-glow)"
+    font-family="SFMono-Regular,Consolas,'Liberation Mono','DejaVu Sans Mono',monospace"
+    font-size="18"
+    font-weight="700"
+  >
+    <text x="44" y="56">██████╗  █████╗ ██████╗ ██╗  ██╗</text>
+    <text x="44" y="83">██╔══██╗██╔══██╗██╔══██╗██║ ██╔╝</text>
+    <text x="44" y="110">██║  ██║███████║██████╔╝█████╔╝</text>
+    <text x="44" y="137">██║  ██║██╔══██║██╔══██╗██╔═██╗       ████████████████████████████████████████</text>
+    <text x="44" y="164">██████╔╝██║  ██║██║  ██║██║  ██╗       ███████████████████████████████████████</text>
+    <text x="44" y="191">╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝        ██████████████████████████████████████</text>
+    <text x="44" y="218">                                                                  ████████████</text>
+    <text x="44" y="245">██████╗ ███████╗███████╗███████╗███╗   ██╗ ██████╗███████╗     ███████████████</text>
+    <text x="44" y="272">██╔══██╗██╔════╝██╔════╝██╔════╝████╗  ██║██╔════╝██╔════╝  ██████████████████</text>
+    <text x="44" y="299">██║  ██║█████╗  █████╗  █████╗  ██╔██╗ ██║██║     █████╗          ████  ██████</text>
+    <text x="44" y="326">██║  ██║██╔══╝  ██╔══╝  ██╔══╝  ██║╚██╗██║██║     ██╔══╝       ███████  ██████</text>
+    <text x="44" y="353">██████╔╝███████╗██║     ███████╗██║ ╚████║╚██████╗███████╗  ██████████████████</text>
+    <text x="44" y="380">╚═════╝ ╚══════╝╚═╝     ╚══════╝╚═╝  ╚═══╝ ╚═════╝╚══════╝        ████████████</text>
+    <text x="44" y="407">                                                               ███████  ██████</text>
+    <text x="44" y="434">███████╗ █████╗  ██████╗████████╗ ██████╗ ██████╗ ██╗   ██╗ ██████████  ██████</text>
+    <text x="44" y="461">██╔════╝██╔══██╗██╔════╝╚══██╔══╝██╔═══██╗██╔══██╗╚██╗ ██╔╝       ████████████</text>
+    <text x="44" y="488">█████╗  ███████║██║        ██║   ██║   ██║██████╔╝ ╚████╔╝     ███████████████</text>
+    <text x="44" y="515">██╔══╝  ██╔══██║██║        ██║   ██║   ██║██╔══██╗  ╚██╔╝   ██████████████████</text>
+    <text x="44" y="542">██║     ██║  ██║╚██████╗   ██║   ╚██████╔╝██║  ██║   ██║</text>
+    <text x="44" y="569">╚═╝     ╚═╝  ╚═╝ ╚═════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝   ╚═╝</text>
   </g>
-  <text x="510" y="169" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="74" font-weight="700" letter-spacing="5">DEFENSE</text>
-  <text x="510" y="248" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="74" font-weight="700" letter-spacing="5">FACTORY</text>
-  <path d="M510 286h594" stroke="#fff" stroke-width="4"/>
-  <text x="510" y="327" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="21" letter-spacing="2">BUGS IN · ARCHITECTURAL ENFORCEMENT OUT</text>
 </svg>
