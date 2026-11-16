@@ -79,7 +79,7 @@ class WorkflowGateTests(unittest.TestCase):
                 'eligibility_receipt':receipt})
 
     def test_structured_decision_blocks_then_resumes_and_can_admit_eligibility(self):
-        request=decision_request({'id':'owner-choice','question':'Which boundary?','blocking_stage':'repair',
+        request=decision_request({'id':'owner-choice','kind':'owner_policy','question':'Which boundary?','blocking_stage':'repair',
             'requested_by':'fixture','created_at':'2026-01-01T00:00:00+00:00',
             'scope_reference':'https://linear.invalid/request','subject':self.subject,
             'options':[{'id':'a','consequence':'Use A'},{'id':'b','consequence':'Use B'}]})
@@ -94,13 +94,13 @@ class WorkflowGateTests(unittest.TestCase):
     def test_decision_request_and_repair_gate_reject_cross_subject_replay(self):
         invalid={"repository":"fixture/repository","revision":"deadbeef"}
         with self.assertRaisesRegex(ValueError,'Exact repository'):
-            decision_request({'id':'bad-subject','question':'Which boundary?',
+            decision_request({'id':'bad-subject','kind':'owner_policy','question':'Which boundary?',
                 'blocking_stage':'repair','requested_by':'fixture',
                 'created_at':'2026-01-01T00:00:00+00:00',
                 'scope_reference':'https://linear.invalid/request','subject':invalid,
                 'options':[{'id':'a','consequence':'Use A'},{'id':'b','consequence':'Use B'}]})
         other={**self.subject,'revision':'c'*40}
-        request=decision_request({'id':'owner-choice','question':'Which boundary?',
+        request=decision_request({'id':'owner-choice','kind':'owner_policy','question':'Which boundary?',
             'blocking_stage':'repair','requested_by':'fixture',
             'created_at':'2026-01-01T00:00:00+00:00',
             'scope_reference':'https://linear.invalid/request','subject':other,
@@ -111,6 +111,16 @@ class WorkflowGateTests(unittest.TestCase):
         assessment={**self.assessment,'repair_contract_blockers':[{'id':'owner-choice'}]}
         with self.assertRaisesRegex(ValueError,'open/stale decision'):
             issue_eligibility(assessment,self.subject,self.counterexample,self.contract,self.scope,[gate])
+
+    def test_owner_decision_gate_rejects_observable_fact(self):
+        with self.assertRaisesRegex(ValueError, 'observable facts need an evidence task'):
+            decision_request({'id':'provider-profile','kind':'observable_fact',
+                'question':'Which authenticated media profile does the provider negotiate?',
+                'blocking_stage':'repair','requested_by':'fixture',
+                'created_at':'2026-01-01T00:00:00+00:00',
+                'scope_reference':'https://linear.invalid/request','subject':self.subject,
+                'options':[{'id':'sdes','consequence':'Use SDES'},
+                           {'id':'dtls','consequence':'Use DTLS'}]})
 
     def test_zero_occurrence_is_explicit_and_needs_operator_scope_decision(self):
         index={'subject':self.subject,'exact_index_available':True}

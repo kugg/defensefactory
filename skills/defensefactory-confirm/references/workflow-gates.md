@@ -23,7 +23,9 @@ assessment and issue a new one from current evidence.
 
 ## Structured owner decisions
 
-Use `decision-request` with one question, at least two option/consequence pairs,
+First route the blocker with `assess-decisions`. `decision-request` accepts only
+`kind: owner_policy`; measurable technical unknowns are factory evidence tasks,
+not owner choices. Use `decision-request` with one question, at least two option/consequence pairs,
 the exact subject and blocking stage. Publish it while open. Use `decision-record`
 only after the owner chooses; retain the decision reference, decider, time and
 scope. `decision-gate` returns `blocked` until the matching receipt is supplied,

@@ -211,10 +211,15 @@ def evaluate(packet, policy, actor):
     if source_only and action in ('close','disqualify'):action='stop_source'
     if action in ('close','disqualify'):authorize(policy,actor,action,case)
     repair_blockers=plan['blocking_decisions']
+    owner_questions=plan['questions']
+    evidence_tasks=plan['evidence_tasks']
     result={'schema_version':2,'stage':'assess','case':case,'result':'inconclusive' if problems else 'recorded' if hypothetical else 'satisfied_within_scope',
             'disposition':action,'closure_permitted':action in ('close','disqualify'),'scope':required,'target_decisions':decisions,
             'problems':problems,'continue_targets':[d['id'] for d in active], 'packet_sha256':identity(packet),'policy_sha256':identity(policy),
-            'question_required':bool(scope_questions or (repair_blockers and active)),'question_kind':'repair_requirements' if repair_blockers and active else 'supported_target_scope' if scope_questions else None,
+            'question_required':bool(scope_questions or (owner_questions and active)),
+            'question_kind':'owner_policy' if owner_questions and active else 'supported_target_scope' if scope_questions else None,
+            'factory_evidence_required':bool(evidence_tasks and active),
+            'factory_evidence_tasks':evidence_tasks if active else [],
             'missing_inputs':sorted(set(scope_questions)),
             'handoff_readiness':'incomplete' if problems or hypothetical else 'assessment_required' if active else 'source_disposition_ready_for_publication' if source_only else 'disposition_ready_for_publication',
             'evaluation_mode':'hypothetical' if hypothetical else 'actual','hypothetical_disposition':proposed_action if hypothetical else None,
@@ -229,6 +234,6 @@ def evaluate(packet, policy, actor):
             'background_observations':background if source_only else [],
             'declared_scope':declared,'deferred_lifecycle_targets':[t for t in declared if t.get('role')!='trial_target'] if source_only else [],
             'terminal_disposition_blockers':['source_only_scope_does_not_authorize_lifecycle_transition'] if source_only else [],
-            'next_action':'Hypothetical comparison only; recover actual scope before disposition.' if hypothetical else 'Resolve missing/stale applicability evidence.' if problems else 'Continue source assessment; resolve named repair requirements before repair. No lifecycle transition is authorized.' if source_only and active else 'Publish and read back the completed scoped source disposition, then stop this source task. Lifecycle scope/authority is deferred; do not mutate ticket status or ask for unrelated E2E guidance.' if source_only else 'Assess the active targets.' if active else 'Publish disposition and evidence; read back, apply authorized native lifecycle status/reason, read back again, then stop.',
+            'next_action':'Hypothetical comparison only; recover actual scope before disposition.' if hypothetical else 'Resolve missing/stale applicability evidence.' if problems else 'Execute and publish the named factory evidence tasks; do not ask the owner to guess observable facts.' if evidence_tasks and active else 'Continue source assessment; resolve named owner policy requirements before repair. No lifecycle transition is authorized.' if source_only and active and owner_questions else 'Continue source assessment and bind the active finding to its repair contract. No lifecycle transition is authorized.' if source_only and active else 'Publish and read back the completed scoped source disposition, then stop this source task. Lifecycle scope/authority is deferred; do not mutate ticket status or ask for unrelated E2E guidance.' if source_only else 'Assess the active targets.' if active else 'Publish disposition and evidence; read back, apply authorized native lifecycle status/reason, read back again, then stop.',
             'limitation':'Correspondence and configured authority checks; external scope reviews and test observations still require substantive review. No lifecycle API was called.'}
     return result

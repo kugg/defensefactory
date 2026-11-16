@@ -31,9 +31,11 @@ def _subject(subject):
 def decision_request(spec):
     """Create the canonical open decision artifact; prose alone is not a gate."""
     require(isinstance(spec, dict), "Decision request object required")
-    required = ("id", "question", "blocking_stage", "requested_by", "created_at",
+    required = ("id", "kind", "question", "blocking_stage", "requested_by", "created_at",
                 "scope_reference", "subject", "options")
     require(all(spec.get(key) for key in required), "Decision request fields missing")
+    require(spec["kind"] == "owner_policy",
+            "Decision requests are only for non-inferable owner policy; observable facts need an evidence task")
     require(spec["blocking_stage"] in
             ("assessment", "repair", "verification", "integration", "deployment", "closure"),
             "Unknown blocking stage")
@@ -78,7 +80,7 @@ def record_decision(request, selection, decider, decided_at, reference, scope):
 def verify_decision_request(request):
     require(isinstance(request, dict) and request.get("record_type") == "decision_request",
             "Structured decision request required")
-    require(request.get('state')=='open' and request.get('id') and request.get('blocking_stage')
+    require(request.get('state')=='open' and request.get('id') and request.get('kind')=='owner_policy' and request.get('blocking_stage')
             and request.get('subject') and isinstance(request.get('options'),list) and len(request['options'])>=2,
             'Decision request shape is incomplete')
     _subject(request['subject'])
