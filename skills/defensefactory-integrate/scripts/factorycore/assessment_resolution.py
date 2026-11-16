@@ -8,6 +8,7 @@ STAGES = {'assessment', 'repair', 'verification', 'integration', 'deployment', '
 TICKET_SURFACES = {'description', 'status', 'comments', 'documents', 'attachments', 'relations'}
 AUTHORITY_EFFECTS = {'resolves', 'constrains', 'authorizes', 'context_only'}
 BLOCKER_KINDS = {'owner_policy', 'observable_fact'}
+INFERENCE_STATES = {'observed', 'not_observed', 'inconclusive', 'absent_within_declared_scope'}
 
 
 def _timestamp(value, label):
@@ -104,6 +105,26 @@ def decision_plan(decisions, stage='repair', authority_review=None):
                     all(isinstance(ref, str) and ref and not ref.startswith('file://') for ref in observations),
                     'Resolved observable fact needs durable evidence references')
             require(d.get('finding'), 'Resolved observable fact needs the measured finding')
+            scope = d.get('measurement_scope')
+            require(isinstance(scope, dict) and scope.get('subject') and scope.get('target') and
+                    scope.get('client_or_evaluator') and isinstance(scope.get('attempts'), list) and
+                    scope['attempts'],
+                    'Resolved observable fact needs exact measurement scope')
+            inference = d.get('inference')
+            require(isinstance(inference, dict) and inference.get('status') in INFERENCE_STATES and
+                    inference.get('claim') and isinstance(inference.get('limitations'), list) and
+                    inference['limitations'],
+                    'Resolved observable fact needs a bounded inference and limitations')
+            legitimate = d.get('legitimate_behavior')
+            require(isinstance(legitimate, list) and legitimate,
+                    'Observable fact must retain legitimate behavior before repair implications')
+            if inference['status'] == 'absent_within_declared_scope':
+                coverage = inference.get('coverage_basis')
+                require(isinstance(coverage, dict) and coverage.get('exhaustive_within_scope') is True and
+                        coverage.get('validated_harness_reference') and
+                        coverage.get('current_target_reference') and
+                        isinstance(coverage.get('tested_variants'), list) and coverage['tested_variants'],
+                        'Capability absence needs exhaustive declared-scope coverage on a validated current harness')
             resolved.append(d)
         else:
             require(not resolutions, 'A reviewed owner decision already resolves this question; do not reopen it')
@@ -124,10 +145,18 @@ def decision_plan(decisions, stage='repair', authority_review=None):
                 require(not d.get('alternatives'),
                         'Observable fact cannot be presented as owner alternatives')
                 plan = d.get('evidence_plan')
+                boundary = plan.get('inference_boundary') if isinstance(plan, dict) else None
                 complete = (isinstance(plan, dict) and plan.get('executor') and
                             plan.get('method') and plan.get('authorization_reference') and
                             isinstance(plan.get('success_criteria'), list) and plan['success_criteria'] and
-                            isinstance(plan.get('redactions'), list))
+                            isinstance(plan.get('redactions'), list) and
+                            isinstance(boundary, dict) and boundary.get('measurement_unit') and
+                            isinstance(boundary.get('allowed_conclusions'), list) and
+                            boundary['allowed_conclusions'] and
+                            isinstance(boundary.get('prohibited_conclusions'), list) and
+                            boundary['prohibited_conclusions'] and
+                            isinstance(boundary.get('legitimate_behavior'), list) and
+                            boundary['legitimate_behavior'])
                 if not complete:
                     incomplete.append(d['id'])
                 evidence_tasks.append({'id': d['id'], 'question': d.get('question'),

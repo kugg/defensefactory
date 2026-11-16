@@ -140,6 +140,12 @@ class DecisionAuthorityTests(unittest.TestCase):
                 'authorization_reference': 'ticket:probe-scope',
                 'success_criteria': ['answer transport and keying method recorded'],
                 'redactions': ['credentials', 'key material'],
+                'inference_boundary': {
+                    'measurement_unit': 'one exact endpoint/client/profile attempt',
+                    'allowed_conclusions': ['negotiation result for the exact attempt'],
+                    'prohibited_conclusions': ['provider-wide capability absence'],
+                    'legitimate_behavior': ['provider calling remains available'],
+                },
             },
         }
         result = decision_plan([blocker], authority_review=self.review())
@@ -155,6 +161,11 @@ class DecisionAuthorityTests(unittest.TestCase):
         blocker['evidence_plan'] = {
             'executor': 'factory', 'method': 'probe', 'authorization_reference': 'ticket:scope',
             'success_criteria': ['result'], 'redactions': [],
+            'inference_boundary': {
+                'measurement_unit': 'attempt', 'allowed_conclusions': ['attempt result'],
+                'prohibited_conclusions': ['universal absence'],
+                'legitimate_behavior': ['call succeeds'],
+            },
         }
         with self.assertRaisesRegex(GateError, 'cannot be presented as owner alternatives'):
             decision_plan([blocker], authority_review=self.review())
@@ -165,10 +176,59 @@ class DecisionAuthorityTests(unittest.TestCase):
             'blocks_stages': ['repair'], 'applied_authority_references': [],
             'finding': 'SDES-SRTP accepted; plaintext downgrade rejected',
             'evidence_references': ['ticket-attachment:provider-capability-receipt'],
+            'measurement_scope': {
+                'subject': 'repository@commit', 'target': 'provider endpoint',
+                'client_or_evaluator': 'probe@digest', 'attempts': ['attempt-1'],
+            },
+            'inference': {
+                'status': 'observed', 'claim': 'SDES succeeded for this exact attempt',
+                'limitations': ['Does not establish all provider endpoints'],
+            },
+            'legitimate_behavior': ['Provider calling remains available'],
         }
         result = decision_plan([blocker], authority_review=self.review())
         self.assertFalse(result['blocked'])
         self.assertEqual(result['resolved_decisions'][0]['finding'], blocker['finding'])
+
+    def test_negative_probe_cannot_claim_capability_absence_without_coverage(self):
+        blocker = {
+            'id': 'provider-profile', 'kind': 'observable_fact', 'state': 'resolved',
+            'blocks_stages': ['repair'], 'applied_authority_references': [],
+            'finding': 'The exact offer did not establish authenticated media',
+            'evidence_references': ['ticket-attachment:probe-result'],
+            'measurement_scope': {
+                'subject': 'repository@commit', 'target': 'one provider endpoint',
+                'client_or_evaluator': 'probe@digest', 'attempts': ['attempt-1'],
+            },
+            'inference': {
+                'status': 'absent_within_declared_scope',
+                'claim': 'Provider capability is absent',
+                'limitations': ['One suite was recognized by the parser'],
+            },
+            'legitimate_behavior': ['Provider calling remains available'],
+        }
+        with self.assertRaisesRegex(GateError, 'Capability absence needs exhaustive'):
+            decision_plan([blocker], authority_review=self.review())
+
+    def test_failed_exact_attempt_is_retained_as_not_observed(self):
+        blocker = {
+            'id': 'provider-profile', 'kind': 'observable_fact', 'state': 'resolved',
+            'blocks_stages': ['repair'], 'applied_authority_references': [],
+            'finding': 'The exact DTLS offer received plaintext RTP',
+            'evidence_references': ['ticket-attachment:probe-result'],
+            'measurement_scope': {
+                'subject': 'repository@commit', 'target': 'one provider endpoint',
+                'client_or_evaluator': 'probe@digest', 'attempts': ['attempt-1'],
+            },
+            'inference': {
+                'status': 'not_observed',
+                'claim': 'Authenticated media was not observed in this attempt',
+                'limitations': ['Does not distinguish provider capability from client incompatibility'],
+            },
+            'legitimate_behavior': ['Provider calling remains available'],
+        }
+        result = decision_plan([blocker], authority_review=self.review())
+        self.assertEqual(result['resolved_decisions'][0]['inference']['status'], 'not_observed')
 
 
 if __name__ == '__main__':

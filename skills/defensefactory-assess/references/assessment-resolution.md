@@ -69,12 +69,34 @@ owner-decision request, offer technical results as choices, or label the ticket
 target may require a narrowly scoped request, but the owner is not asked to guess
 the measurement result.
 
+Every observable `evidence_plan` also carries an `inference_boundary` with the
+exact `measurement_unit`, nonempty `allowed_conclusions`, nonempty
+`prohibited_conclusions`, and the `legitimate_behavior` that a later repair must
+preserve. Design sanitized result categories so they retain distinctions needed
+by those conclusions. If a category collapses “absent,” “different,” “malformed”
+or “client unsupported,” the measurement is inconclusive for capability absence.
+A negative result proves only the exact subject, target, client/evaluator,
+profile and attempts named by the receipt. It does not establish service-wide or
+provider-wide absence.
+
 Use `kind: owner_policy` only for a non-inferable product, business, risk,
 support-policy or deployment choice. `decision-request` accepts only this kind.
 When an observable fact is resolved, retain the measured finding and shareable
-evidence references. When owner policy is resolved, bind the actual reviewed
+evidence references, exact `measurement_scope`, bounded `inference` and preserved
+`legitimate_behavior`. Use `not_observed` for a failed exact attempt and
+`inconclusive` when the result categories cannot support the proposed conclusion.
+`absent_within_declared_scope` additionally requires an exhaustive scope, current
+target identity, validated harness reference and all tested variants. It never
+means universal absence. When owner policy is resolved, bind the actual reviewed
 owner record. A current owner resolution or constraint recovered from the ticket
 cannot be reopened as a new question.
+
+A security repair must preserve the component's declared legitimate positive
+behavior. Do not infer that “fail closed” means disabling the component or its
+essential external service. A deny-all outcome is a failed repair unless an
+explicit owner policy selected that product behavior. Where security and
+availability appear incompatible, keep the finding active, collect the missing
+interoperability facts, and present evidence-backed architecture alternatives.
 
 Before `assess-decisions`, retrieve the current ticket and persist a complete
 authority review of its description, status, comments, documents, attachments
