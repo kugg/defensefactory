@@ -59,6 +59,23 @@ or lifecycle inventory usually blocks a narrower evidence or later-stage claim.
 Missing facts can still block source understanding; explain the dependency rather
 than treating every missing capability as either mandatory or irrelevant.
 
+Classify every blocker before routing it. Use `kind: observable_fact` when an
+authorized source inspection, capability probe, test, runtime observation or
+other measurement can establish the answer. An unresolved observable fact must
+carry `evidence_plan` with the actual executor, method, authorization reference,
+success criteria and required redactions. It remains factory work: do not emit an
+owner-decision request, offer technical results as choices, or label the ticket
+`Owner decision`. A missing permission, credential reference or approved test
+target may require a narrowly scoped request, but the owner is not asked to guess
+the measurement result.
+
+Use `kind: owner_policy` only for a non-inferable product, business, risk,
+support-policy or deployment choice. `decision-request` accepts only this kind.
+When an observable fact is resolved, retain the measured finding and shareable
+evidence references. When owner policy is resolved, bind the actual reviewed
+owner record. A current owner resolution or constraint recovered from the ticket
+cannot be reopened as a new question.
+
 Before `assess-decisions`, retrieve the current ticket and persist a complete
 authority review of its description, status, comments, documents, attachments
 and relations. Mark a surface `empty` only when the connector confirms it; a
@@ -70,9 +87,10 @@ records and identify the exact prior record in `supersedes`; unresolved
 conflicting resolutions are rejected. Older receipts remain evidence, but a
 newer opening does not erase a still-current owner decision.
 
-Run `assess-decisions` with `{stage,authority_review,decisions}`. Each decision
-carries `id`, `state`, `reference`, `blocks_stages`, actual `owner`, one concrete
-`question`, and at least two `alternatives` with `choice` and `consequence`. A
+Run `assess-decisions` with `{stage,authority_review,decisions}`. Each blocker
+carries `id`, `kind`, `state`, `reference` and `blocks_stages`. An unresolved
+`owner_policy` also carries the actual `owner`, one concrete `question`, and at
+least two `alternatives` with `choice` and `consequence`. A
 resolved choice needs its actual `decision_reference`, retained `choice` and any
 applied constraint references. An unresolved question must record
 `no_applicable_resolution` and explain why the complete review does not answer

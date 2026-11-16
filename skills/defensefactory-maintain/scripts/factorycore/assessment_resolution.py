@@ -7,6 +7,7 @@ from .core import require, identity
 STAGES = {'assessment', 'repair', 'verification', 'integration', 'deployment', 'closure'}
 TICKET_SURFACES = {'description', 'status', 'comments', 'documents', 'attachments', 'relations'}
 AUTHORITY_EFFECTS = {'resolves', 'constrains', 'authorizes', 'context_only'}
+BLOCKER_KINDS = {'owner_policy', 'observable_fact'}
 
 
 def _timestamp(value, label):
@@ -59,7 +60,7 @@ def _authority_review(review):
 
 
 def decision_plan(decisions, stage='repair', authority_review=None):
-    """Classify explicit prerequisites; never resolve policy choices or grant authority."""
+    """Route policy choices to owners and measurable unknowns to evidence work."""
     require(stage in STAGES, 'Unknown blocked stage')
     require(isinstance(decisions, list), 'Decisions must be an array')
     review = _authority_review(authority_review)
@@ -68,9 +69,12 @@ def decision_plan(decisions, stage='repair', authority_review=None):
     unmapped = [record['id'] for record in review['authority_records']
                 if record['effect'] in ('resolves', 'constrains') and record['decision_id'] not in ids]
     require(not unmapped, 'Current owner decisions/constraints were not mapped into the decision plan: ' + ', '.join(unmapped))
-    blocking, deferred, resolved, questions, incomplete = [], [], [], [], []
+    blocking, deferred, resolved, questions, evidence_tasks, incomplete = [], [], [], [], [], []
     for original in decisions:
         d = copy.deepcopy(original)
+        kind = d.get('kind')
+        require(kind in BLOCKER_KINDS,
+                'Blocker kind must be owner_policy or observable_fact; do not route an unclassified unknown')
         state = d.get('state')
         require(state in ('unresolved', 'resolved'), 'Decision state must be unresolved/resolved')
         blocks = d.get('blocks_stages', ['repair'])
@@ -85,12 +89,21 @@ def decision_plan(decisions, stage='repair', authority_review=None):
         applied = d.get('applied_authority_references', [])
         require(isinstance(applied, list), 'Applied authority references must be an array')
         require(set(constraints) <= set(applied), 'Decision omitted a current owner constraint')
-        if state == 'resolved':
+        if state == 'resolved' and kind == 'owner_policy':
             # The plan is not an authority check: retain the actual decision resource.
             require(d.get('decision_reference'), 'Resolved decision needs its actual decision reference')
             require(any(record['reference'] == d['decision_reference'] for record in resolutions),
                     'Resolved decision must bind a reviewed owner resolution from the current ticket')
             require(d.get('choice'), 'Resolved decision must retain the chosen requirement or direction')
+            resolved.append(d)
+        elif state == 'resolved':
+            require(not resolutions,
+                    'Observable facts are established by retained measurement, not owner resolution')
+            observations = d.get('evidence_references', [])
+            require(isinstance(observations, list) and observations and
+                    all(isinstance(ref, str) and ref and not ref.startswith('file://') for ref in observations),
+                    'Resolved observable fact needs durable evidence references')
+            require(d.get('finding'), 'Resolved observable fact needs the measured finding')
             resolved.append(d)
         else:
             require(not resolutions, 'A reviewed owner decision already resolves this question; do not reopen it')
@@ -100,19 +113,36 @@ def decision_plan(decisions, stage='repair', authority_review=None):
             deferred.append(d)
         elif state == 'unresolved':
             blocking.append(d)
-            options = d.get('alternatives', [])
-            if not (d.get('owner') and d.get('question') and d.get('reference') and
-                    len(options) >= 2 and all(o.get('choice') and o.get('consequence') for o in options)):
-                incomplete.append(d['id'])
-            questions.append({'id': d['id'], 'owner': d.get('owner'), 'question': d.get('question'),
-                              'alternatives': options, 'reference': d.get('reference')})
+            if kind == 'owner_policy':
+                options = d.get('alternatives', [])
+                if not (d.get('owner') and d.get('question') and d.get('reference') and
+                        len(options) >= 2 and all(o.get('choice') and o.get('consequence') for o in options)):
+                    incomplete.append(d['id'])
+                questions.append({'id': d['id'], 'owner': d.get('owner'), 'question': d.get('question'),
+                                  'alternatives': options, 'reference': d.get('reference')})
+            else:
+                require(not d.get('alternatives'),
+                        'Observable fact cannot be presented as owner alternatives')
+                plan = d.get('evidence_plan')
+                complete = (isinstance(plan, dict) and plan.get('executor') and
+                            plan.get('method') and plan.get('authorization_reference') and
+                            isinstance(plan.get('success_criteria'), list) and plan['success_criteria'] and
+                            isinstance(plan.get('redactions'), list))
+                if not complete:
+                    incomplete.append(d['id'])
+                evidence_tasks.append({'id': d['id'], 'question': d.get('question'),
+                                       'reference': d.get('reference'),
+                                       'evidence_plan': copy.deepcopy(plan),
+                                       'next_action_owner': plan.get('executor') if isinstance(plan, dict) else None})
     return {'result': 'inconclusive' if incomplete else 'recorded', 'stage': stage,
             'blocked': bool(blocking), 'blocking_decisions': blocking,
             'deferred_decisions': deferred, 'resolved_decisions': resolved,
-            'questions': questions, 'incomplete_decision_briefs': incomplete,
+            'questions': questions, 'owner_action_required': bool(questions),
+            'evidence_tasks': evidence_tasks, 'factory_evidence_required': bool(evidence_tasks),
+            'incomplete_decision_briefs': incomplete,
             'authority_review': review, 'authority_review_sha256': identity(review),
             'repair_permitted': False, 'closure_permitted': False,
-            'limitation': 'Complete ticket decision reconciliation and explicit prerequisite routing; not semantic proof, authority attestation or proof that the stated blocker is necessary.'}
+            'limitation': 'Complete ticket decision reconciliation and explicit prerequisite routing; not semantic proof, authority attestation, execution of an evidence plan or proof that the stated blocker is necessary.'}
 
 
 def impact_review(assertions):

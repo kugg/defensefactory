@@ -109,7 +109,7 @@ EXAMPLES = {
     'repair-admission': {'eligibility_receipt':'REPLACE_RETRIEVED_ELIGIBILITY_OBJECT',
         'subject':{'repository':'REPLACE_REPOSITORY','revision':'REPLACE_CURRENT_FULL_COMMIT'},
         'contract_version':'REPLACE_CURRENT_CONTRACT_VERSION','scope_reference':'REPLACE_AUTHORITY_REFERENCE'},
-    'decision-request': {'id':'REPLACE_DECISION_ID','question':'REPLACE_EXACT_QUESTION',
+    'decision-request': {'id':'REPLACE_DECISION_ID','kind':'owner_policy','question':'REPLACE_EXACT_QUESTION',
         'blocking_stage':'repair','requested_by':'REPLACE_ACTOR','created_at':'REPLACE_ISO8601',
         'scope_reference':'REPLACE_TICKET_SCOPE','subject':{'repository':'REPLACE_REPOSITORY','revision':'REPLACE_FULL_COMMIT'},
         'options':[{'id':'option-a','consequence':'REPLACE_CONSEQUENCE_A'},
@@ -139,7 +139,7 @@ EXAMPLES = {
             {'kind': kind, 'state': 'reviewed', 'reference': 'REPLACE_' + kind.upper() + '_RETRIEVAL'}
             for kind in ('description', 'status', 'comments', 'documents', 'attachments', 'relations')],
         'authority_records': []}, 'decisions': [{
-        'id': 'behavior-choice', 'state': 'unresolved', 'blocks_stages': ['repair'],
+        'id': 'behavior-choice', 'kind': 'owner_policy', 'state': 'unresolved', 'blocks_stages': ['repair'],
         'owner': 'REPLACE_COMPONENT_OWNER', 'reference': 'REPLACE_REQUIREMENT_REFERENCE',
         'authority_review': 'no_applicable_resolution',
         'authority_rationale': 'REPLACE_WHY_NO_REVIEWED_OWNER_RECORD_RESOLVES_THIS_DECISION',
